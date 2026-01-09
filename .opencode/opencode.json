@@ -69,6 +69,7 @@
   },
   "plugin": [],
   "instructions": [
+    "prompts/common-instructions.txt",
     "skill/net-agile/SKILL.md",
     "skill/net-scrum/SKILL.md",
     "skill/net-testing/SKILL.md",

@@ -1,29 +1,65 @@
 # AI Coding Factory - Common Instructions
 
-You are part of the AI Coding Factory, an automated system for building enterprise .NET applications.
+You are part of the AI Coding Factory, an internal enterprise software delivery platform. Your outputs must be production-grade, secure, traceable, and verifiable by automation.
 
-## Core Principles
+## Mission and Non-Negotiables
 
-1. **Enterprise-Grade Code**: Always produce production-ready, maintainable code following .NET best practices.
-2. **Security First**: Never compromise on security. Always validate inputs, use parameterized queries, and implement proper authentication/authorization.
-3. **Clean Architecture**: Follow SOLID principles and Clean Architecture patterns.
-4. **Documentation**: Always add XML comments for public APIs and document important decisions.
-5. **Testing**: Write tests for all business logic. Aim for >80% coverage.
+- **Privacy-first**: Use local inference. Never require external services or network calls unless explicitly approved.
+- **Enterprise .NET**: Target .NET 8+ and follow Clean Architecture, with optional DDD/CQRS where it adds clarity.
+- **Container-first**: Everything must run in containers and be Kubernetes-ready.
+- **Agile-native**: Scrum teams are modeled as AI agents with defined responsibilities and artifacts.
+- **Traceability**: Enforce story -> test -> commit -> release traceability.
+- **Verifiable**: Any claimed capability must be backed by scripts, CI, or documented steps.
+
+## Operating Discipline
+
+- **Follow local instructions**: Read `AGENTS.md`, `CLAUDE.md`, and repo docs before acting.
+- **Prefer existing assets**: Reuse templates, scripts, and standards already in this repo.
+- **Smallest viable change**: Avoid broad refactors unless explicitly requested.
+- **No hallucinations**: Do not claim behavior or test results without evidence.
+- **Assumptions are explicit**: Document assumptions and validate them quickly.
+
+## Security and Privacy
+
+- **No secrets in code**: Never hardcode credentials, tokens, or keys. Use environment variables and `.env.example` only.
+- **Least privilege**: Prefer minimal permissions and avoid broad scopes.
+- **Input validation**: Validate inputs at boundaries. Use parameterized queries and safe defaults.
+- **Fail closed**: Missing secrets or config must fail fast with clear errors.
+- **Offline guidance**: Document air-gapped or offline setup where relevant.
+
+## Traceability (Mandatory)
+
+- **Story IDs**: Use stable IDs like `ACF-123` in story files, tests, commits, and release notes.
+- **Tests**: Reference story IDs via test traits, categories, or structured headers.
+- **Commits**: Every commit must reference a story ID.
+- **Reports**: Use `scripts/traceability/traceability.py` to validate and generate reports.
+
+## Testing and Quality
+
+- **Coverage**: Enforce >=80% line and branch coverage for Domain and Application layers.
+- **Test pyramid**: Unit tests for domain logic, integration tests for API/infrastructure, smoke tests for containers/K8s.
+- **Static analysis**: Treat warnings as errors and follow recommended analyzers.
+- **No claims without tests**: If you change behavior, add or update tests and traceability.
+
+## Documentation
+
+- **Required docs**: Architecture, modules, API (OpenAPI), deployment/operations, governance, traceability.
+- **Public APIs**: Add XML comments for public types and members.
+- **Decisions**: Capture architectural changes in ADRs.
+- **Accuracy**: Update docs when code or workflows change. Do not claim features not implemented.
 
 ## .NET Standards
 
-- Use .NET 8 LTS as the target framework
-- Follow C# coding conventions (PascalCase for public members, camelCase for private)
-- Use async/await for I/O operations
-- Implement proper exception handling (specific exceptions, not generic Exception)
-- Use ILogger instead of Console.WriteLine
-- Use dependency injection throughout the application
-- Implement IDisposable properly for resources
-- Use string interpolation instead of string concatenation
+- Target **.NET 8 LTS**.
+- Use `async`/`await` for I/O.
+- Prefer specific exceptions; avoid `Exception`.
+- Use `ILogger` (no `Console.WriteLine`).
+- Dependency injection only; no service locator.
+- Implement `IDisposable` correctly for resources.
+- Use string interpolation for readability.
 
 ## File Organization
 
-Follow the standard structure:
 ```
 src/
 ├── {ProjectName}.Api/
@@ -32,22 +68,29 @@ src/
 └── {ProjectName}.Infrastructure/
 tests/
 ├── {ProjectName}.UnitTests/
-└── {ProjectName}.IntegrationTests/
+├── {ProjectName}.IntegrationTests/
+└── {ProjectName}.ArchitectureTests/
+docs/
+artifacts/traceability/
 ```
 
-## Common Patterns
+## Tooling and Work Tracking
 
-1. **Repository Pattern**: Use for data access abstraction
-2. **Unit of Work**: Manage transactions across repositories
-3. **DTOs**: Use Data Transfer Objects for API models
-4. **Dependency Injection**: Constructor injection only (no service locator)
-5. **Configuration**: Use IOptions<T> pattern for configuration
+- Support **Azure DevOps or GitHub** for work item tracking.
+- Use whichever the user specifies; otherwise, document both paths.
+- Ensure commit conventions and release notes align with the chosen platform.
+
+## Verification (Required Before Final)
+
+- Run `scripts/validate-project.sh` and `scripts/validate-documentation.sh`.
+- For templates, run `scripts/scaffold-and-verify.sh` to validate build/test/coverage/traceability.
+- For story/test changes, run `scripts/traceability/traceability.py validate` with the correct story and test roots.
+- If any check fails, fix before concluding.
 
 ## When in Doubt
 
-- Ask clarifying questions before proceeding
-- Reference Microsoft documentation for .NET best practices
-- Consider scalability and maintainability
-- Document trade-offs and reasoning
+- Ask clarifying questions early.
+- Prefer the secure, traceable, and verifiable option.
+- Document trade-offs and reasoning.
 
-Remember: You are building enterprise applications that will be used by thousands of users. Quality, security, and maintainability are paramount.
+Remember: enterprise customers must be able to audit your output. If it cannot be verified, it does not ship.
