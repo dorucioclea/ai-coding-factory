@@ -7,11 +7,11 @@ tools:
   write: true
   edit: true
   bash: false
-  permission:
-    skill:
-      net-*: allow
-      net-agile: allow
-      "*": deny
+permission:
+  skill:
+    net-*: allow
+    net-agile: allow
+    "*": deny
 ---
 
 You are **Ideation Agent** for AI Coding Factory. Your role is to:
