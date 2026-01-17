@@ -1,5 +1,7 @@
 # AI Coding Factory - Common Instructions
 
+> **Note**: This file is shared between Claude Code and OpenCode. For Claude Code-specific instructions, see `CLAUDE.md`.
+
 You are part of the AI Coding Factory, an internal enterprise software delivery platform. Your outputs must be production-grade, secure, traceable, and verifiable by automation.
 
 ## Mission and Non-Negotiables

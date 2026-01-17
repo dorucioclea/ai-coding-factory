@@ -1,19 +1,36 @@
 # AGENTS.md
 
-This file provides guidance to Coding Agents when working with code in this repository.
+This file provides guidance to AI Coding Agents when working with code in this repository.
+
+> **For Claude Code users**: See `CLAUDE.md` for Claude Code-specific instructions, slash commands, and hooks.
 
 ## Repository Overview
 
-AI Coding Factory is a comprehensive system that automates the enterprise .NET application development lifecycle using specialized OpenCode agents. It implements a multi-agent orchestration model where each agent handles specific development stages (Ideation → Prototype → PoC → Pilot → Product).
+AI Coding Factory is a comprehensive system that automates the enterprise .NET application development lifecycle using AI-assisted development. It implements a multi-agent orchestration model where each agent handles specific development stages (Ideation → Prototype → PoC → Pilot → Product).
+
+## Supported AI Assistants
+
+| Assistant | Primary Config | Commands | Hooks |
+|-----------|---------------|----------|-------|
+| **Claude Code** | `.claude/`, `CLAUDE.md` | `.claude/commands/*.md` | `.claude/hooks/*.sh` |
+| OpenCode | `.opencode/opencode.json` | `/agent <name>` | `.opencode/plugin/*.ts` |
 
 ## Architecture
 
-This is an **OpenCode-based multi-agent system**, not a traditional code repository. The core architecture consists of:
+This is an **AI-assisted multi-agent system**, not a traditional code repository. The core architecture consists of:
 
+### Claude Code Configuration (Primary)
+- **Slash Commands** (`.claude/commands/`) - `/validate`, `/implement`, `/scaffold`, etc.
+- **Hooks** (`.claude/hooks/`) - Pre/post execution validation
+- **Settings** (`.claude/settings.json`) - Permissions, environment, hook configuration
+
+### OpenCode Configuration (Legacy Support)
 - **5 Specialized Agents** (`.opencode/agent/`) - Stage-specific AI assistants for development lifecycle
 - **11+ Reusable Skills** (`.opencode/skill/`) - Composable workflows for common .NET patterns
 - **3 Custom Plugins** (`.opencode/plugin/`) - TypeScript-based integrations (SonarQube, OWASP, CI/CD)
 - **Agent Templates** (`.opencode/templates/`) - Agile/Scrum artifacts and role playbooks
+
+### Shared Resources
 - **Project Templates** (`templates/`) - Clean Architecture and microservice boilerplates
 
 ### Multi-Agent Development Flow
@@ -52,7 +69,25 @@ Skills are auto-discovered and loaded by agents on-demand.
 
 ## Common Commands
 
-### Development Workflow
+### Claude Code Workflow (Recommended)
+```bash
+# Start Claude Code in the repository
+claude
+
+# Use slash commands
+/validate              # Run all validation scripts
+/new-story Login       # Create a new user story
+/scaffold MyProject    # Create new project from template
+/implement ACF-001     # Implement a story
+/traceability          # Generate traceability report
+/security-review       # Perform security audit
+/code-review staged    # Review staged changes
+/adr Caching Layer     # Create ADR
+/release 1.0.0         # Prepare release
+/sprint plan           # Start sprint planning
+```
+
+### OpenCode Workflow (Alternative)
 ```bash
 # Initial setup (only run once)
 ./scripts/setup.sh
@@ -181,11 +216,21 @@ Configuration in `.opencode/opencode.json`:
 
 ### Repository Root
 ```
-.opencode/           # OpenCode configuration (agents, skills, plugins)
+.claude/             # Claude Code configuration (primary)
+├── settings.json    # Permissions, hooks, environment
+├── commands/        # Slash commands
+└── hooks/           # Pre/post execution hooks
+.opencode/           # OpenCode configuration (legacy support)
+├── agent/           # Agent definitions
+├── skill/           # Reusable .NET skills
+├── plugin/          # TypeScript plugins
+└── templates/       # Agile/Scrum templates
 templates/           # Project boilerplates (Clean Architecture, microservices)
 projects/            # Generated projects (gitignored, user workspace)
 scripts/             # Automation (setup.sh, validate-project.sh)
-docs/                # Architecture documentation (ARCHITECTURE.md, AGILE-METHODOLOGY.md)
+docs/                # Architecture documentation
+CLAUDE.md            # Claude Code instructions
+AGENTS.md            # This file
 ```
 
 ### Generated .NET Projects
