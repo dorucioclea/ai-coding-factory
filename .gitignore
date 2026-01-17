@@ -1,5 +1,9 @@
 # AI Coding Factory - .gitignore
 
+# Claude Code
+.claude-cache/
+.claude/*.local.json
+
 # OpenCode
 .opencode/.cache/
 .opencode/node_modules/

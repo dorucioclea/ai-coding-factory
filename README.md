@@ -2,11 +2,11 @@
 
 # AI Coding Factory
 
-Enterprise-grade internal software delivery platform for private, traceable, and governed .NET development. Open source and GitHub-ready, with optional Azure DevOps support.
+Enterprise-grade internal software delivery platform for private, traceable, and governed .NET development. Optimized for **Claude Code** with full support for OpenCode. Open source and GitHub-ready, with optional Azure DevOps support.
 
 Repository: https://github.com/mitkox/ai-coding-factory
 
-[Features](#features) | [Quick Start](#quick-start) | [Governance](#governance-and-traceability) | [How To Verify](#how-to-verify)
+[Features](#features) | [Quick Start](#quick-start) | [Claude Code](#claude-code-integration) | [Governance](#governance-and-traceability) | [How To Verify](#how-to-verify)
 
 </div>
 
@@ -14,7 +14,14 @@ Repository: https://github.com/mitkox/ai-coding-factory
 
 ## Overview
 
-AI Coding Factory turns local inference into an **internal delivery platform** that replaces outsourcing with auditable, automated, and private software delivery. The platform enforces **quality, security, traceability, and governance by default** while staying fully offline-capable.
+AI Coding Factory is an **AI coding forge** that transforms AI-assisted development into an **internal delivery platform** with auditable, automated, and governed software delivery. The platform enforces **quality, security, traceability, and governance by default**.
+
+### Supported AI Coding Assistants
+
+| Assistant | Status | Configuration |
+|-----------|--------|---------------|
+| **Claude Code** | Primary | `.claude/` directory, `CLAUDE.md` |
+| OpenCode | Supported | `.opencode/` directory |
 
 ## Features
 
@@ -54,14 +61,73 @@ AI Coding Factory turns local inference into an **internal delivery platform** t
 
 ```
 ai-coding-factory/
-├── .opencode/                      # Agents, skills, prompts, templates
+├── .claude/                        # Claude Code configuration (primary)
+│   ├── settings.json               # Permissions, hooks, environment
+│   ├── commands/                   # Slash commands (/validate, /implement, etc.)
+│   └── hooks/                      # Pre/post execution hooks
+├── .opencode/                      # OpenCode configuration (legacy support)
+│   ├── agent/                      # Agent definitions
+│   ├── skill/                      # Reusable .NET skills
+│   ├── plugin/                     # TypeScript plugins
+│   └── templates/                  # Agile/Scrum templates
 ├── docs/                           # Governance, traceability, testing, Scrum
 ├── templates/                      # Clean Architecture + microservice templates
 ├── scripts/                        # Validation, traceability, scaffold verification
 ├── artifacts/                      # Traceability outputs (sample + generated)
+├── CLAUDE.md                       # Claude Code instructions
+├── AGENTS.md                       # Agent guidance (both tools)
 ├── azure-pipelines.yml             # Azure DevOps CI pipeline
-├── .github/workflows/quality-gates.yml # GitHub Actions CI pipeline (optional)
+├── .github/workflows/quality-gates.yml # GitHub Actions CI pipeline
 └── README.md
+```
+
+## Claude Code Integration
+
+Claude Code is the primary AI assistant for this platform. Configuration is in `.claude/` directory.
+
+### Available Slash Commands
+
+| Command | Description |
+|---------|-------------|
+| `/validate [scope]` | Run validation scripts (all, project, docs, policy, traceability) |
+| `/new-story <title>` | Create INVEST-compliant user story |
+| `/scaffold <name>` | Create new .NET project from template |
+| `/implement <ACF-###>` | Full implementation workflow for a story |
+| `/traceability` | Generate story-test-commit linkage report |
+| `/security-review` | Perform security audit |
+| `/code-review` | Perform code quality review |
+| `/adr <title>` | Create Architecture Decision Record |
+| `/release <version>` | Prepare release with all artifacts |
+| `/sprint <action>` | Sprint management (plan, daily, review, retro) |
+
+### Hooks
+
+| Hook | Trigger | Purpose |
+|------|---------|---------|
+| `pre-write-validate.sh` | Before file writes | Block secrets, validate story IDs in tests |
+| `post-test-traceability.sh` | After `dotnet test` | Validate story-test linkage |
+| `post-commit-validate.sh` | After `git commit` | Verify story ID in commit message |
+
+### Quick Start with Claude Code
+
+```bash
+# 1. Start Claude Code in the repository
+claude
+
+# 2. Read the instructions
+# Claude Code automatically reads CLAUDE.md
+
+# 3. Create your first story
+/new-story User Authentication
+
+# 4. Scaffold a new project
+/scaffold AuthService
+
+# 5. Implement the story
+/implement ACF-001
+
+# 6. Validate everything
+/validate
 ```
 
 ## Governance and Traceability
@@ -117,7 +183,26 @@ vllm serve GLM-4.7 --dtype auto --api-key your-api-key
 - Load a model
 - Enable OpenAI-compatible server
 
-### 3) Run OpenCode
+### 3) Run Claude Code (Recommended)
+
+```bash
+# Navigate to repository
+cd ai-coding-factory
+
+# Start Claude Code
+claude
+
+# Use built-in slash commands
+/validate              # Run all validation scripts
+/new-story Login Page  # Create a new user story
+/scaffold MyProject    # Create new .NET project
+/implement ACF-001     # Implement a story
+/traceability          # Generate traceability report
+/security-review       # Perform security review
+/release 1.0.0         # Prepare release
+```
+
+### 3-Alt) Run OpenCode (Alternative)
 
 ```bash
 opencode

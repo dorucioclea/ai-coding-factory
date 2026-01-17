@@ -1,0 +1,215 @@
+{
+  "$schema": "https://claude.ai/schemas/file-map.json",
+  "description": "Maps concepts to file patterns for quick discovery",
+  "concepts": {
+    "authentication": {
+      "description": "JWT authentication and authorization",
+      "patterns": [
+        "src/*/Services/*Auth*.cs",
+        "src/*/Controllers/Auth*.cs",
+        "src/*/Configuration/*Jwt*.cs",
+        "src/*/Middleware/*Auth*.cs"
+      ]
+    },
+    "domain-entities": {
+      "description": "Core business entities",
+      "patterns": [
+        "src/*.Domain/Entities/*.cs",
+        "src/*.Domain/Aggregates/*.cs"
+      ]
+    },
+    "value-objects": {
+      "description": "Immutable value objects",
+      "patterns": [
+        "src/*.Domain/ValueObjects/*.cs"
+      ]
+    },
+    "domain-events": {
+      "description": "Domain event definitions",
+      "patterns": [
+        "src/*.Domain/Events/*.cs"
+      ]
+    },
+    "repositories": {
+      "description": "Data access patterns",
+      "patterns": [
+        "src/*.Domain/Repositories/I*.cs",
+        "src/*.Infrastructure/Repositories/*.cs"
+      ]
+    },
+    "commands": {
+      "description": "CQRS write operations",
+      "patterns": [
+        "src/*.Application/Commands/**/*Command.cs",
+        "src/*.Application/Commands/**/*Handler.cs",
+        "src/*.Application/Commands/**/*Validator.cs"
+      ]
+    },
+    "queries": {
+      "description": "CQRS read operations",
+      "patterns": [
+        "src/*.Application/Queries/**/*Query.cs",
+        "src/*.Application/Queries/**/*Handler.cs"
+      ]
+    },
+    "dtos": {
+      "description": "Data transfer objects",
+      "patterns": [
+        "src/*.Application/DTOs/*.cs",
+        "src/*.Application/Models/*.cs"
+      ]
+    },
+    "validators": {
+      "description": "FluentValidation validators",
+      "patterns": [
+        "src/*.Application/**/*Validator.cs"
+      ]
+    },
+    "controllers": {
+      "description": "API endpoints",
+      "patterns": [
+        "src/*.Api/Controllers/*.cs"
+      ]
+    },
+    "middleware": {
+      "description": "Request/response pipeline",
+      "patterns": [
+        "src/*.Api/Middleware/*.cs"
+      ]
+    },
+    "filters": {
+      "description": "Action and exception filters",
+      "patterns": [
+        "src/*.Api/Filters/*.cs"
+      ]
+    },
+    "ef-configurations": {
+      "description": "Entity Framework configurations",
+      "patterns": [
+        "src/*.Infrastructure/Persistence/Configurations/*.cs"
+      ]
+    },
+    "migrations": {
+      "description": "Database migrations",
+      "patterns": [
+        "src/*.Infrastructure/Persistence/Migrations/*.cs"
+      ]
+    },
+    "unit-tests": {
+      "description": "Unit test files",
+      "patterns": [
+        "tests/*.UnitTests/**/*.cs"
+      ]
+    },
+    "integration-tests": {
+      "description": "Integration test files",
+      "patterns": [
+        "tests/*.IntegrationTests/**/*.cs"
+      ]
+    },
+    "architecture-tests": {
+      "description": "Architecture validation tests",
+      "patterns": [
+        "tests/*.ArchitectureTests/**/*.cs"
+      ]
+    },
+    "docker": {
+      "description": "Container configuration",
+      "patterns": [
+        "docker/Dockerfile",
+        "docker/docker-compose*.yml",
+        "Dockerfile",
+        "docker-compose*.yml"
+      ]
+    },
+    "kubernetes": {
+      "description": "Kubernetes manifests",
+      "patterns": [
+        "k8s/**/*.yaml",
+        "k8s/**/*.yml",
+        "kubernetes/**/*.yaml"
+      ]
+    },
+    "ci-cd": {
+      "description": "CI/CD pipeline definitions",
+      "patterns": [
+        ".github/workflows/*.yml",
+        "azure-pipelines.yml",
+        ".azure-pipelines/*.yml"
+      ]
+    },
+    "configuration": {
+      "description": "Application configuration",
+      "patterns": [
+        "src/*.Api/appsettings*.json",
+        "src/*.Api/Program.cs"
+      ]
+    },
+    "stories": {
+      "description": "User stories and requirements",
+      "patterns": [
+        "artifacts/stories/*.md"
+      ]
+    },
+    "adrs": {
+      "description": "Architecture Decision Records",
+      "patterns": [
+        "docs/architecture/adr/*.md"
+      ]
+    },
+    "traceability": {
+      "description": "Traceability artifacts",
+      "patterns": [
+        "artifacts/traceability/*.md"
+      ]
+    },
+    "agent-configuration": {
+      "description": "AI agent configuration",
+      "patterns": [
+        ".claude/**/*",
+        ".opencode/**/*",
+        "CLAUDE.md",
+        "AGENTS.md"
+      ]
+    },
+    "validation-scripts": {
+      "description": "Project validation scripts",
+      "patterns": [
+        "scripts/validate-*.sh",
+        "scripts/traceability/*.py",
+        "scripts/coverage/*.py"
+      ]
+    },
+    "templates": {
+      "description": "Project and code templates",
+      "patterns": [
+        "templates/**/*",
+        ".opencode/templates/**/*"
+      ]
+    }
+  },
+  "layers": {
+    "domain": {
+      "path": "src/*.Domain/",
+      "description": "Business logic and entities - NO external dependencies"
+    },
+    "application": {
+      "path": "src/*.Application/",
+      "description": "Use cases and orchestration - depends only on Domain"
+    },
+    "infrastructure": {
+      "path": "src/*.Infrastructure/",
+      "description": "External concerns - depends on Domain and Application"
+    },
+    "api": {
+      "path": "src/*.Api/",
+      "description": "HTTP interface - composition root"
+    }
+  },
+  "entry_points": {
+    "main": "src/*.Api/Program.cs",
+    "claude_instructions": "CLAUDE.md",
+    "agent_instructions": "AGENTS.md",
+    "governance": "CORPORATE_RND_POLICY.md"
+  }
+}

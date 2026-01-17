@@ -1,0 +1,46 @@
+{
+  "$schema": "https://claude.ai/schemas/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(git *)",
+      "Bash(dotnet *)",
+      "Bash(npm *)",
+      "Bash(node *)",
+      "Bash(python3 *)",
+      "Bash(chmod +x *)",
+      "Bash(ls *)",
+      "Bash(mkdir *)",
+      "Bash(pwd)",
+      "Bash(cd *)",
+      "Bash(./scripts/*)"
+    ],
+    "deny": [
+      "Bash(rm -rf /)",
+      "Bash(sudo *)",
+      "Bash(curl * | sh)",
+      "Bash(wget * | sh)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [".claude/hooks/pre-write-validate.sh"]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash(dotnet test*)",
+        "hooks": [".claude/hooks/post-test-traceability.sh"]
+      },
+      {
+        "matcher": "Bash(git commit*)",
+        "hooks": [".claude/hooks/post-commit-validate.sh"]
+      }
+    ]
+  },
+  "env": {
+    "DOTNET_CLI_TELEMETRY_OPTOUT": "1",
+    "DOTNET_NOLOGO": "true"
+  }
+}
