@@ -1,0 +1,295 @@
+{
+  "$schema": "https://claude.ai/schemas/error-patterns.json",
+  "description": "Common errors and their solutions for AI Coding Factory projects",
+  "patterns": {
+    "build": {
+      "CS0246": {
+        "message": "The type or namespace name could not be found",
+        "category": "Compilation",
+        "severity": "error",
+        "causes": [
+          "Missing using statement",
+          "Missing package reference",
+          "Typo in type name",
+          "Wrong namespace"
+        ],
+        "solutions": [
+          "Add the appropriate using statement at the top of the file",
+          "Add package reference: dotnet add package <PackageName>",
+          "Check spelling of the type name",
+          "Verify the type exists in the referenced namespace"
+        ],
+        "examples": {
+          "before": "var logger = new Logger();",
+          "after": "using Microsoft.Extensions.Logging;\n\nprivate readonly ILogger<MyClass> _logger;"
+        }
+      },
+      "CS0103": {
+        "message": "The name does not exist in the current context",
+        "category": "Compilation",
+        "severity": "error",
+        "causes": [
+          "Variable not declared",
+          "Variable out of scope",
+          "Missing using directive"
+        ],
+        "solutions": [
+          "Declare the variable before use",
+          "Check variable scope",
+          "Add using directive for static members"
+        ]
+      },
+      "CS1061": {
+        "message": "Type does not contain a definition for member",
+        "category": "Compilation",
+        "severity": "error",
+        "causes": [
+          "Method/property doesn't exist on the type",
+          "Extension method not in scope",
+          "Wrong type"
+        ],
+        "solutions": [
+          "Check API documentation for correct member names",
+          "Add using directive for extension methods",
+          "Verify the object type"
+        ]
+      },
+      "CS0029": {
+        "message": "Cannot implicitly convert type",
+        "category": "Compilation",
+        "severity": "error",
+        "causes": [
+          "Type mismatch in assignment",
+          "Return type doesn't match method signature"
+        ],
+        "solutions": [
+          "Use explicit cast if conversion is valid",
+          "Change variable type to match",
+          "Use conversion method (ToString, Parse, etc.)"
+        ]
+      }
+    },
+    "runtime": {
+      "NullReferenceException": {
+        "message": "Object reference not set to an instance of an object",
+        "category": "Runtime",
+        "severity": "error",
+        "causes": [
+          "Accessing member of null object",
+          "Uninitialized variable",
+          "Async method returning null"
+        ],
+        "solutions": [
+          "Add null check before access",
+          "Use null-conditional operator (?. or ??)",
+          "Initialize objects properly",
+          "Use nullable reference types"
+        ],
+        "examples": {
+          "before": "var name = order.Customer.Name;",
+          "after": "var name = order?.Customer?.Name ?? \"Unknown\";"
+        }
+      },
+      "InvalidOperationException": {
+        "message": "Operation is not valid due to the current state",
+        "category": "Runtime",
+        "severity": "error",
+        "causes": [
+          "Invalid state transition",
+          "Collection modified during iteration",
+          "Sequence contains no elements"
+        ],
+        "solutions": [
+          "Validate state before operation",
+          "Use ToList() before modifying collection",
+          "Use FirstOrDefault instead of First"
+        ]
+      },
+      "ArgumentNullException": {
+        "message": "Value cannot be null",
+        "category": "Runtime",
+        "severity": "error",
+        "causes": [
+          "Null passed to method that doesn't accept it"
+        ],
+        "solutions": [
+          "Validate parameters at method entry",
+          "Use ArgumentNullException.ThrowIfNull()",
+          "Provide default value"
+        ]
+      }
+    },
+    "entityframework": {
+      "DbUpdateException": {
+        "message": "An error occurred while saving the entity changes",
+        "category": "Database",
+        "severity": "error",
+        "causes": [
+          "Foreign key constraint violation",
+          "Unique constraint violation",
+          "Column size exceeded"
+        ],
+        "solutions": [
+          "Check entity relationships",
+          "Verify unique values",
+          "Check string lengths against column limits"
+        ]
+      },
+      "EF1001": {
+        "message": "Unable to create migrations",
+        "category": "Database",
+        "severity": "error",
+        "causes": [
+          "DbContext not registered",
+          "Missing design-time factory",
+          "Connection string not found"
+        ],
+        "solutions": [
+          "Ensure DbContext is registered in DI",
+          "Add IDesignTimeDbContextFactory",
+          "Set connection string in appsettings.json or env var"
+        ]
+      }
+    },
+    "aspnetcore": {
+      "404NotFound": {
+        "message": "Resource not found",
+        "category": "HTTP",
+        "severity": "warning",
+        "causes": [
+          "Incorrect route",
+          "Missing controller/action",
+          "Entity doesn't exist in database"
+        ],
+        "solutions": [
+          "Verify route matches controller attribute",
+          "Check HTTP method (GET, POST, etc.)",
+          "Validate ID before querying"
+        ]
+      },
+      "401Unauthorized": {
+        "message": "Authentication required",
+        "category": "HTTP",
+        "severity": "warning",
+        "causes": [
+          "Missing or invalid JWT token",
+          "Token expired",
+          "Authentication not configured"
+        ],
+        "solutions": [
+          "Include valid Bearer token in Authorization header",
+          "Refresh expired token",
+          "Configure authentication in Program.cs"
+        ]
+      },
+      "403Forbidden": {
+        "message": "Access denied",
+        "category": "HTTP",
+        "severity": "warning",
+        "causes": [
+          "User doesn't have required role",
+          "Policy requirement not met"
+        ],
+        "solutions": [
+          "Check user roles against [Authorize] attribute",
+          "Review authorization policies"
+        ]
+      }
+    },
+    "testing": {
+      "TestNotFound": {
+        "message": "No tests found to run",
+        "category": "Testing",
+        "severity": "warning",
+        "causes": [
+          "Test methods missing [Fact] or [Theory]",
+          "Test class not public",
+          "Test project missing reference"
+        ],
+        "solutions": [
+          "Add [Fact] attribute to test methods",
+          "Make test class and methods public",
+          "Reference xunit packages"
+        ]
+      },
+      "MockSetupFailed": {
+        "message": "Mock setup verification failed",
+        "category": "Testing",
+        "severity": "error",
+        "causes": [
+          "Method not setup on mock",
+          "Arguments don't match setup",
+          "Async method not returning Task"
+        ],
+        "solutions": [
+          "Verify mock setup matches actual call",
+          "Use It.IsAny<T>() for flexible matching",
+          "Use ReturnsAsync for async methods"
+        ],
+        "examples": {
+          "before": "_mock.Setup(x => x.GetById(id)).Returns(entity);",
+          "after": "_mock.Setup(x => x.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))\n    .ReturnsAsync(entity);"
+        }
+      }
+    },
+    "traceability": {
+      "MissingStoryId": {
+        "message": "Story ID not found in test/commit",
+        "category": "Traceability",
+        "severity": "warning",
+        "causes": [
+          "Test missing [Trait(\"Story\", \"ACF-###\")]",
+          "Commit message doesn't start with ACF-###"
+        ],
+        "solutions": [
+          "Add Story trait to test: [Trait(\"Story\", \"ACF-###\")]",
+          "Format commit: ACF-### Description of change"
+        ]
+      },
+      "OrphanedTest": {
+        "message": "Test references non-existent story",
+        "category": "Traceability",
+        "severity": "warning",
+        "causes": [
+          "Story deleted or renumbered",
+          "Typo in story ID"
+        ],
+        "solutions": [
+          "Verify story exists in artifacts/stories/",
+          "Update test trait to correct story ID"
+        ]
+      }
+    },
+    "architecture": {
+      "LayerViolation": {
+        "message": "Invalid cross-layer dependency",
+        "category": "Architecture",
+        "severity": "error",
+        "causes": [
+          "Domain referencing Infrastructure",
+          "Application referencing API",
+          "Wrong direction dependency"
+        ],
+        "solutions": [
+          "Move interface to Domain layer",
+          "Use dependency injection",
+          "Review Clean Architecture rules"
+        ]
+      },
+      "DomainDependency": {
+        "message": "Domain layer has external dependency",
+        "category": "Architecture",
+        "severity": "error",
+        "causes": [
+          "Using Microsoft.EntityFrameworkCore in Domain",
+          "Using third-party library in Domain"
+        ],
+        "solutions": [
+          "Move EF configuration to Infrastructure",
+          "Use interfaces and abstractions",
+          "Domain should have zero external dependencies"
+        ]
+      }
+    }
+  }
+}
