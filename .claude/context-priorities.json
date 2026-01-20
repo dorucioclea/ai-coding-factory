@@ -1,0 +1,250 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Claude Code context window optimization configuration",
+  "version": "1.0.0",
+
+  "priorities": {
+    "critical": {
+      "description": "Always read first - core instructions and policies",
+      "weight": 100,
+      "files": [
+        "CLAUDE.md",
+        "CORPORATE_RND_POLICY.md"
+      ]
+    },
+    "high": {
+      "description": "Read when starting new work or need context",
+      "weight": 80,
+      "files": [
+        ".claude/context/architecture.md",
+        ".claude/context/patterns.md",
+        ".claude/context/glossary.md",
+        ".claude/context/recent-decisions.md",
+        "artifacts/stories/ACF-*.md"
+      ]
+    },
+    "medium": {
+      "description": "Read on demand when relevant to task",
+      "weight": 50,
+      "files": [
+        ".claude/context/anti-patterns.md",
+        ".claude/templates/*.template",
+        ".claude/error-patterns.json",
+        "docs/architecture/**/*.md",
+        "scripts/*.sh"
+      ]
+    },
+    "low": {
+      "description": "Reference only when specifically needed",
+      "weight": 20,
+      "files": [
+        ".claude/templates/adr/*.md",
+        ".opencode/**/*.md",
+        "docs/**/*.md"
+      ]
+    }
+  },
+
+  "caching": {
+    "aggressive": {
+      "description": "Cache aggressively - rarely changes",
+      "ttl": "24h",
+      "patterns": [
+        ".claude/templates/**/*",
+        ".claude/context/patterns.md",
+        ".claude/context/anti-patterns.md",
+        ".claude/error-patterns.json",
+        ".opencode/skill/**/*.md"
+      ]
+    },
+    "moderate": {
+      "description": "Cache with moderate refresh",
+      "ttl": "4h",
+      "patterns": [
+        "CLAUDE.md",
+        "CORPORATE_RND_POLICY.md",
+        ".claude/context/architecture.md",
+        ".claude/context/glossary.md"
+      ]
+    },
+    "minimal": {
+      "description": "Minimal caching - changes frequently",
+      "ttl": "30m",
+      "patterns": [
+        "artifacts/stories/*.md",
+        "artifacts/sprints/*.md",
+        ".claude/context/recent-decisions.md"
+      ]
+    }
+  },
+
+  "exclusions": {
+    "always_skip": {
+      "description": "Never read these - binary, generated, or irrelevant",
+      "patterns": [
+        "**/node_modules/**",
+        "**/bin/**",
+        "**/obj/**",
+        "**/.git/**",
+        "**/TestResults/**",
+        "**/coverage/**",
+        "**/*.dll",
+        "**/*.exe",
+        "**/*.pdb",
+        "**/*.cache",
+        "**/*.log",
+        "**/packages/**",
+        "**/.vs/**",
+        "**/.idea/**"
+      ]
+    },
+    "skip_unless_requested": {
+      "description": "Skip unless user specifically asks",
+      "patterns": [
+        "**/migrations/**",
+        "**/*.Designer.cs",
+        "**/*.g.cs",
+        "**/wwwroot/**",
+        "**/*.min.js",
+        "**/*.min.css"
+      ]
+    }
+  },
+
+  "contextStrategies": {
+    "newFeature": {
+      "description": "Starting a new feature implementation",
+      "readOrder": [
+        "CLAUDE.md",
+        "artifacts/stories/${storyId}.md",
+        ".claude/context/architecture.md",
+        ".claude/context/patterns.md",
+        "src/${layer}/Entities/*.cs",
+        "src/${layer}/Commands/*.cs"
+      ]
+    },
+    "bugFix": {
+      "description": "Fixing a bug",
+      "readOrder": [
+        "CLAUDE.md",
+        ".claude/error-patterns.json",
+        "${affectedFiles}",
+        "tests/**/*Tests.cs"
+      ]
+    },
+    "codeReview": {
+      "description": "Reviewing code changes",
+      "readOrder": [
+        "CLAUDE.md",
+        ".claude/context/anti-patterns.md",
+        ".claude/context/patterns.md",
+        "${changedFiles}"
+      ]
+    },
+    "testing": {
+      "description": "Writing or reviewing tests",
+      "readOrder": [
+        "CLAUDE.md",
+        ".claude/templates/unit-test.cs.template",
+        ".claude/templates/integration-test.cs.template",
+        "tests/**/*Tests.cs",
+        "${targetFiles}"
+      ]
+    },
+    "documentation": {
+      "description": "Working on documentation",
+      "readOrder": [
+        "CLAUDE.md",
+        "README.md",
+        "docs/**/*.md",
+        ".claude/context/glossary.md"
+      ]
+    },
+    "infrastructure": {
+      "description": "Working on Docker, K8s, CI/CD",
+      "readOrder": [
+        "CLAUDE.md",
+        "Dockerfile",
+        "docker-compose*.yml",
+        ".github/workflows/*.yml",
+        "k8s/**/*.yaml",
+        "helm/**/*.yaml"
+      ]
+    },
+    "security": {
+      "description": "Security review or implementation",
+      "readOrder": [
+        "CLAUDE.md",
+        "CORPORATE_RND_POLICY.md",
+        ".claude/context/anti-patterns.md",
+        "src/**/Auth*.cs",
+        "src/**/Security*.cs",
+        "appsettings*.json"
+      ]
+    }
+  },
+
+  "fileTypePreferences": {
+    "sourceCode": {
+      "extensions": [".cs", ".csproj", ".sln"],
+      "priority": "high",
+      "maxLines": 500
+    },
+    "configuration": {
+      "extensions": [".json", ".yaml", ".yml", ".xml"],
+      "priority": "medium",
+      "maxLines": 200
+    },
+    "documentation": {
+      "extensions": [".md", ".txt"],
+      "priority": "medium",
+      "maxLines": 1000
+    },
+    "scripts": {
+      "extensions": [".sh", ".ps1", ".py"],
+      "priority": "low",
+      "maxLines": 300
+    }
+  },
+
+  "smartLoading": {
+    "layerOrder": {
+      "description": "Order to load Clean Architecture layers",
+      "sequence": ["Domain", "Application", "Infrastructure", "API"]
+    },
+    "dependencyAware": {
+      "description": "Load dependencies before dependents",
+      "enabled": true
+    },
+    "testProximity": {
+      "description": "Load tests near source files",
+      "enabled": true,
+      "pattern": "src/{path}/{file}.cs → tests/{path}/{file}Tests.cs"
+    }
+  },
+
+  "summarization": {
+    "longFiles": {
+      "threshold": 500,
+      "strategy": "extractPublicApi",
+      "includeComments": true
+    },
+    "largeDirectories": {
+      "threshold": 20,
+      "strategy": "listWithDescriptions"
+    }
+  },
+
+  "taskHints": {
+    "keywords": {
+      "entity": ["Domain/Entities", "Domain/ValueObjects"],
+      "repository": ["Domain/Repositories", "Infrastructure/Repositories"],
+      "command": ["Application/Commands"],
+      "query": ["Application/Queries"],
+      "controller": ["API/Controllers"],
+      "test": ["tests/*Tests"],
+      "migration": ["Infrastructure/Migrations"],
+      "config": ["appsettings*.json", "Program.cs"]
+    }
+  }
+}
