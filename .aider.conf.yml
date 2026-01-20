@@ -1,0 +1,100 @@
+# Aider Configuration for AI Coding Factory
+# https://aider.chat/docs/config/aider_conf.html
+
+# Model settings
+model: claude-3-5-sonnet-20241022
+
+# Auto-commit settings
+auto-commits: false
+dirty-commits: false
+
+# Editing settings
+edit-format: diff
+auto-lint: true
+auto-test: false
+
+# Git settings
+attribute-author: true
+attribute-committer: true
+attribute-commit-message-author: true
+attribute-commit-message-committer: true
+
+# Repository conventions file
+read:
+  - CLAUDE.md
+  - CORPORATE_RND_POLICY.md
+  - .ai/instructions/CORE.md
+
+# Files to never edit
+ignore-files:
+  - "*.lock"
+  - "*.min.js"
+  - "*.min.css"
+  - "**/bin/**"
+  - "**/obj/**"
+  - "**/node_modules/**"
+  - "**/.git/**"
+
+# Conventions for this repository
+conventions: |
+  # AI Coding Factory Conventions
+
+  ## Story Traceability
+  - Every change must link to a story: ACF-###
+  - Stories: artifacts/stories/ACF-###.md
+  - Test traits: [Trait("Story", "ACF-###")]
+  - Commits: ACF-### Description
+
+  ## Clean Architecture Layers
+  - Domain: Entities, Value Objects (no external deps)
+  - Application: Commands, Queries, DTOs, Validators
+  - Infrastructure: EF Core, Repositories
+  - API: Controllers, Middleware
+
+  ## .NET Standards
+  - Target .NET 8 LTS
+  - Use async/await for I/O
+  - FluentValidation for input validation
+  - MediatR for CQRS
+  - Structured logging (ILogger)
+
+  ## Testing
+  - >80% coverage for Domain/Application
+  - Naming: MethodName_Scenario_ExpectedBehavior
+  - Always add [Trait("Story", "ACF-###")]
+
+  ## Security
+  - Never hardcode secrets
+  - Use parameterized queries
+  - Validate all inputs
+  - Use IConfiguration for settings
+
+  ## Commit Format
+  ACF-### Brief description
+
+  - Detail 1
+  - Detail 2
+
+  Co-Authored-By: aider <noreply@aider.chat>
+
+# Lint commands per file type
+lint-cmds:
+  "*.cs": "dotnet format --verify-no-changes"
+
+# Test command
+test-cmd: "dotnet test --no-build --verbosity quiet"
+
+# Map file extensions to languages for better parsing
+map-whole-word: true
+
+# Show diffs before applying
+show-diffs: true
+
+# Verbose mode off by default
+verbose: false
+
+# Stream output
+stream: true
+
+# Pretty output
+pretty: true

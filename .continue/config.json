@@ -1,0 +1,125 @@
+{
+  "$schema": "https://continue.dev/config-schema.json",
+  "models": [
+    {
+      "title": "Claude 3.5 Sonnet",
+      "provider": "anthropic",
+      "model": "claude-3-5-sonnet-20241022",
+      "apiKey": "${ANTHROPIC_API_KEY}"
+    },
+    {
+      "title": "GPT-4o",
+      "provider": "openai",
+      "model": "gpt-4o",
+      "apiKey": "${OPENAI_API_KEY}"
+    }
+  ],
+  "tabAutocompleteModel": {
+    "title": "Codestral",
+    "provider": "mistral",
+    "model": "codestral-latest"
+  },
+  "customCommands": [
+    {
+      "name": "story",
+      "description": "Create a new user story",
+      "prompt": "Create a new user story following the ACF-### format. Find the next available ID by checking artifacts/stories/. Use the story template from .ai/instructions/governance.md. Include: user story statement, acceptance criteria, technical notes, and test plan."
+    },
+    {
+      "name": "implement",
+      "description": "Implement a user story",
+      "prompt": "Read the story from artifacts/stories/{input}.md. Then implement it following Clean Architecture: 1) Domain entities/value objects, 2) Application commands/queries with validators, 3) Infrastructure if needed, 4) API controllers. Write tests with [Trait(\"Story\", \"{input}\")]. Commit with {input} prefix."
+    },
+    {
+      "name": "review",
+      "description": "Review code for quality and security",
+      "prompt": "Review the selected code for: 1) Clean Architecture compliance, 2) SOLID principles, 3) Security vulnerabilities (OWASP Top 10), 4) Test coverage, 5) Naming conventions, 6) Story traceability. Provide specific actionable feedback."
+    },
+    {
+      "name": "test",
+      "description": "Generate tests for code",
+      "prompt": "Generate tests for the selected code. Include: 1) Unit tests for Domain/Application layers, 2) Integration tests for API endpoints. Use [Trait(\"Story\", \"ACF-###\")] for traceability. Follow naming convention: MethodName_Scenario_ExpectedBehavior."
+    },
+    {
+      "name": "adr",
+      "description": "Create an Architecture Decision Record",
+      "prompt": "Create an ADR for the decision described. Use the template from .ai/instructions/governance.md or .claude/templates/adr/. Include: Status, Context, Decision, Options Considered, Consequences (positive, negative, neutral)."
+    },
+    {
+      "name": "validate",
+      "description": "Run validation scripts",
+      "prompt": "Run these validation scripts and report results:\n1. ./scripts/validate-project.sh\n2. ./scripts/validate-documentation.sh\n3. ./scripts/validate-rnd-policy.sh\n4. python3 scripts/traceability/traceability.py validate"
+    }
+  ],
+  "contextProviders": [
+    {
+      "name": "code",
+      "params": {}
+    },
+    {
+      "name": "docs",
+      "params": {}
+    },
+    {
+      "name": "diff",
+      "params": {}
+    },
+    {
+      "name": "terminal",
+      "params": {}
+    },
+    {
+      "name": "problems",
+      "params": {}
+    },
+    {
+      "name": "folder",
+      "params": {}
+    },
+    {
+      "name": "codebase",
+      "params": {}
+    }
+  ],
+  "slashCommands": [
+    {
+      "name": "edit",
+      "description": "Edit selected code"
+    },
+    {
+      "name": "comment",
+      "description": "Add comments to code"
+    },
+    {
+      "name": "share",
+      "description": "Share conversation"
+    },
+    {
+      "name": "cmd",
+      "description": "Generate terminal command"
+    },
+    {
+      "name": "commit",
+      "description": "Generate commit message following ACF-### format"
+    }
+  ],
+  "docs": [
+    {
+      "name": "AI Coding Factory",
+      "startUrl": "file://./CLAUDE.md",
+      "faviconUrl": ""
+    },
+    {
+      "name": "Core Instructions",
+      "startUrl": "file://./.ai/instructions/CORE.md",
+      "faviconUrl": ""
+    },
+    {
+      "name": "Governance",
+      "startUrl": "file://./.ai/instructions/governance.md",
+      "faviconUrl": ""
+    }
+  ],
+  "systemMessage": "You are an AI assistant working in the AI Coding Factory repository - an enterprise .NET software delivery platform.\n\nKey rules:\n1. ALWAYS follow CORPORATE_RND_POLICY.md\n2. Story IDs: ACF-### format, in tests as [Trait(\"Story\", \"ACF-###\")], in commits as prefix\n3. Clean Architecture: Domain → Application → Infrastructure → API\n4. .NET 8 LTS with async/await, FluentValidation, MediatR\n5. Testing: >80% coverage for Domain/Application\n6. Security: Never hardcode secrets, validate inputs\n\nRefer to CLAUDE.md and .ai/instructions/ for detailed guidance.",
+  "allowAnonymousTelemetry": false
+}
