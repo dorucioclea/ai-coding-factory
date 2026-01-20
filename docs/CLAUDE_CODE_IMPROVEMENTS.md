@@ -20,7 +20,7 @@ This document catalogs improvements that would help Claude Code work more effect
 | .claude/mcp-servers.json | ✅ Done | MCP server configuration template |
 | Documentation updates | ✅ Done | Updated README, AGENTS.md for Claude Code |
 
-### Slash Commands (19 Total)
+### Slash Commands (20 Total)
 | Command | Purpose | Status |
 |---------|---------|--------|
 | `/validate` | Run all validation scripts | ✅ Done |
@@ -32,7 +32,7 @@ This document catalogs improvements that would help Claude Code work more effect
 | `/code-review` | Perform code quality review | ✅ Done |
 | `/adr` | Create Architecture Decision Record | ✅ Done |
 | `/release` | Prepare release with all artifacts | ✅ Done |
-| `/sprint` | Sprint management (plan, daily, review, retro) | ✅ Done |
+| `/sprint` | Sprint management with automation | ✅ Enhanced |
 | `/add-entity` | Add domain entity with DDD patterns | ✅ Done |
 | `/add-endpoint` | Add API endpoint with CQRS | ✅ Done |
 | `/add-test` | Generate unit/integration/architecture tests | ✅ Done |
@@ -42,6 +42,7 @@ This document catalogs improvements that would help Claude Code work more effect
 | `/add-auth` | Add JWT authentication | ✅ Done |
 | `/add-k8s` | Add Kubernetes/Helm configuration | ✅ Done |
 | `/add-observability` | Add logging, tracing, metrics | ✅ Done |
+| `/dependencies` | Dependency graph visualization | ✅ Done |
 
 ### Context Files (5 Total)
 | File | Purpose | Status |
@@ -52,7 +53,7 @@ This document catalogs improvements that would help Claude Code work more effect
 | `glossary.md` | Domain terminology | ✅ Done |
 | `recent-decisions.md` | ADR summaries | ✅ Done |
 
-### Templates (7 Total)
+### Templates (13 Total)
 | Template | Purpose | Status |
 |----------|---------|--------|
 | `unit-test.cs.template` | Unit test generation | ✅ Done |
@@ -62,6 +63,12 @@ This document catalogs improvements that would help Claude Code work more effect
 | `controller.cs.template` | API controller generation | ✅ Done |
 | `command-handler.cs.template` | CQRS command handler | ✅ Done |
 | `query-handler.cs.template` | CQRS query handler | ✅ Done |
+| `adr/database-choice.md` | Database selection ADR | ✅ Done |
+| `adr/authentication-method.md` | Auth method ADR | ✅ Done |
+| `adr/caching-strategy.md` | Caching approach ADR | ✅ Done |
+| `adr/message-queue.md` | Message broker ADR | ✅ Done |
+| `adr/api-versioning.md` | API versioning ADR | ✅ Done |
+| `adr/deployment-strategy.md` | Deployment approach ADR | ✅ Done |
 
 ### Hooks (4 Total)
 | Hook | Purpose | Status |
@@ -76,6 +83,7 @@ This document catalogs improvements that would help Claude Code work more effect
 |------|---------|--------|
 | `file-map.json` | Concept-to-file mapping | ✅ Done |
 | `error-patterns.json` | Common errors and solutions | ✅ Done |
+| `quick-actions.md` | Quick reference for common operations | ✅ Done |
 
 ---
 
@@ -104,7 +112,7 @@ Created templates in `.claude/templates/`:
 - `controller.cs.template`
 
 ### 3. Interactive Story Wizard
-**Status**: Deferred to P2
+**Status**: Deferred to P3
 **Reason**: Current `/new-story` command is functional; enhancement can wait
 
 ---
@@ -145,47 +153,60 @@ Comprehensive mapping of 20+ concepts to file patterns.
 
 ---
 
-## P2: Medium Priority Improvements
+## P2: Medium Priority Improvements - ✅ ALL COMPLETE
 
-### 8. Dependency Graph Visualization
-**Status**: Pending
-**Effort**: High
+### 8. Dependency Graph Visualization ✅
+**Status**: Complete
+**File**: `.claude/commands/dependencies.md`
 
-Create a `/dependencies` command to generate ASCII dependency graphs.
+Features:
+- ASCII dependency graph
+- Mermaid diagram output
+- JSON export
+- Clean Architecture violation detection
+- Package dependency analysis
 
-### 9. Quick Actions Menu
-**Status**: Pending
-**Effort**: Low
+### 9. Quick Actions Menu ✅
+**Status**: Complete
+**File**: `.claude/quick-actions.md`
 
-Create `.claude/quick-actions.md` with common operations reference.
+Includes:
+- Development workflows
+- Quality checks
+- Infrastructure commands
+- Sprint management
+- Common .NET commands
+- Git operations
 
 ### 10. Error Pattern Database ✅
-**Status**: Complete
+**Status**: Complete (from P1)
 **File**: `.claude/error-patterns.json`
 
 Contains 50+ common .NET errors with solutions.
 
-### 11. Sprint Automation Enhancement
-**Status**: Pending
-**Effort**: High
+### 11. Sprint Automation Enhancement ✅
+**Status**: Complete
+**File**: `.claude/commands/sprint.md` (enhanced)
 
-Enhance `/sprint` with:
-- Daily standup git log parsing
-- Sprint review demo script generation
-- Retrospective metrics analysis
-- Velocity tracking
+New features:
+- **Daily standup**: Auto-generates from git log
+- **Sprint review**: Demo script generation from completed stories
+- **Retrospective**: Automated metrics analysis (velocity, coverage, commit patterns)
+- **Velocity tracking**: Statistical analysis with recommendations
+- **Metrics dashboard**: Comprehensive sprint metrics
 
-### 12. ADR Templates Library
-**Status**: Pending
-**Effort**: Low
+### 12. ADR Templates Library ✅
+**Status**: Complete
+**Directory**: `.claude/templates/adr/`
 
-Create pre-filled ADR templates in `.claude/templates/adr/`:
-- database-choice.md
-- authentication-method.md
-- caching-strategy.md
-- message-queue.md
-- api-versioning.md
-- deployment-strategy.md
+Templates created:
+- `database-choice.md` - PostgreSQL, SQL Server, MongoDB, Cosmos DB
+- `authentication-method.md` - JWT, OAuth, Cookies, API Keys
+- `caching-strategy.md` - Memory, Redis, Hybrid, HTTP caching
+- `message-queue.md` - RabbitMQ, Kafka, Service Bus, SQS
+- `api-versioning.md` - URL, Query, Header, Evolutionary
+- `deployment-strategy.md` - Rolling, Blue-Green, Canary, Feature Flags
+- `README.md` - Usage guide and conventions
 
 ---
 
@@ -227,6 +248,12 @@ Create `/refactor` command with safety checks.
 
 Create `/generate-docs` command for OpenAPI/module docs.
 
+### 19. Interactive Story Wizard (moved from P0)
+**Status**: Pending
+**Effort**: Medium
+
+Enhance `/new-story` with interactive prompts and suggestions.
+
 ---
 
 ## Implementation Status Summary
@@ -235,27 +262,35 @@ Create `/generate-docs` command for OpenAPI/module docs.
 |----------|-------|----------|-----------|
 | P0 | 3 | 2 | 1 (deferred) |
 | P1 | 4 | 4 | 0 |
-| P2 | 5 | 1 | 4 |
-| P3 | 6 | 0 | 6 |
+| P2 | 5 | 5 | 0 |
+| P3 | 7 | 0 | 7 |
+
+**Overall Progress**: P0 + P1 + P2 Complete (11/12 items)
 
 ## Metrics Achieved
 
-| Metric | Before | After | Target |
-|--------|--------|-------|--------|
-| Commands available | 10 | 19 | 20 |
-| Hook scripts | 3 | 4 | 10 |
-| Context files | 3 | 5 | 5 |
-| Error patterns | 0 | 50+ | 50 |
-| Template files | 0 | 7 | 10 |
+| Metric | Before | After | Target | Status |
+|--------|--------|-------|--------|--------|
+| Commands available | 10 | 20 | 20 | ✅ Met |
+| Hook scripts | 3 | 4 | 10 | ⚠️ 40% |
+| Context files | 3 | 5 | 5 | ✅ Met |
+| Error patterns | 0 | 50+ | 50 | ✅ Met |
+| Template files | 0 | 13 | 10 | ✅ Exceeded |
+| ADR templates | 0 | 6 | 6 | ✅ Met |
 
 ---
 
-## Next Steps (P2 Recommended)
+## Next Steps (P3)
 
-1. **Quick Actions Menu** (Low effort) - Easy win for usability
-2. **ADR Templates Library** (Low effort) - Improves architecture documentation
-3. **Dependency Graph** (High effort) - Useful for understanding projects
-4. **Sprint Automation** (High effort) - Improves agile workflow
+Recommended order for P3 implementation:
+
+1. **Project Health Dashboard** (Medium effort) - High value for project oversight
+2. **API Documentation Generator** (Medium effort) - Improves developer experience
+3. **Context Window Optimization** (Medium effort) - Performance improvement
+4. **Interactive Story Wizard** (Medium effort) - Better UX for story creation
+5. **Learning Mode** (High effort) - Advanced feature
+6. **Multi-Project Support** (High effort) - Complex but valuable
+7. **Refactoring Assistant** (High effort) - Advanced code manipulation
 
 ---
 
@@ -282,4 +317,4 @@ To add a new improvement:
 ---
 
 *Last updated: January 2025*
-*P0 + P1 Complete*
+*P0 + P1 + P2 Complete*
