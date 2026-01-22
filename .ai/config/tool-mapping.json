@@ -1,0 +1,153 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Maps shared AI instructions to tool-specific configurations",
+  "version": "1.0.0",
+
+  "sharedInstructions": {
+    "core": ".ai/instructions/CORE.md",
+    "architecture": ".ai/instructions/architecture.md",
+    "testing": ".ai/instructions/testing.md",
+    "security": ".ai/instructions/security.md",
+    "governance": ".ai/instructions/governance.md"
+  },
+
+  "tools": {
+    "claude-code": {
+      "configRoot": ".claude/",
+      "entryPoint": "CLAUDE.md",
+      "commandsDir": ".claude/commands/",
+      "settingsFile": ".claude/settings.json",
+      "format": "markdown-commands",
+      "features": {
+        "slashCommands": true,
+        "hooks": true,
+        "mcp": true,
+        "customContext": true
+      }
+    },
+
+    "opencode": {
+      "configRoot": ".opencode/",
+      "entryPoint": "AGENTS.md",
+      "agentsDir": ".opencode/agent/",
+      "skillsDir": ".opencode/skill/",
+      "settingsFile": ".opencode/opencode.json",
+      "format": "agent-skill",
+      "features": {
+        "agents": true,
+        "skills": true,
+        "plugins": true,
+        "templates": true
+      }
+    },
+
+    "cursor": {
+      "configRoot": "./",
+      "entryPoint": ".cursorrules",
+      "format": "single-file-markdown",
+      "features": {
+        "rules": true,
+        "codebase": true
+      }
+    },
+
+    "codex-cli": {
+      "configRoot": "./",
+      "entryPoint": "CODEX.md",
+      "format": "single-file-markdown",
+      "features": {
+        "agents": true,
+        "sandboxMode": true
+      }
+    },
+
+    "aider": {
+      "configRoot": "./",
+      "entryPoint": ".aider.conf.yml",
+      "format": "yaml-config",
+      "features": {
+        "conventions": true,
+        "filePatterns": true
+      }
+    },
+
+    "continue": {
+      "configRoot": ".continue/",
+      "entryPoint": ".continue/config.json",
+      "format": "json-config",
+      "features": {
+        "models": true,
+        "slashCommands": true,
+        "contextProviders": true
+      }
+    }
+  },
+
+  "commandMapping": {
+    "validate": {
+      "description": "Run all validation scripts",
+      "claude": "/validate",
+      "opencode": "@validate",
+      "cursor": "Run validation scripts",
+      "codex": "validate"
+    },
+    "new-story": {
+      "description": "Create a new user story",
+      "claude": "/new-story",
+      "opencode": "@new-story",
+      "cursor": "Create user story",
+      "codex": "new-story"
+    },
+    "implement": {
+      "description": "Implement a user story",
+      "claude": "/implement",
+      "opencode": "@implement",
+      "cursor": "Implement story",
+      "codex": "implement"
+    },
+    "scaffold": {
+      "description": "Create new project from template",
+      "claude": "/scaffold",
+      "opencode": "@scaffold",
+      "cursor": "Scaffold project",
+      "codex": "scaffold"
+    },
+    "code-review": {
+      "description": "Perform code quality review",
+      "claude": "/code-review",
+      "opencode": "@code-review",
+      "cursor": "Review code",
+      "codex": "code-review"
+    },
+    "security-review": {
+      "description": "Perform security audit",
+      "claude": "/security-review",
+      "opencode": "@security-review",
+      "cursor": "Security review",
+      "codex": "security-review"
+    }
+  },
+
+  "agentMapping": {
+    "developer": {
+      "description": "Implementation within story scope",
+      "claude": "Task tool with developer context",
+      "opencode": "developer-agent"
+    },
+    "qa": {
+      "description": "Test linkage and coverage",
+      "claude": "Task tool with QA context",
+      "opencode": "qa-agent"
+    },
+    "security": {
+      "description": "Threat modeling and security reviews",
+      "claude": "Task tool with security context",
+      "opencode": "security-agent"
+    },
+    "devops": {
+      "description": "CI/CD and deployment",
+      "claude": "Task tool with devops context",
+      "opencode": "devops-agent"
+    }
+  }
+}
