@@ -1,0 +1,24 @@
+---
+description: Clean Architecture rules for .NET projects - layer dependencies and structure
+globs: ["**/*.cs", "**/*.csproj", "**/*.sln"]
+alwaysApply: true
+---
+
+# Clean Architecture Rules
+
+## Layer Dependencies (CRITICAL)
+- Domain has ZERO external dependencies
+- Application depends ONLY on Domain
+- Infrastructure depends on Domain + Application
+- API is the composition root
+
+## Layer Contents
+1. **Domain**: Entities, Value Objects, Aggregates, Domain Events, Repository Interfaces
+2. **Application**: Commands/Queries (CQRS), DTOs, Validators, Behaviors
+3. **Infrastructure**: EF Core, Repository Implementations, External Services
+4. **API**: Controllers, Middleware, Filters, DI Configuration
+
+## Rules
+- Never reference Infrastructure from Domain or Application
+- Use dependency injection for all cross-layer communication
+- Keep Domain pure - no framework dependencies

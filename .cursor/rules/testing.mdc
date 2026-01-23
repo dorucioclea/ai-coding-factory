@@ -1,0 +1,25 @@
+---
+description: Testing standards for .NET projects - TDD, coverage, naming
+globs: ["**/*Test*.cs", "**/*Tests*.cs", "**/*.Tests/**/*.cs"]
+alwaysApply: false
+---
+
+# Testing Standards
+
+## Test Naming Convention
+Use: `MethodName_Scenario_ExpectedBehavior`
+
+## Test Structure
+Always use Arrange-Act-Assert pattern.
+
+## Requirements
+- Unit test coverage >= 80% for Domain/Application layers
+- All tests must include Story trait: [Trait("Story", "ACF-XXX")]
+- Use FluentAssertions for readable assertions
+- Use Moq for mocking dependencies
+- Use TestContainers for integration tests with real databases
+
+## TDD Workflow
+1. RED: Write failing test first
+2. GREEN: Write minimal code to pass
+3. REFACTOR: Clean up while keeping tests green

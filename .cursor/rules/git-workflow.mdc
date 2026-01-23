@@ -1,0 +1,28 @@
+---
+description: Git workflow and commit conventions
+globs: ["**/*"]
+alwaysApply: false
+---
+
+# Git Workflow
+
+## Commit Message Format
+```
+ACF-### Brief description
+
+- Detail 1
+- Detail 2
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
+
+## Branch Naming
+- feature/ACF-###-description
+- bugfix/ACF-###-description
+- hotfix/ACF-###-description
+
+## Rules
+- Every commit references a story ID
+- Keep commits atomic and focused
+- Write meaningful commit messages
+- Rebase feature branches before merge

@@ -1,0 +1,27 @@
+---
+description: C# coding style and conventions
+globs: ["**/*.cs"]
+alwaysApply: true
+---
+
+# C# Coding Style
+
+## General
+- Target .NET 8 LTS
+- Use async/await for all I/O operations
+- Use specific exceptions
+- Use structured logging
+- Constructor injection only
+- Proper resource disposal with await using
+
+## Naming
+- PascalCase for public members
+- _camelCase for private fields
+- Interfaces prefixed with I
+- Async methods suffixed with Async
+
+## Patterns
+- Use string interpolation
+- Prefer records for DTOs
+- Use nullable reference types
+- Use pattern matching where appropriate

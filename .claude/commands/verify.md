@@ -1,127 +1,59 @@
-# /verify - Run Verification Loop
+# Verification Command
 
-Run comprehensive verification checks on the current codebase.
+Run comprehensive verification on current codebase state.
 
-## Usage
+## Instructions
 
-```
-/verify              # Run full verification
-/verify quick        # Quick build + unit tests only
-/verify unit         # Unit tests only
-/verify integration  # Integration tests only
-/verify coverage     # Coverage analysis
-/verify all          # Everything including traceability
-```
+Execute verification in this exact order:
 
-## Verification Levels
+1. **Build Check**
+   - Run the build command for this project
+   - If it fails, report errors and STOP
 
-### Quick (< 30s)
-- Build check
-- Unit tests only
-- No coverage
+2. **Type Check**
+   - Run TypeScript/type checker
+   - Report all errors with file:line
 
-### Standard (< 2min)
-- Build check
-- Unit tests
-- Integration tests
-- Basic coverage
+3. **Lint Check**
+   - Run linter
+   - Report warnings and errors
 
-### Full (< 5min)
-- All tests
-- Coverage >= 80% check
-- Architecture tests
-- Traceability validation
-- Security scan
+4. **Test Suite**
+   - Run all tests
+   - Report pass/fail count
+   - Report coverage percentage
 
-## Verification Steps
+5. **Console.log Audit**
+   - Search for console.log in source files
+   - Report locations
 
-```bash
-# Step 1: Build
-dotnet build --no-incremental
-
-# Step 2: Unit Tests
-dotnet test --filter "Category=Unit" --no-build
-
-# Step 3: Integration Tests
-dotnet test --filter "Category=Integration" --no-build
-
-# Step 4: Architecture Tests
-dotnet test --filter "Category=Architecture" --no-build
-
-# Step 5: Coverage Check
-dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
-python3 scripts/coverage/check-coverage.py coverage.xml
-
-# Step 6: Traceability
-python3 scripts/traceability/traceability.py validate
-
-# Step 7: Security Scan (if available)
-dotnet list package --vulnerable
-```
+6. **Git Status**
+   - Show uncommitted changes
+   - Show files modified since last commit
 
 ## Output
 
-```
-=== Verification Loop ===
-
-[1/6] Building...                    ✓ PASS
-[2/6] Unit Tests (142 tests)...      ✓ PASS
-[3/6] Integration Tests (28 tests).. ✓ PASS
-[4/6] Architecture Tests...          ✓ PASS
-[5/6] Coverage (85.2%)...            ✓ PASS (>= 80%)
-[6/6] Traceability...                ✓ PASS
-
-=== Verification Complete ===
-All checks passed! Safe to commit.
-```
-
-## Failure Handling
-
-When verification fails:
-
-1. **Identify failure** - Note which step failed
-2. **Analyze cause** - Review error messages
-3. **Fix minimally** - Only fix what's broken
-4. **Re-verify** - Run full loop again
+Produce a concise verification report:
 
 ```
-[3/6] Integration Tests...  ✗ FAIL
+VERIFICATION: [PASS/FAIL]
 
-FAILED: OrderServiceTests.CreateOrder_WithInvalidCustomer_ThrowsException
-  Expected: InvalidOperationException
-  Actual: NullReferenceException
+Build:    [OK/FAIL]
+Types:    [OK/X errors]
+Lint:     [OK/X issues]
+Tests:    [X/Y passed, Z% coverage]
+Secrets:  [OK/X found]
+Logs:     [OK/X console.logs]
 
-Action: Fix null check in OrderService.CreateOrder()
-Then: Run /verify again
+Ready for PR: [YES/NO]
 ```
 
-## Integration with Hooks
+If any critical issues, list them with fix suggestions.
 
-The verification loop integrates with existing hooks:
+## Arguments
 
-- `pre-test-setup.sh` - Runs before tests
-- `post-test-traceability.sh` - Runs after tests
-- `post-build-analyze.sh` - Runs after build
-
-## Continuous Mode
-
-Run verification in watch mode:
-
-```bash
-dotnet watch test --project tests/UnitTests
-```
-
-## Pre-Commit Verification
-
-Always run before committing:
-
-```bash
-/verify && git commit -m "ACF-XXX feat: Description"
-```
-
-## Related Commands
-
-- `/checkpoint` - Save state after passing verification
-- `/tdd` - TDD workflow includes verification
-- `/coverage` - Detailed coverage analysis
-- `/traceability` - Detailed traceability report
+$ARGUMENTS can be:
+- `quick` - Only build + types
+- `full` - All checks (default)
+- `pre-commit` - Checks relevant for commits
+- `pre-pr` - Full checks plus security scan

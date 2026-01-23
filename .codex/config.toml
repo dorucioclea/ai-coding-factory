@@ -1,0 +1,55 @@
+# OpenAI Codex CLI Configuration
+# Documentation: https://developers.openai.com/codex
+
+[features]
+# Enable shell snapshot for context
+shell_snapshot = true
+
+# Enable web search requests
+web_search_request = true
+
+# Enable autonomous mode (no confirmations)
+autonomous_mode = false
+
+[model]
+# Default model for Codex CLI
+default = "gpt-4"
+
+[context]
+# Project doc fallback filenames (tried in order)
+project_doc_fallback_filenames = ["AGENTS.md", "CLAUDE.md", "README.md"]
+
+# Global instructions location
+# global_instructions = "~/.codex/AGENTS.md"
+
+[mcp.github]
+command = ["npx", "-y", "@modelcontextprotocol/server-github"]
+env = { GITHUB_PERSONAL_ACCESS_TOKEN = "${GITHUB_TOKEN}" }
+
+[mcp.memory]
+command = ["npx", "-y", "@modelcontextprotocol/server-memory"]
+
+[mcp.sequential-thinking]
+command = ["npx", "-y", "@modelcontextprotocol/server-sequential-thinking"]
+
+[mcp.filesystem]
+command = ["npx", "-y", "@modelcontextprotocol/server-filesystem", "."]
+
+[mcp.context7]
+command = ["npx", "-y", "@context7/mcp-server"]
+
+[mcp.docker]
+command = ["npx", "-y", "@modelcontextprotocol/server-docker"]
+
+[mcp.postgres]
+command = ["npx", "-y", "@modelcontextprotocol/server-postgres"]
+env = { DATABASE_URL = "${DATABASE_URL}" }
+
+[notifications]
+# Notification hooks
+notify_on_complete = true
+notify_on_error = true
+
+[tui]
+# TUI notifications
+notifications = true

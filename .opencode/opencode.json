@@ -65,9 +65,49 @@
     },
     "devops": {
       "instructions": "agent/devops-agent.md"
+    },
+    "architect": {
+      "instructions": "../.claude/agents/architect.md",
+      "description": "System design and architecture decisions"
+    },
+    "code-reviewer": {
+      "instructions": "../.claude/agents/code-reviewer.md",
+      "description": "Code quality and review specialist"
+    },
+    "tdd-guide": {
+      "instructions": "../.claude/agents/tdd-guide.md",
+      "description": "Test-driven development methodology"
+    },
+    "build-error-resolver": {
+      "instructions": "../.claude/agents/build-error-resolver.md",
+      "description": "Fix build errors and compilation issues"
+    },
+    "e2e-runner": {
+      "instructions": "../.claude/agents/e2e-runner.md",
+      "description": "Playwright E2E testing execution"
+    },
+    "refactor-cleaner": {
+      "instructions": "../.claude/agents/refactor-cleaner.md",
+      "description": "Dead code cleanup and refactoring"
+    },
+    "doc-updater": {
+      "instructions": "../.claude/agents/doc-updater.md",
+      "description": "Documentation synchronization"
+    },
+    "security-reviewer": {
+      "instructions": "../.claude/agents/security-reviewer.md",
+      "description": "Vulnerability and security analysis"
+    },
+    "planner": {
+      "instructions": "../.claude/agents/planner.md",
+      "description": "Feature implementation planning"
     }
   },
-  "plugin": [],
+  "plugin": [
+    "plugin/ci-cd-orchestrator.ts",
+    "plugin/dependency-check.ts",
+    "plugin/sonarqube-integration.ts"
+  ],
   "instructions": [
     "prompts/common-instructions.txt",
     "skill/net-agile/SKILL.md",
@@ -81,14 +121,52 @@
     "skill/net-repository-pattern/SKILL.md",
     "skill/net-domain-model/SKILL.md",
     "skill/net-cqrs/SKILL.md",
-    "skill/net-observability/SKILL.md"
+    "skill/net-observability/SKILL.md",
+    "../.claude/skills/backend-patterns/SKILL.md",
+    "../.claude/skills/coding-standards/SKILL.md",
+    "../.claude/skills/tdd-workflow/SKILL.md",
+    "../.claude/skills/verification-loop/SKILL.md",
+    "../.claude/skills/continuous-learning/SKILL.md",
+    "../.claude/skills/strategic-compact/SKILL.md",
+    "../.claude/skills/security-review/SKILL.md",
+    "../.claude/skills/clickhouse-io/SKILL.md"
   ],
   "mcp": {
     "github": {
-      "type": "remote",
-      "url": "https://mcp.github.com",
-      "enabled": false,
-      "oauth": {}
+      "type": "stdio",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
+      },
+      "enabled": false
+    },
+    "memory": {
+      "type": "stdio",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-memory"],
+      "enabled": false
+    },
+    "filesystem": {
+      "type": "stdio",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-filesystem", "."],
+      "enabled": false
+    },
+    "docker": {
+      "type": "stdio",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-docker"],
+      "enabled": false
+    },
+    "postgres": {
+      "type": "stdio",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-postgres"],
+      "env": {
+        "DATABASE_URL": "${DATABASE_URL}"
+      },
+      "enabled": false
+    },
+    "context7": {
+      "type": "stdio",
+      "command": ["npx", "-y", "@context7/mcp-server"],
+      "enabled": false
     },
     "azure-devops": {
       "type": "remote",
@@ -107,6 +185,11 @@
       "headers": {
         "Authorization": "Bearer {env:SONARQUBE_TOKEN}"
       }
+    },
+    "clickhouse": {
+      "type": "http",
+      "url": "https://mcp.clickhouse.cloud/mcp",
+      "enabled": false
     }
   },
   "share": "disabled",

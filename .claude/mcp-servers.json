@@ -7,25 +7,34 @@
       "env": {
         "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
       },
-      "description": "GitHub API integration for issues, PRs, and repository management",
+      "description": "GitHub operations - PRs, issues, repos",
+      "enabled": false
+    },
+    "gitlab": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-gitlab"],
+      "env": {
+        "GITLAB_PERSONAL_ACCESS_TOKEN": "${GITLAB_TOKEN}"
+      },
+      "description": "GitLab API integration for issues, MRs, and repository management",
       "enabled": false
     },
     "filesystem": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/Users/dorucioclea/.claude-worktrees/ai-coding-factory/upbeat-brahmagupta"],
-      "description": "Filesystem access with proper permissions",
-      "enabled": true
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "${PROJECT_ROOT}"],
+      "description": "Filesystem operations with proper permissions",
+      "enabled": false
     },
     "memory": {
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-memory"],
-      "description": "Persistent memory for context across sessions",
+      "description": "Persistent memory across sessions",
       "enabled": false
     },
     "sequential-thinking": {
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
-      "description": "Step-by-step reasoning for complex tasks",
+      "description": "Chain-of-thought reasoning for complex tasks",
       "enabled": false
     },
     "brave-search": {
@@ -35,6 +44,21 @@
         "BRAVE_API_KEY": "${BRAVE_API_KEY}"
       },
       "description": "Web search for documentation and research",
+      "enabled": false
+    },
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@context7/mcp-server"],
+      "description": "Live documentation lookup for libraries",
+      "enabled": false
+    },
+    "firecrawl": {
+      "command": "npx",
+      "args": ["-y", "firecrawl-mcp"],
+      "env": {
+        "FIRECRAWL_API_KEY": "${FIRECRAWL_API_KEY}"
+      },
+      "description": "Web scraping and crawling",
       "enabled": false
     },
     "azure": {
@@ -62,13 +86,16 @@
       "description": "PostgreSQL database operations",
       "enabled": false
     },
-    "gitlab": {
+    "supabase": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-gitlab"],
-      "env": {
-        "GITLAB_PERSONAL_ACCESS_TOKEN": "${GITLAB_TOKEN}"
-      },
-      "description": "GitLab API integration for issues, MRs, and repository management",
+      "args": ["-y", "@supabase/mcp-server-supabase@latest", "--project-ref=${SUPABASE_PROJECT_REF}"],
+      "description": "Supabase database operations",
+      "enabled": false
+    },
+    "clickhouse": {
+      "type": "http",
+      "url": "https://mcp.clickhouse.cloud/mcp",
+      "description": "ClickHouse analytics queries",
       "enabled": false
     },
     "slack": {
@@ -85,6 +112,53 @@
       "args": ["-y", "@modelcontextprotocol/server-time"],
       "description": "Time and timezone utilities",
       "enabled": false
+    },
+    "vercel": {
+      "type": "http",
+      "url": "https://mcp.vercel.com",
+      "description": "Vercel deployments and projects",
+      "enabled": false
+    },
+    "railway": {
+      "command": "npx",
+      "args": ["-y", "@railway/mcp-server"],
+      "description": "Railway deployments",
+      "enabled": false
+    },
+    "cloudflare-docs": {
+      "type": "http",
+      "url": "https://docs.mcp.cloudflare.com/mcp",
+      "description": "Cloudflare documentation search",
+      "enabled": false
+    },
+    "cloudflare-workers-builds": {
+      "type": "http",
+      "url": "https://builds.mcp.cloudflare.com/mcp",
+      "description": "Cloudflare Workers builds",
+      "enabled": false
+    },
+    "cloudflare-workers-bindings": {
+      "type": "http",
+      "url": "https://bindings.mcp.cloudflare.com/mcp",
+      "description": "Cloudflare Workers bindings",
+      "enabled": false
+    },
+    "cloudflare-observability": {
+      "type": "http",
+      "url": "https://observability.mcp.cloudflare.com/mcp",
+      "description": "Cloudflare observability/logs",
+      "enabled": false
+    },
+    "magic": {
+      "command": "npx",
+      "args": ["-y", "@magicuidesign/mcp@latest"],
+      "description": "Magic UI components",
+      "enabled": false
     }
+  },
+  "_comments": {
+    "usage": "Enable servers by setting 'enabled': true and configuring env vars",
+    "env_vars": "Use ${VAR_NAME} syntax - will be resolved from environment",
+    "context_warning": "Keep under 10 MCPs enabled to preserve context window"
   }
 }

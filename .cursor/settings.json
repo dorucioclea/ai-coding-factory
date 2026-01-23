@@ -1,0 +1,25 @@
+{
+  "$schema": "https://cursor.com/schemas/settings.json",
+  "rules": {
+    "enabled": true,
+    "directory": ".cursor/rules"
+  },
+  "features": {
+    "composer": true,
+    "chat": true,
+    "codeActions": true
+  },
+  "context": {
+    "includeOpenFiles": true,
+    "includeRecentFiles": true,
+    "maxFiles": 20
+  },
+  "model": {
+    "default": "claude-3-5-sonnet",
+    "codeActions": "claude-3-5-sonnet"
+  },
+  "_comments": {
+    "rules": "Rules are loaded from .cursor/rules/*.mdc files",
+    "cursorrules": ".cursorrules is deprecated, use .cursor/rules/*.mdc instead"
+  }
+}

@@ -1,6 +1,23 @@
 ---
-description: Security-focused code analysis and audit skills. Use when reviewing code for vulnerabilities, performing security audits, or implementing security features.
-globs: ["**/*"]
-alwaysApply: false
+description: Security rules for .NET development
+globs: ["**/*.cs", "**/*.json", "**/*.yaml", "**/*.yml"]
+alwaysApply: true
 ---
 
+# Security Rules
+
+## Always Do
+- Use parameterized queries (EF Core only)
+- Validate all inputs (FluentValidation)
+- Use IConfiguration for settings
+- Implement proper authentication (JWT)
+- Log with ILogger (structured logging)
+- Use HTTPS in production
+
+## Never Do
+- Hardcode secrets, tokens, or keys
+- Use raw SQL strings
+- Trust user input without validation
+- Use Console.WriteLine for logging
+- Commit .env files (use .env.example)
+- Disable security features
