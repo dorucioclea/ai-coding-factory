@@ -1,0 +1,59 @@
+---
+description: .NET 8 best practices - Clean Architecture, async/await, dependency injection, EF Core
+globs: ["**/*.cs", "**/*.csproj", "**/*.sln"]
+alwaysApply: true
+---
+
+# .NET Patterns for Cursor
+
+## Clean Architecture Layers
+- **Domain**: Entities, Value Objects, Repository Interfaces - NO dependencies
+- **Application**: Commands/Queries, DTOs, Validators - depends on Domain only
+- **Infrastructure**: EF Core, External Services - depends on Domain + Application
+- **API**: Controllers, Middleware - composition root
+
+## Code Style
+
+### Async/Await
+```csharp
+// Always use async for I/O
+public async Task<Result> ProcessAsync(CancellationToken ct)
+{
+    await using var stream = File.OpenRead(path);
+    return await parser.ParseAsync(stream, ct);
+}
+```
+
+### Dependency Injection
+```csharp
+// Constructor injection only
+public class OrderService(
+    IOrderRepository repository,
+    ILogger<OrderService> logger)
+{
+    public async Task<Order> GetAsync(int id)
+    {
+        logger.LogInformation("Getting order {OrderId}", id);
+        return await repository.GetByIdAsync(id);
+    }
+}
+```
+
+### Structured Logging
+```csharp
+// Use message templates, not string interpolation
+_logger.LogInformation("Processing {OrderId} for {CustomerId}", orderId, customerId);
+```
+
+### Nullable Reference Types
+```csharp
+// Enable and respect nullable annotations
+public string? OptionalValue { get; set; }
+public required string RequiredValue { get; set; }
+```
+
+## EF Core
+- Use `.AsNoTracking()` for read-only queries
+- Use `.Include()` for eager loading
+- Never concatenate SQL - use LINQ or parameterized queries
+- Use migrations for schema changes

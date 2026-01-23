@@ -8,7 +8,7 @@
         "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
       },
       "description": "GitHub operations - PRs, issues, repos",
-      "enabled": false
+      "enabled": true
     },
     "gitlab": {
       "command": "npx",
@@ -29,7 +29,7 @@
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-memory"],
       "description": "Persistent memory across sessions",
-      "enabled": false
+      "enabled": true
     },
     "sequential-thinking": {
       "command": "npx",
@@ -50,7 +50,7 @@
       "command": "npx",
       "args": ["-y", "@context7/mcp-server"],
       "description": "Live documentation lookup for libraries",
-      "enabled": false
+      "enabled": true
     },
     "firecrawl": {
       "command": "npx",
@@ -75,7 +75,7 @@
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-docker"],
       "description": "Docker container operations for container-first development",
-      "enabled": false
+      "enabled": true
     },
     "postgres": {
       "command": "npx",

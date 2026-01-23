@@ -1,0 +1,56 @@
+---
+description: Git commit conventions for AI Coding Factory - story IDs, commit messages, PR format
+globs: ["**/*"]
+alwaysApply: false
+---
+
+# Git Commit Rules for Cursor
+
+## Commit Message Format
+```
+ACF-### type: Brief description
+
+- Detail 1
+- Detail 2
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
+
+## Types
+- `feat` - New feature
+- `fix` - Bug fix
+- `refactor` - Code restructuring
+- `test` - Adding/updating tests
+- `docs` - Documentation
+- `chore` - Maintenance
+- `style` - Formatting
+
+## Rules
+- Every commit references a story ID (ACF-###)
+- First line under 72 characters
+- Use imperative mood ("Add feature" not "Added feature")
+- Explain why, not just what
+
+## Branch Naming
+- `feature/ACF-###-description`
+- `bugfix/ACF-###-description`
+- `hotfix/ACF-###-description`
+
+## PR Format
+```markdown
+## Summary
+- Bullet points describing changes
+
+## Test plan
+- [ ] Unit tests pass
+- [ ] Integration tests pass
+- [ ] Manual testing completed
+
+🤖 Generated with Claude Code
+```
+
+## Before Committing
+- [ ] Tests pass
+- [ ] No console.log/TODO in new code
+- [ ] Story ID in commit message
+- [ ] Meaningful commit message

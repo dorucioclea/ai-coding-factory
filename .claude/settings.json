@@ -5,6 +5,9 @@
       "Bash(git *)",
       "Bash(dotnet *)",
       "Bash(npm *)",
+      "Bash(pnpm *)",
+      "Bash(yarn *)",
+      "Bash(bun *)",
       "Bash(node *)",
       "Bash(python3 *)",
       "Bash(chmod +x *)",
@@ -12,7 +15,9 @@
       "Bash(mkdir *)",
       "Bash(pwd)",
       "Bash(cd *)",
-      "Bash(./scripts/*)"
+      "Bash(./scripts/*)",
+      "Bash(docker *)",
+      "Bash(docker-compose *)"
     ],
     "deny": [
       "Bash(rm -rf /)",
@@ -25,48 +30,106 @@
     "PreToolUse": [
       {
         "matcher": "Write",
-        "hooks": [".claude/hooks/pre-write-validate.sh"]
+        "hooks": [".claude/hooks/pre-write-validate.sh"],
+        "description": "Validate file writes for security and patterns"
       },
       {
         "matcher": "Bash(dotnet build*)",
-        "hooks": [".claude/hooks/pre-build-check.sh"]
+        "hooks": [".claude/hooks/pre-build-check.sh"],
+        "description": "Pre-build validation for .NET projects"
       },
       {
         "matcher": "Bash(dotnet test*)",
-        "hooks": [".claude/hooks/pre-test-setup.sh"]
+        "hooks": [".claude/hooks/pre-test-setup.sh"],
+        "description": "Setup test environment before running tests"
+      },
+      {
+        "matcher": "Bash(npm run dev*)",
+        "hooks": [".claude/hooks/tmux-dev-server.sh"],
+        "description": "Recommend tmux for dev servers"
+      },
+      {
+        "matcher": "Bash(git push*)",
+        "hooks": [".claude/hooks/pre-push-review.sh"],
+        "description": "Review changes before git push"
       }
     ],
     "PostToolUse": [
       {
         "matcher": "Bash(dotnet test*)",
-        "hooks": [".claude/hooks/post-test-traceability.sh"]
+        "hooks": [".claude/hooks/post-test-traceability.sh"],
+        "description": "Validate traceability after tests"
       },
       {
         "matcher": "Bash(git commit*)",
-        "hooks": [".claude/hooks/post-commit-validate.sh"]
+        "hooks": [".claude/hooks/post-commit-validate.sh"],
+        "description": "Validate commit format and story linkage"
       },
       {
         "matcher": "Bash(dotnet build*)",
-        "hooks": [".claude/hooks/post-build-analyze.sh"]
+        "hooks": [".claude/hooks/post-build-analyze.sh"],
+        "description": "Analyze build output for warnings"
+      },
+      {
+        "matcher": "Bash(gh pr create*)",
+        "hooks": [".claude/hooks/post-pr-create.sh"],
+        "description": "Log PR URL and provide review command"
+      },
+      {
+        "matcher": "Edit",
+        "hooks": [".claude/hooks/post-edit-lint.sh"],
+        "description": "Lint and check edited files"
       }
     ],
     "UserPromptSubmit": [
       {
         "matcher": ".*(/scaffold|scaffold).*",
-        "hooks": [".claude/hooks/post-scaffold-validate.sh"]
+        "hooks": [".claude/hooks/post-scaffold-validate.sh"],
+        "description": "Validate scaffolded projects"
       },
       {
         "matcher": ".*(/release|release).*",
-        "hooks": [".claude/hooks/pre-release-checklist.sh"]
+        "hooks": [".claude/hooks/pre-release-checklist.sh"],
+        "description": "Pre-release validation checklist"
       },
       {
         "matcher": ".*(/security-review|security).*",
-        "hooks": [".claude/hooks/post-security-scan.sh"]
+        "hooks": [".claude/hooks/post-security-scan.sh"],
+        "description": "Security scan after security commands"
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "*",
+        "hooks": [".claude/hooks/memory-persistence/pre-compact.sh"],
+        "description": "Save state before context compaction"
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [".claude/hooks/memory-persistence/session-start.sh"],
+        "description": "Load previous context on session start"
+      }
+    ],
+    "SessionEnd": [
+      {
+        "matcher": "*",
+        "hooks": [".claude/hooks/memory-persistence/session-end.sh"],
+        "description": "Persist session state on end"
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [".claude/hooks/stop-cleanup.sh"],
+        "description": "Cleanup checks after each response"
       }
     ]
   },
   "env": {
     "DOTNET_CLI_TELEMETRY_OPTOUT": "1",
-    "DOTNET_NOLOGO": "true"
+    "DOTNET_NOLOGO": "true",
+    "CLAUDE_SESSION_DIR": ".claude/sessions"
   }
 }

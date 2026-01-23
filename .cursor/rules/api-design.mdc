@@ -1,0 +1,53 @@
+---
+description: REST API design patterns - endpoints, status codes, error handling, validation
+globs: ["**/Controllers/**", "**/api/**", "**/*.controller.ts", "**/route.ts"]
+alwaysApply: false
+---
+
+# API Design Rules for Cursor
+
+## RESTful Conventions
+- `GET /resources` - List resources
+- `GET /resources/{id}` - Get single resource
+- `POST /resources` - Create resource
+- `PUT /resources/{id}` - Replace resource
+- `PATCH /resources/{id}` - Partial update
+- `DELETE /resources/{id}` - Delete resource
+
+## HTTP Status Codes
+- `200` - Success
+- `201` - Created
+- `204` - No Content (successful DELETE)
+- `400` - Bad Request (validation error)
+- `401` - Unauthorized (not authenticated)
+- `403` - Forbidden (not authorized)
+- `404` - Not Found
+- `409` - Conflict (duplicate, constraint violation)
+- `422` - Unprocessable Entity (business rule violation)
+- `500` - Internal Server Error
+
+## Error Response Format
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Invalid request",
+    "details": [
+      { "field": "email", "message": "Must be valid email" }
+    ]
+  }
+}
+```
+
+## Validation
+- Validate all inputs at API boundary
+- Return 400 with field-level errors
+- Never trust client data
+- Sanitize before storage
+
+## Security
+- Authenticate before authorize
+- Check resource ownership
+- Rate limit all endpoints
+- Log security events
+- Never expose internal errors

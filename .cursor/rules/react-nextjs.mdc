@@ -1,0 +1,54 @@
+---
+description: React and Next.js best practices - Server Components, hooks, state management, performance
+globs: ["**/*.tsx", "**/*.jsx", "**/*.ts", "**/*.js", "**/app/**", "**/components/**"]
+alwaysApply: false
+---
+
+# React/Next.js Rules for Cursor
+
+## Server vs Client Components
+
+### Server Components (default in app/)
+- Fetch data directly
+- Access backend resources
+- Keep sensitive logic on server
+- No hooks, no event handlers
+
+### Client Components
+- Add `'use client'` directive
+- Use for interactivity, hooks, browser APIs
+- Keep as small as possible
+
+```tsx
+// Server Component (default)
+async function ProductList() {
+  const products = await db.products.findMany()
+  return <ul>{products.map(p => <li key={p.id}>{p.name}</li>)}</ul>
+}
+
+// Client Component
+'use client'
+function AddToCartButton({ productId }) {
+  const [pending, startTransition] = useTransition()
+  return <button onClick={() => startTransition(() => addToCart(productId))}>Add</button>
+}
+```
+
+## Performance Rules
+- Avoid barrel imports (`import { x } from './components'`)
+- Use dynamic imports for heavy components
+- Memoize expensive calculations with `useMemo`
+- Use `useCallback` for functions passed to children
+- Prefer Server Components for data fetching
+
+## State Management
+- Local state: `useState`
+- Server state: Server Components or React Query
+- Global client state: Zustand (avoid Redux unless complex)
+- Form state: React Hook Form + Zod
+
+## Hooks Rules
+- Only call at top level
+- Only call from React functions
+- Custom hooks must start with `use`
+- Include all dependencies in dependency arrays
