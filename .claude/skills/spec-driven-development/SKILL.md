@@ -11,6 +11,10 @@ triggers:
   - "I have an idea"
   - "let's build"
   - "help me create"
+modes:
+  - yolo: "Minimal questions, maximum assumptions, fastest path to code"
+  - standard: "Balanced approach with 3 questions per phase"
+  - deep: "Thorough requirement gathering, comprehensive specification"
 ---
 
 # Spec-Driven Development
@@ -22,9 +26,121 @@ Transform vague ideas into actionable specifications through **automated, system
 **Core Principles:**
 - Never ask "should I use spec-driven development?" - just do it
 - Never ask "should I use the templates?" - always use them
-- Maximum 3 clarification questions per phase
+- Maximum 3 clarification questions per phase (in Standard mode)
 - Present questions with suggested answers in table format
 - Make reasonable assumptions for anything not critical
+
+## Modes
+
+### Yolo Mode 🚀
+
+**Trigger**: User says "yolo", "just build it", "skip questions", or "fast mode"
+
+**Behavior**:
+- Ask **0-1 questions** (only if truly ambiguous)
+- Make **maximum assumptions** based on common patterns
+- Generate specification immediately
+- Scaffold and start implementation without waiting
+
+**Assumptions in Yolo Mode**:
+- Public app with user registration
+- Standard CRUD for main entity
+- Email/password auth
+- List view for MVP (no maps/complex UI)
+- Basic features only (no comments, ratings, etc. unless core to concept)
+- PostgreSQL + Redis + .NET + Next.js stack
+
+**Example**:
+```
+User: "Build me a recipe sharing app, yolo mode"
+
+Claude: "Going full yolo! Building a recipe sharing platform with:
+- User registration/login
+- Create, view, browse recipes
+- Basic search
+- Clean Architecture backend + Next.js frontend
+
+Scaffolding now... [proceeds immediately]"
+```
+
+---
+
+### Standard Mode (Default) ⚡
+
+**Trigger**: Default behavior when project idea detected
+
+**Behavior**:
+- Ask **max 3 questions per phase** (usually 2 phases)
+- Present options with recommendations
+- Make reasonable assumptions for non-critical items
+- Generate specification after answers
+- Wait for approval before scaffolding
+
+---
+
+### Deep Mode 🔬
+
+**Trigger**: User says "deep mode", "thorough", "detailed spec", or "comprehensive"
+
+**Behavior**:
+- Ask **up to 5 questions per phase** across 3-4 phases
+- Explore edge cases and error handling
+- Document all assumptions explicitly
+- Generate comprehensive PRD-level specification
+- Include architecture decisions and rationale
+- Create detailed user journey maps
+
+**Phases in Deep Mode**:
+
+1. **Vision & Users** (5 questions)
+   - Target market/audience
+   - Problem being solved
+   - Success metrics
+   - Competitive landscape
+   - User personas
+
+2. **Features & Scope** (5 questions)
+   - Core features (must-have)
+   - Secondary features (should-have)
+   - Explicit exclusions
+   - MVP vs full vision
+   - Integration requirements
+
+3. **User Experience** (5 questions)
+   - Key user journeys
+   - Error handling expectations
+   - Accessibility requirements
+   - Mobile vs desktop priority
+   - Onboarding flow
+
+4. **Technical & Operations** (3-5 questions)
+   - Scale expectations
+   - Performance requirements
+   - Security/compliance needs
+   - Deployment preferences
+   - Monitoring/alerting needs
+
+**Output in Deep Mode**:
+- Full PRD document (using `prd-template.md`)
+- Architecture document (using `architecture-template.md`)
+- Detailed user stories with all acceptance criteria
+- Technical research items identified
+
+---
+
+## Mode Detection
+
+Automatically detect mode from user language:
+
+| User Says | Mode |
+|-----------|------|
+| "yolo", "just build it", "skip the questions", "fast" | Yolo |
+| "thorough", "detailed", "comprehensive", "deep dive" | Deep |
+| (default - no modifier) | Standard |
+
+Can also be explicitly set:
+- `/create-project --mode=yolo {idea}`
+- `/create-project --mode=deep {idea}`
 
 ## Auto-Trigger Behavior
 
