@@ -26,6 +26,14 @@
       {
         "matcher": "Write",
         "hooks": [".claude/hooks/pre-write-validate.sh"]
+      },
+      {
+        "matcher": "Bash(dotnet build*)",
+        "hooks": [".claude/hooks/pre-build-check.sh"]
+      },
+      {
+        "matcher": "Bash(dotnet test*)",
+        "hooks": [".claude/hooks/pre-test-setup.sh"]
       }
     ],
     "PostToolUse": [
@@ -36,6 +44,24 @@
       {
         "matcher": "Bash(git commit*)",
         "hooks": [".claude/hooks/post-commit-validate.sh"]
+      },
+      {
+        "matcher": "Bash(dotnet build*)",
+        "hooks": [".claude/hooks/post-build-analyze.sh"]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": ".*(/scaffold|scaffold).*",
+        "hooks": [".claude/hooks/post-scaffold-validate.sh"]
+      },
+      {
+        "matcher": ".*(/release|release).*",
+        "hooks": [".claude/hooks/pre-release-checklist.sh"]
+      },
+      {
+        "matcher": ".*(/security-review|security).*",
+        "hooks": [".claude/hooks/post-security-scan.sh"]
       }
     ]
   },
