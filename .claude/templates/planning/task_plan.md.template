@@ -1,0 +1,102 @@
+# Task Plan: {{TaskName}}
+
+**Story:** {{StoryId}}
+**Created:** {{Date}}
+**Owner:** {{Owner}}
+
+---
+
+## Objective
+
+{{TaskObjective}}
+
+## Success Criteria
+
+- [ ] {{Criterion1}}
+- [ ] {{Criterion2}}
+- [ ] {{Criterion3}}
+
+---
+
+## Phases
+
+### Phase 1: Research & Analysis
+**Status:** ⬜ Not Started | 🔄 In Progress | ✅ Complete
+
+- [ ] Understand existing codebase patterns
+- [ ] Identify affected components
+- [ ] Review related documentation
+- [ ] Document findings in `findings.md`
+
+**Notes:**
+
+
+### Phase 2: Design & Planning
+**Status:** ⬜ Not Started | 🔄 In Progress | ✅ Complete
+
+- [ ] Define technical approach
+- [ ] Identify potential risks
+- [ ] Create ADR if architectural decision needed
+- [ ] Get approach approved
+
+**Notes:**
+
+
+### Phase 3: Implementation
+**Status:** ⬜ Not Started | 🔄 In Progress | ✅ Complete
+
+- [ ] Write failing tests (TDD Red)
+- [ ] Implement feature
+- [ ] Pass all tests (TDD Green)
+- [ ] Refactor if needed (TDD Refactor)
+- [ ] Update progress.md with session notes
+
+**Notes:**
+
+
+### Phase 4: Validation & Review
+**Status:** ⬜ Not Started | 🔄 In Progress | ✅ Complete
+
+- [ ] Self-review code changes
+- [ ] Ensure coverage ≥80%
+- [ ] Run security checks
+- [ ] Create PR
+- [ ] Address review feedback
+- [ ] Merge
+
+**Notes:**
+
+
+---
+
+## Current Status
+
+| Field | Value |
+|-------|-------|
+| **Phase** | 1 / 4 |
+| **Blocker** | None |
+| **Next Action** | Begin research |
+| **Last Updated** | {{Date}} |
+
+---
+
+## Dependencies
+
+- Depends on: (list any blocking items)
+- Blocks: (list items waiting on this)
+
+---
+
+## Risks & Mitigations
+
+| Risk | Impact | Likelihood | Mitigation |
+|------|--------|------------|------------|
+| | | | |
+
+---
+
+## Related Links
+
+- Story: `artifacts/stories/{{StoryId}}.md`
+- Findings: `artifacts/planning/{{taskName}}/findings.md`
+- Progress: `artifacts/planning/{{taskName}}/progress.md`

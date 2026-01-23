@@ -1,0 +1,127 @@
+# Findings: {{TaskName}}
+
+**Story:** {{StoryId}}
+**Last Updated:** {{Date}}
+
+---
+
+## Code Analysis
+
+### Relevant Files
+
+| File | Purpose | Notes |
+|------|---------|-------|
+| `path/to/file.cs` | Description | |
+| | | |
+
+### Existing Patterns
+
+**Patterns Observed:**
+- Pattern 1: Description
+- Pattern 2: Description
+
+**Anti-Patterns to Avoid:**
+- Anti-pattern 1: Why to avoid
+
+### Dependencies
+
+**Internal:**
+- Module/Service: How it's used
+
+**External (NuGet/npm):**
+- Package: Version - Purpose
+
+---
+
+## Technical Research
+
+### Approach Options
+
+#### Option A: {{OptionAName}}
+
+**Description:**
+
+
+**Pros:**
+-
+
+**Cons:**
+-
+
+**Effort:** Low / Medium / High
+
+#### Option B: {{OptionBName}}
+
+**Description:**
+
+
+**Pros:**
+-
+
+**Cons:**
+-
+
+**Effort:** Low / Medium / High
+
+### Recommended Approach
+
+**Selected:** Option [A/B]
+
+**Rationale:**
+
+
+---
+
+## Domain Knowledge
+
+### Business Rules
+
+1. Rule description
+2. Rule description
+
+### Edge Cases
+
+| Scenario | Expected Behavior |
+|----------|-------------------|
+| | |
+
+### Validation Requirements
+
+- [ ] Validation rule 1
+- [ ] Validation rule 2
+
+---
+
+## Technical Notes
+
+### Important Discoveries
+
+1. **Finding:** Description
+   - Impact: How this affects implementation
+   - Action: What to do about it
+
+### Gotchas & Warnings
+
+⚠️ **Warning:** Description of potential issue
+
+### Code Snippets
+
+```csharp
+// Relevant code example
+```
+
+---
+
+## Open Questions
+
+- [x] Question 1? → **Answer:** Resolved answer
+- [ ] Question 2? → Waiting for clarification
+- [ ] Question 3? → Need to investigate
+
+---
+
+## References
+
+- [Documentation Link](url)
+- [Related PR](url)
+- [Stack Overflow](url)

@@ -1,0 +1,102 @@
+# Progress Log: {{TaskName}}
+
+**Story:** {{StoryId}}
+
+---
+
+## Session: {{Date}}
+
+**Duration:** {{StartTime}} - {{EndTime}}
+**Phase:** {{CurrentPhase}} / 4
+
+### Completed This Session
+
+- [x] Task completed 1
+- [x] Task completed 2
+- [x] Task completed 3
+
+### In Progress
+
+- [ ] Task in progress (X% complete)
+
+### Test Results
+
+```
+dotnet test
+─────────────────────────────────────
+Test Run Successful.
+Total tests: XX
+     Passed: XX
+     Failed: XX
+     Skipped: XX
+Duration: X.XXs
+─────────────────────────────────────
+```
+
+### Build Status
+
+```
+dotnet build
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+```
+
+### Blockers Encountered
+
+- [ ] Blocker 1: Description → Resolution/Status
+- None this session ✓
+
+### Decisions Made
+
+| Decision | Rationale |
+|----------|-----------|
+| | |
+
+### Notes
+
+- Note 1
+- Note 2
+
+### Next Session
+
+- [ ] Task to do next
+- [ ] Task to do next
+
+---
+
+## Session: {{PreviousDate}}
+
+**Duration:** {{StartTime}} - {{EndTime}}
+**Phase:** {{Phase}} / 4
+
+### Completed This Session
+
+- [x] Previous task 1
+- [x] Previous task 2
+
+### Notes
+
+- Previous session notes
+
+---
+
+## Summary Statistics
+
+| Metric | Value |
+|--------|-------|
+| **Total Sessions** | X |
+| **Total Time** | X hours |
+| **Tests Written** | X |
+| **Files Changed** | X |
+| **Current Phase** | X / 4 |
+| **Blockers Resolved** | X |
+
+---
+
+## Milestone Checkpoints
+
+- [ ] Phase 1 Complete: Research done, findings documented
+- [ ] Phase 2 Complete: Design approved, ADR created if needed
+- [ ] Phase 3 Complete: Implementation done, tests passing
+- [ ] Phase 4 Complete: PR merged, documentation updated
