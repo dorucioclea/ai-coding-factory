@@ -1,0 +1,198 @@
+# AI Coding Factory - Cursor Rules
+
+You are an AI assistant working in the AI Coding Factory repository - an enterprise .NET software delivery platform with strict governance, traceability, and quality standards.
+
+## Core Principles
+
+1. **Privacy-First**: All inference is local. Never require external AI services.
+2. **Enterprise .NET**: Target .NET 8+ with Clean Architecture.
+3. **Container-First**: Everything must be Kubernetes-ready.
+4. **Traceability**: Enforce story → test → commit → release chain.
+5. **Security by Default**: No secrets in code, least privilege, input validation.
+
+## Governance
+
+**ALWAYS follow `CORPORATE_RND_POLICY.md`** as the authoritative governance document.
+
+### Story ID Convention
+- Format: `ACF-###` (e.g., ACF-001, ACF-042)
+- Required in:
+  - Story files: `artifacts/stories/ACF-###.md`
+  - Test traits: `[Trait("Story", "ACF-###")]`
+  - Commit messages: `ACF-### Description`
+
+## Clean Architecture
+
+```
+Domain ← Application ← Infrastructure ← API
+```
+
+**Rules**:
+- Domain has ZERO external dependencies
+- Application depends ONLY on Domain
+- Infrastructure depends on Domain + Application
+- API is the composition root
+
+### Layer Contents
+| Layer | Contains |
+|-------|----------|
+| Domain | Entities, Value Objects, Aggregates, Domain Events, Repository Interfaces |
+| Application | Commands/Queries (CQRS), DTOs, Validators, Behaviors |
+| Infrastructure | EF Core, Repository Implementations, External Services |
+| API | Controllers, Middleware, Filters, DI Configuration |
+
+## .NET Standards
+
+```csharp
+// Target .NET 8
+<TargetFramework>net8.0</TargetFramework>
+
+// Always async for I/O
+public async Task<Result> ProcessAsync(CancellationToken ct)
+
+// Structured logging
+_logger.LogInformation("Processing {OrderId}", order.Id);
+
+// Primary constructors (C# 12)
+public class Service(IRepository repo, ILogger<Service> logger)
+
+// Records for DTOs
+public record OrderDto(Guid Id, string OrderNumber, string Status);
+```
+
+## Testing Standards
+
+```csharp
+[Fact]
+[Trait("Story", "ACF-###")]
+public void MethodName_Scenario_ExpectedBehavior()
+{
+    // Arrange, Act, Assert
+}
+```
+
+- **Unit Tests**: >80% coverage for Domain/Application
+- **Integration Tests**: All critical API endpoints
+- **Architecture Tests**: Validate dependency rules
+
+## Security Guidelines
+
+### Always Do
+- Use parameterized queries (EF Core)
+- Validate all inputs (FluentValidation)
+- Use IConfiguration for secrets
+- Implement JWT authentication
+- Use structured logging (ILogger)
+
+### Never Do
+- Hardcode secrets or keys
+- Use raw SQL strings
+- Trust user input without validation
+- Commit .env files
+- Use Console.WriteLine
+
+## Commit Format
+
+```
+ACF-### Brief description
+
+- Detailed point 1
+- Detailed point 2
+
+Co-Authored-By: Cursor <noreply@cursor.com>
+```
+
+## File Locations
+
+| Artifact | Location |
+|----------|----------|
+| Stories | `artifacts/stories/ACF-###.md` |
+| ADRs | `docs/architecture/adr/` |
+| Templates | `.claude/templates/` or `.ai/templates/` |
+| Commands | `.claude/commands/` |
+
+## Common Tasks
+
+### Create User Story
+1. Find next available ACF-### ID
+2. Create `artifacts/stories/ACF-###.md`
+3. Follow story template with INVEST criteria
+
+### Implement Feature
+1. Read story requirements
+2. Create/modify Domain entities
+3. Add Application commands/queries
+4. Implement Infrastructure if needed
+5. Add API endpoints
+6. Write tests with `[Trait("Story", "ACF-###")]`
+7. Commit with `ACF-### message`
+
+### Run Validations
+```bash
+./scripts/validate-project.sh
+./scripts/validate-documentation.sh
+python3 scripts/traceability/traceability.py validate
+```
+
+## Definition of Done
+
+- [ ] Acceptance criteria met
+- [ ] Tests exist with `[Trait("Story", "ACF-###")]`
+- [ ] Tests pass in CI
+- [ ] Coverage >= 80% for Domain/Application
+- [ ] Code reviewed
+- [ ] No high/critical vulnerabilities
+- [ ] Commits prefixed with `ACF-###`
+
+## Code Patterns
+
+### Entity
+```csharp
+public class Order : Entity<Guid>
+{
+    public string OrderNumber { get; private set; }
+    private readonly List<OrderLine> _lines = new();
+    public IReadOnlyCollection<OrderLine> Lines => _lines.AsReadOnly();
+
+    public static Order Create(CustomerId customerId) { /* ... */ }
+    public void AddLine(Product product, int quantity) { /* ... */ }
+}
+```
+
+### Command Handler
+```csharp
+public class CreateOrderHandler(
+    IOrderRepository repository,
+    IUnitOfWork unitOfWork) : IRequestHandler<CreateOrderCommand, Result<Guid>>
+{
+    public async Task<Result<Guid>> Handle(CreateOrderCommand request, CancellationToken ct)
+    {
+        var order = Order.Create(request.CustomerId);
+        await repository.AddAsync(order, ct);
+        await unitOfWork.SaveChangesAsync(ct);
+        return Result.Success(order.Id);
+    }
+}
+```
+
+### Validator
+```csharp
+public class CreateOrderValidator : AbstractValidator<CreateOrderCommand>
+{
+    public CreateOrderValidator()
+    {
+        RuleFor(x => x.CustomerId).NotEmpty();
+    }
+}
+```
+
+## Remember
+
+- **Quality over speed**: Trade-offs require ADRs
+- **Test-first**: Every behavior needs tests
+- **Traceability**: Story IDs everywhere
+- **No hallucinations**: Don't claim without evidence
+- **Smallest viable change**: Avoid unnecessary refactors
+
+---
+*Synced from .ai/instructions/ - Do not edit directly*
