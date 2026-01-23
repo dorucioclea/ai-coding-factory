@@ -1,6 +1,6 @@
 # /scaffold - Create New Project from Template
 
-Scaffold a new .NET project using the Clean Architecture template.
+Scaffold a new project using enterprise templates.
 
 ## Usage
 ```
@@ -9,60 +9,80 @@ Scaffold a new .NET project using the Clean Architecture template.
 
 Where:
 - `project-name`: The name for the new project (PascalCase recommended)
-- `template`: Optional, one of:
-  - `clean-architecture` (default) - Full Clean Architecture solution
-  - `microservice` - Microservice template
+- `template`: One of:
+  - `clean-architecture` (default) - Full .NET Clean Architecture solution
+  - `microservice` - Lightweight .NET microservice
+  - `react-frontend` - Next.js 14+ React frontend with auth
 
 ## Instructions
 
 When invoked, perform the following steps:
 
-1. **Validate project name**:
-   - Must be valid C# identifier (PascalCase, no spaces/special chars)
-   - Cannot conflict with existing projects in `projects/`
+### 1. Validate Project Name
+- Must be valid identifier (PascalCase, no spaces/special chars)
+- Cannot conflict with existing projects in `projects/`
 
-2. **Create project directory**:
-   ```bash
-   mkdir -p projects/<ProjectName>
-   cd projects/<ProjectName>
-   ```
+### 2. Detect Template Type
 
-3. **Copy template structure**:
-   - For `clean-architecture`: Copy from `templates/clean-architecture-solution/`
-   - For `microservice`: Copy from `templates/microservice-template/`
+**For .NET templates** (`clean-architecture`, `microservice`):
+```bash
+mkdir -p projects/<ProjectName>
+```
 
-4. **Replace placeholders**:
-   - Replace `{ProjectName}` with the actual project name in:
-     - Directory names
-     - File names
-     - File contents (.csproj, .cs, .json, .yml files)
-     - Solution file (.sln)
+**For React template** (`react-frontend`):
+```bash
+mkdir -p projects/<ProjectName>-frontend
+```
 
-5. **Initialize project**:
-   ```bash
-   # Restore dependencies
-   dotnet restore
+### 3. Copy Template Structure
 
-   # Verify build
-   dotnet build
+| Template | Source Path |
+|----------|-------------|
+| `clean-architecture` | `templates/clean-architecture-solution/` |
+| `microservice` | `templates/microservice-template/` |
+| `react-frontend` | `templates/react-frontend-template/` |
 
-   # Run tests
-   dotnet test
-   ```
+### 4. Replace Placeholders
 
-6. **Create initial story**:
-   - Create `artifacts/stories/ACF-001.md` for project setup
-   - Include project scaffolding as the first tracked story
+Replace `ProjectName` / `projectname` with the actual project name in:
+- Directory names
+- File names
+- File contents
 
-7. **Initialize git** (if not already in repo):
-   ```bash
-   git init
-   git add .
-   git commit -m "ACF-001 Initial project scaffold from template"
-   ```
+**For .NET**: `.csproj`, `.cs`, `.json`, `.yml`, `.sln` files
+**For React**: `package.json`, `.tsx`, `.ts`, `.env.example` files
 
-## Output Structure
+### 5. Initialize Project
 
+**For .NET templates**:
+```bash
+dotnet restore
+dotnet build
+dotnet test
+```
+
+**For React template**:
+```bash
+npm install
+npm run lint
+npm run type-check
+npm run build
+```
+
+### 6. Create Initial Story
+- Create `artifacts/stories/ACF-001.md` for project setup
+- Include project scaffolding as the first tracked story
+
+### 7. Initialize Git (if not in repo)
+```bash
+git init
+git add .
+git commit -m "ACF-001 Initial project scaffold from template"
+```
+
+## Output Structures
+
+### Clean Architecture (.NET)
 ```
 projects/<ProjectName>/
 ├── src/
@@ -75,36 +95,54 @@ projects/<ProjectName>/
 │   ├── <ProjectName>.IntegrationTests/
 │   └── <ProjectName>.ArchitectureTests/
 ├── docker/
-│   ├── Dockerfile
-│   └── docker-compose.yml
 ├── docs/
-│   ├── architecture/
-│   ├── modules/
-│   ├── api/
-│   └── operations/
-├── artifacts/
-│   └── stories/
-│       └── ACF-001.md
+├── artifacts/stories/
 ├── <ProjectName>.sln
-├── .gitignore
-├── .editorconfig
-├── Directory.Build.props
-├── azure-pipelines.yml
 └── README.md
 ```
 
-## Post-Scaffold Checklist
+### React Frontend
+```
+projects/<ProjectName>-frontend/
+├── src/
+│   ├── app/                 # Next.js pages
+│   │   ├── auth/           # Login, Register, Forgot Password
+│   │   └── dashboard/      # Protected pages
+│   ├── components/
+│   │   ├── ui/             # shadcn/ui components
+│   │   ├── layout/         # Header, Sidebar
+│   │   ├── forms/          # Form components
+│   │   └── tables/         # Data tables
+│   ├── hooks/              # useAuth, custom hooks
+│   ├── lib/                # API client, auth, utils
+│   ├── stores/             # Zustand stores
+│   ├── types/              # TypeScript types
+│   └── i18n/               # Translations
+├── e2e/                    # Playwright tests
+├── Dockerfile
+├── docker-compose.yml
+└── README.md
+```
 
-After scaffolding, remind the user to:
+## Post-Scaffold Checklists
 
+### For .NET Projects
 1. Review and customize `appsettings.json`
 2. Set up `.env` from `.env.example`
 3. Configure database connection string
-4. Review generated documentation structure
+4. Configure JWT secret
 5. Create first feature story with `/new-story`
 
-## Example
+### For React Projects
+1. Copy `.env.example` to `.env.local`
+2. Set `NEXT_PUBLIC_API_URL` to backend URL
+3. Match `JWT_SECRET` with backend
+4. Review `src/config/site.ts`
+5. Create first feature story with `/new-story`
 
+## Examples
+
+### Scaffold .NET Backend
 ```
 User: /scaffold OrderManagement
 
@@ -124,4 +162,54 @@ Next steps:
 2. Review appsettings.json and configure database
 3. Create your first feature: /new-story <feature-name>
 4. Run: dotnet run --project src/OrderManagement.Api
+```
+
+### Scaffold React Frontend
+```
+User: /scaffold OrderManagement react-frontend
+
+Claude: Creating new React frontend "OrderManagement" using react-frontend template...
+
+1. Creating directory structure... done
+2. Copying template files... done
+3. Replacing placeholders... done
+4. Installing dependencies... done
+5. Type checking... done
+6. Building... done
+
+Project created at: projects/OrderManagement-frontend/
+
+Next steps:
+1. cd projects/OrderManagement-frontend
+2. Copy .env.example to .env.local
+3. Set NEXT_PUBLIC_API_URL=http://localhost:5000/api
+4. Run: npm run dev
+5. Open http://localhost:3000
+
+To connect with backend:
+- Ensure backend is running on port 5000
+- Match JWT_SECRET between frontend and backend
+- Configure CORS in backend for http://localhost:3000
+```
+
+### Scaffold Full Stack
+```
+User: /scaffold FishSpot
+     /scaffold FishSpot react-frontend
+
+Claude: Full stack project created!
+
+Backend: projects/FishSpot/
+Frontend: projects/FishSpot-frontend/
+
+Quick start:
+# Terminal 1 - Backend
+cd projects/FishSpot
+dotnet run --project src/FishSpot.Api
+
+# Terminal 2 - Frontend
+cd projects/FishSpot-frontend
+npm run dev
+
+# Open http://localhost:3000
 ```
