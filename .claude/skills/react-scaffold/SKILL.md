@@ -40,6 +40,55 @@ Guide for scaffolding and building React/Next.js frontends using the `react-fron
 
 This creates `projects/{ProjectName}-frontend/` with full structure.
 
+## Running the Application
+
+### Prerequisites
+
+Start the shared infrastructure first:
+
+```bash
+cd templates/infrastructure
+cp .env.example .env  # First time only
+docker compose up -d  # Starts PostgreSQL + Redis
+```
+
+### Development Mode (Recommended)
+
+Run frontend locally for hot reload:
+
+```bash
+cd projects/{ProjectName}-frontend
+npm install
+npm run dev
+```
+
+Frontend available at: http://localhost:3000
+
+### With Backend
+
+```bash
+# Terminal 1: Infrastructure
+cd templates/infrastructure
+docker compose up -d
+
+# Terminal 2: Backend API
+cd projects/{ProjectName}-api
+dotnet run --project src/{ProjectName}.Api
+
+# Terminal 3: Frontend
+cd projects/{ProjectName}-frontend
+npm run dev
+```
+
+### Full Docker Mode
+
+```bash
+cd templates/infrastructure
+docker compose --profile fullstack up -d --build
+```
+
+See `docker-infrastructure` skill for more Docker commands.
+
 ## Key Files to Know
 
 | Purpose | File | Notes |
@@ -175,49 +224,42 @@ Common additions: `dialog`, `tabs`, `calendar`, `combobox`
 
 ## Backend Integration
 
-### Match JWT Configuration
+The frontend is designed to work with the `clean-architecture-solution` backend template. Both share the same JWT configuration via the infrastructure `.env` file.
 
-Frontend `.env.local`:
-```
+### Shared Configuration
+
+All configuration is centralized in `templates/infrastructure/.env`:
+
+```bash
+# JWT (shared between frontend and backend)
+JWT_SECRET=your-super-secret-key-at-least-32-characters
+JWT_ISSUER=ProjectName
+JWT_AUDIENCE=ProjectName
+
+# API URL for frontend
 NEXT_PUBLIC_API_URL=http://localhost:5000/api
-JWT_SECRET=same-as-backend-min-32-chars
 ```
 
-Backend `appsettings.json`:
-```json
-{
-  "Jwt": {
-    "Secret": "same-as-backend-min-32-chars",
-    "Issuer": "ProjectName",
-    "Audience": "ProjectName"
-  }
-}
-```
+### How It Works
 
-### CORS Configuration
-
-Backend must allow frontend origin:
-```csharp
-// In Program.cs or extension
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("Frontend", policy =>
-    {
-        policy.WithOrigins("http://localhost:3000")
-              .AllowAnyMethod()
-              .AllowAnyHeader()
-              .AllowCredentials();
-    });
-});
-```
+1. **Infrastructure** provides PostgreSQL, Redis, and shared env vars
+2. **Backend** reads JWT config from environment
+3. **Frontend** reads `NEXT_PUBLIC_API_URL` from environment
+4. **Both** use the same JWT secret for token validation
 
 ### Auth Flow
 
-1. Frontend calls `POST /api/auth/login`
-2. Backend returns JWT tokens
-3. Frontend stores in cookies via `tokenStorage`
-4. Subsequent requests include `Authorization: Bearer {token}`
-5. On 401, frontend attempts refresh via `POST /api/auth/refresh`
+1. User submits login form
+2. Frontend calls `POST /api/auth/login` via `authService.login()`
+3. Backend validates credentials, returns JWT tokens
+4. Frontend stores tokens in cookies via `tokenStorage`
+5. Subsequent API calls include `Authorization: Bearer {token}`
+6. On 401, frontend attempts refresh via `POST /api/auth/refresh`
+7. If refresh fails, user is redirected to login
+
+### CORS (Pre-configured)
+
+The backend template already includes CORS configuration that allows the frontend origin. No manual setup needed when using the infrastructure docker-compose.
 
 ## Patterns to Follow
 
