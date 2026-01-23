@@ -142,6 +142,60 @@ Can also be explicitly set:
 - `/create-project --mode=yolo {idea}`
 - `/create-project --mode=deep {idea}`
 
+---
+
+## Scale-Adaptive Intelligence
+
+Automatically detect project complexity and suggest appropriate mode:
+
+### Complexity Signals
+
+| Signal | Low (Yolo) | Medium (Standard) | High (Deep) |
+|--------|------------|-------------------|-------------|
+| **Entities** | 1-2 | 3-5 | 6+ |
+| **User types** | 1 | 2-3 | 4+ |
+| **Integrations** | None | 1-2 | 3+ |
+| **Auth needs** | Basic | Roles | Multi-tenant |
+| **Data sensitivity** | Public | User data | Financial/health |
+| **Scale hints** | Personal | Team/SMB | Enterprise |
+
+### Detection Patterns
+
+**Low Complexity (Suggest Yolo)**:
+- "simple", "basic", "just a", "quick", "MVP"
+- Single user type mentioned
+- No integrations mentioned
+- Personal/hobby project indicators
+
+**Medium Complexity (Default Standard)**:
+- Multiple features mentioned
+- 2-3 user types
+- Some integrations
+- Business use case
+
+**High Complexity (Suggest Deep)**:
+- "enterprise", "production", "scale"
+- Multiple user types with different permissions
+- Compliance/security requirements mentioned
+- External integrations required
+- Multi-tenant hints
+
+### Auto-Suggestion
+
+When complexity signals detected, suggest but don't force:
+
+```markdown
+**Complexity Assessment**
+
+Based on your description, this looks like a **medium complexity** project:
+- 3 main entities (Users, Spots, Reviews)
+- 2 user types (regular users, moderators)
+- No external integrations
+
+I'll use **Standard Mode** (recommended).
+Say "yolo" to skip questions or "deep mode" for comprehensive spec.
+```
+
 ## Auto-Trigger Behavior
 
 When detecting any project idea, immediately:
