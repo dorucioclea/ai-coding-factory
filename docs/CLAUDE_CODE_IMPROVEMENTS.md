@@ -84,7 +84,7 @@ This document catalogs improvements that would help Claude Code work more effect
 | `adr/api-versioning.md` | API versioning ADR |
 | `adr/deployment-strategy.md` | Deployment approach ADR |
 
-### Hooks (4 Total)
+### Hooks (10 Total)
 
 | Hook | Purpose |
 |------|---------|
@@ -92,6 +92,12 @@ This document catalogs improvements that would help Claude Code work more effect
 | `post-test-traceability.sh` | Validates story-test linkage |
 | `post-commit-validate.sh` | Validates commit format |
 | `pre-commit.sh` | Comprehensive pre-commit validation |
+| `pre-build-check.sh` | Validates project structure before dotnet build |
+| `post-build-analyze.sh` | Checks warnings and architecture after build |
+| `pre-test-setup.sh` | Verifies Docker, fixtures, coverage tools before tests |
+| `post-scaffold-validate.sh` | Validates generated project structure |
+| `pre-release-checklist.sh` | Comprehensive release readiness verification |
+| `post-security-scan.sh` | Archives results, tracks trends, alerts on issues |
 
 ### Configuration Files
 
@@ -239,7 +245,7 @@ Features:
 | Slash Commands | 10 | 25 | 20 | ✅ Exceeded |
 | Context Files | 3 | 5 | 5 | ✅ Met |
 | Templates | 0 | 13 | 10 | ✅ Exceeded |
-| Hooks | 3 | 4 | 10 | ⚠️ 40% |
+| Hooks | 3 | 10 | 10 | ✅ Met |
 | Error Patterns | 0 | 50+ | 50 | ✅ Met |
 | ADR Templates | 0 | 6 | 6 | ✅ Met |
 | Config Files | 1 | 5 | 5 | ✅ Met |
@@ -331,11 +337,17 @@ Features:
 │       ├── message-queue.md
 │       ├── api-versioning.md
 │       └── deployment-strategy.md
-└── hooks/                     # 4 hooks
+└── hooks/                     # 10 hooks
     ├── pre-write-validate.sh
     ├── post-test-traceability.sh
     ├── post-commit-validate.sh
-    └── pre-commit.sh
+    ├── pre-commit.sh
+    ├── pre-build-check.sh
+    ├── post-build-analyze.sh
+    ├── pre-test-setup.sh
+    ├── post-scaffold-validate.sh
+    ├── pre-release-checklist.sh
+    └── post-security-scan.sh
 ```
 
 ---
@@ -353,5 +365,50 @@ The platform is ready for production use with Claude Code as the primary AI assi
 
 ---
 
+## Phase 2 Improvements - Hooks Expansion
+
+Phase 2 focused on expanding the hooks system from 4 to 10 hooks, providing comprehensive lifecycle coverage for .NET development.
+
+### New Hooks Added
+
+| Hook | Trigger | Purpose |
+|------|---------|---------|
+| `pre-build-check.sh` | Before `dotnet build` | Validates .sln/.csproj files, checks NuGet restore status, verifies .NET SDK version compatibility |
+| `post-build-analyze.sh` | After `dotnet build` | Checks compiler warnings, runs architecture tests, reports layer dependency violations |
+| `pre-test-setup.sh` | Before `dotnet test` | Verifies Docker running (for TestContainers), checks test database config, validates coverage tools |
+| `post-scaffold-validate.sh` | After `/scaffold` | Validates generated project structure, verifies Clean Architecture layers, confirms project compiles |
+| `pre-release-checklist.sh` | Before `/release` | Comprehensive release gate: tests, coverage, traceability, security, documentation, versioning |
+| `post-security-scan.sh` | After `/security-review` | Archives scan results, compares against baseline, generates trend reports, alerts on threshold violations |
+
+### Hook Categories
+
+**Build Lifecycle:**
+- `pre-build-check.sh` - Pre-flight checks
+- `post-build-analyze.sh` - Quality analysis
+
+**Test Lifecycle:**
+- `pre-test-setup.sh` - Environment validation
+- `post-test-traceability.sh` - Story linkage verification
+
+**Command Hooks:**
+- `post-scaffold-validate.sh` - New project validation
+- `pre-release-checklist.sh` - Release gate enforcement
+- `post-security-scan.sh` - Security tracking
+
+**Write Hooks:**
+- `pre-write-validate.sh` - File validation
+- `pre-commit.sh` - Commit preparation
+- `post-commit-validate.sh` - Commit verification
+
+### Benefits
+
+1. **Automated Quality Gates**: Every build, test, and release goes through automated validation
+2. **Security Tracking**: Vulnerability trends tracked over time with baseline comparisons
+3. **Release Confidence**: Comprehensive checklist ensures nothing is missed before release
+4. **Developer Feedback**: Clear, actionable messages help developers fix issues quickly
+5. **Governance Compliance**: Hooks enforce CORPORATE_RND_POLICY.md requirements automatically
+
+---
+
 *Last updated: January 2025*
-*Status: ✅ All Priorities Complete*
+*Status: ✅ All Priorities Complete (including Phase 2 Hooks)*
