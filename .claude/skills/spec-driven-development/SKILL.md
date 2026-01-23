@@ -1,197 +1,255 @@
 ---
 name: spec-driven-development
 description: Use when starting a new project from an idea or vague requirements. Guides through systematic requirement gathering, specification creation, and user questions before any implementation.
+autoTrigger: true
+triggers:
+  - "I want to build"
+  - "build me a"
+  - "create an app"
+  - "I need a website"
+  - "make me a"
+  - "I have an idea"
+  - "let's build"
+  - "help me create"
 ---
 
 # Spec-Driven Development
 
 ## Overview
 
-Transform vague ideas into actionable specifications through systematic questioning. **Never write code until requirements are crystal clear.**
+Transform vague ideas into actionable specifications through **automated, systematic questioning**. This skill triggers automatically when a project idea is detected.
 
-Core principle: The cost of unclear requirements grows exponentially - 5 minutes of questions saves 5 hours of rework.
+**Core Principles:**
+- Never ask "should I use spec-driven development?" - just do it
+- Never ask "should I use the templates?" - always use them
+- Maximum 3 clarification questions per phase
+- Present questions with suggested answers in table format
+- Make reasonable assumptions for anything not critical
 
-## When to Use
+## Auto-Trigger Behavior
 
-- User says "I want to build..." or "Create a..."
-- Vague feature requests without clear acceptance criteria
-- New project kickoff
-- Major feature additions
+When detecting any project idea, immediately:
+1. Acknowledge the idea (1 sentence)
+2. State you'll gather requirements (1 sentence)
+3. Present first batch of questions (max 3)
 
-## The Process
+**Example opener:**
+> "A fishing spots sharing platform - great idea! Let me ask a few quick questions to nail down the requirements."
 
-```
-┌─────────────────────────────────────────────────────┐
-│                 IDEA RECEIVED                        │
-└────────────────────┬────────────────────────────────┘
-                     ▼
-┌─────────────────────────────────────────────────────┐
-│  PHASE 1: DOMAIN DISCOVERY                          │
-│  - What problem does this solve?                    │
-│  - Who are the users?                               │
-│  - What's the core value proposition?               │
-└────────────────────┬────────────────────────────────┘
-                     ▼
-┌─────────────────────────────────────────────────────┐
-│  PHASE 2: FEATURE SCOPING                           │
-│  - What are the must-have features (MVP)?           │
-│  - What's explicitly out of scope?                  │
-│  - What are nice-to-haves for later?                │
-└────────────────────┬────────────────────────────────┘
-                     ▼
-┌─────────────────────────────────────────────────────┐
-│  PHASE 3: TECHNICAL REQUIREMENTS                    │
-│  - Authentication needs?                            │
-│  - Data persistence requirements?                   │
-│  - Integration with external services?              │
-│  - Performance/scale requirements?                  │
-└────────────────────┬────────────────────────────────┘
-                     ▼
-┌─────────────────────────────────────────────────────┐
-│  PHASE 4: SPECIFICATION OUTPUT                      │
-│  - Write specification document                     │
-│  - Get user approval                                │
-│  - Create epic and stories                          │
-└─────────────────────────────────────────────────────┘
+## Question Format (MANDATORY)
+
+Always present questions in this table format with recommendations:
+
+```markdown
+## Question 1: [Topic]
+
+**Context**: [Why this matters for the build]
+
+| Option | Description | Implications |
+|--------|-------------|--------------|
+| A (Recommended) | [Best option] | [Why it's recommended] |
+| B | [Alternative] | [Trade-offs] |
+| C | [Another option] | [Trade-offs] |
+| Custom | Your own answer | Describe what you need |
+
+## Question 2: [Topic]
+...
+
+## Question 3: [Topic]
+...
+
+**Reply with your choices (e.g., "1: A, 2: B, 3: Custom - I want X")**
 ```
 
-## Question Framework
+## The 3-Question Phases
 
-### Phase 1: Domain Discovery (Ask First)
+### Phase 1: Core Understanding (3 questions max)
 
-**Core Questions:**
-1. "What problem are you trying to solve?" (pain point)
-2. "Who will use this?" (personas)
-3. "What does success look like?" (metrics)
-4. "Are there existing solutions? What's wrong with them?" (differentiation)
+Pick the 3 most important from:
+- **Users**: Who will use this? (B2C, B2B, internal)
+- **Problem**: What's the main pain point being solved?
+- **MVP Scope**: What are the 3 must-have features?
+- **Success**: How will you measure success?
 
-**Present as multiple choice when possible:**
-```
-Who is the primary user?
-  1. End consumers (B2C)
-  2. Business users (B2B)
-  3. Internal team members
-  4. Other: ___
-```
+**Make assumptions for:**
+- Authentication method (default: email/password)
+- Data storage (default: PostgreSQL)
+- Hosting (default: containerized)
 
-### Phase 2: Feature Scoping
+### Phase 2: Feature Specifics (3 questions max)
 
-**MVP Questions:**
-1. "If you could only have 3 features, what would they be?"
-2. "What's the simplest version that would be useful?"
-3. "What features can wait until v2?"
+Based on Phase 1 answers, ask about:
+- Specific feature behaviors
+- User permissions/roles
+- Data relationships
+- Integration requirements
 
-**Scope Boundaries:**
-1. "What should this explicitly NOT do?"
-2. "Are there integrations we should avoid for now?"
+**Make assumptions for:**
+- Standard CRUD operations
+- Basic validation rules
+- Common UI patterns
 
-### Phase 3: Technical Requirements
+### Phase 3: Technical Confirmation (usually 0-2 questions)
 
-**Stack Questions:**
-```
-For the backend, what fits your needs?
-  1. .NET 8 Clean Architecture (Recommended) - Enterprise-grade, full testing
-  2. Microservice - Lightweight, Kubernetes-ready
-  3. I have existing backend
-```
+Only ask if:
+- Unusual scale requirements mentioned
+- Specific technology preferences hinted
+- Complex integrations needed
 
-```
-For the frontend:
-  1. Next.js + React (Recommended) - Full-featured, SSR, auth ready
-  2. SPA only - Simpler, no server rendering
-  3. No frontend needed - API only
-```
+**Default assumptions (don't ask):**
+- Backend: .NET 8 Clean Architecture template
+- Frontend: Next.js 14 React template
+- Database: PostgreSQL
+- Cache: Redis
+- Auth: JWT with refresh tokens
+- API: RESTful
 
-**Data Questions:**
-1. "What data needs to persist?"
-2. "Any sensitive data requiring encryption?"
-3. "Expected data volume?"
+## Specification Output
 
-**Auth Questions:**
-```
-Authentication requirements?
-  1. Email/password only
-  2. Social login (Google, GitHub, etc.)
-  3. Enterprise SSO (SAML, OIDC)
-  4. No auth needed (public)
-```
-
-## Output: Specification Document
-
-After questions, generate `docs/specs/YYYY-MM-DD-{project}-spec.md`:
+After questions, generate specification in this format:
 
 ```markdown
 # Project Specification: {Project Name}
 
-## Problem Statement
-{What problem this solves}
+**Created**: {date}
+**Status**: Draft → Approved
 
-## Users & Personas
+## Problem Statement
+{1-2 sentences on the problem being solved}
+
+## Target Users
+
 | Persona | Description | Key Needs |
 |---------|-------------|-----------|
-| {name} | {description} | {needs} |
+| {type} | {description} | {needs} |
 
-## Core Features (MVP)
-1. {Feature 1} - {Description}
-2. {Feature 2} - {Description}
-3. {Feature 3} - {Description}
+## User Stories (Prioritized)
+
+### P1 - Must Have (MVP)
+- **US-001**: As a {user}, I want to {action} so that {benefit}
+  - Acceptance: Given {context}, When {action}, Then {result}
+- **US-002**: ...
+- **US-003**: ...
+
+### P2 - Should Have
+- **US-004**: ...
+
+### P3 - Nice to Have
+- **US-005**: ...
 
 ## Out of Scope (v1)
 - {Feature X} - Planned for v2
 - {Feature Y} - Not in roadmap
 
 ## Technical Decisions
-- **Backend**: {choice + rationale}
-- **Frontend**: {choice + rationale}
-- **Database**: {choice + rationale}
-- **Authentication**: {choice + rationale}
+| Decision | Choice | Rationale |
+|----------|--------|-----------|
+| Backend | .NET 8 Clean Architecture | Enterprise-grade, testable |
+| Frontend | Next.js 14 + React | SSR, auth integration |
+| Database | PostgreSQL | Relational, proven |
+| Auth | JWT + Refresh Tokens | Stateless, scalable |
 
-## Non-Functional Requirements
-- **Performance**: {targets}
-- **Security**: {requirements}
-- **Scalability**: {expectations}
+## Key Entities
+- **{Entity1}**: {description, key fields}
+- **{Entity2}**: {description, relationships}
 
-## Success Metrics
-1. {Metric 1}
-2. {Metric 2}
+## Success Criteria
+- [ ] SC-001: {Measurable outcome}
+- [ ] SC-002: {Measurable outcome}
 
-## Epics & Stories
-### Epic 1: {Name}
-- Story 1.1: {Title}
-- Story 1.2: {Title}
-
-### Epic 2: {Name}
-- Story 2.1: {Title}
-
-## Open Questions
-- {Any unresolved items}
+## Assumptions Made
+- {List any assumptions made during specification}
 
 ---
-Approved by: {user confirmation}
-Date: {date}
+**Awaiting user approval before implementation**
 ```
 
-## Integration with Templates
+## Post-Specification Flow
 
-After specification approval:
+After user approves spec:
 
-1. **Backend**: Use `/scaffold {ProjectName} clean-architecture`
-2. **Frontend**: Use `/scaffold {ProjectName} react-frontend`
-3. **Full Stack**: Use `/scaffold-fullstack {ProjectName}`
+1. **Scaffold Projects**
+   ```bash
+   /scaffold {ProjectName} clean-architecture
+   /scaffold {ProjectName} react-frontend
+   cp -r templates/infrastructure projects/{ProjectName}/
+   ```
 
-## Common Mistakes
+2. **Create Implementation Plan**
+   - Break into phases (Setup → Core → Features → Polish)
+   - Identify parallel work opportunities
 
-| Mistake | Fix |
-|---------|-----|
-| Jumping to code | Complete all 4 phases first |
-| Asking too many questions at once | One question per message |
-| Open-ended only | Prefer multiple choice |
-| Skipping "out of scope" | Explicitly define boundaries |
-| No written spec | Always create spec document |
+3. **Generate Tasks**
+   - One task per user story
+   - Mark dependencies
+   - Estimate complexity
 
-## Red Flags - STOP
+4. **Begin Implementation**
+   - Start with P1 stories
+   - TDD approach
+   - Commit after each story
 
-- User says "just build something" → Clarify minimum requirements
-- Scope keeps growing → Define MVP boundaries
-- No clear user/persona → Cannot proceed without target user
-- "I'll know it when I see it" → Need concrete acceptance criteria
+## What NOT to Do
+
+| Don't | Do Instead |
+|-------|------------|
+| Ask "Should I use spec-driven?" | Just start the process |
+| Ask "Which template?" | Use both (backend + frontend) |
+| Ask more than 3 questions at once | Batch into phases |
+| Ask open-ended questions | Provide multiple choice with recommendation |
+| Ask about standard tech choices | Use defaults, mention in spec |
+| Wait for permission to scaffold | Scaffold after spec approval |
+
+## Integration with Other Skills
+
+After specification:
+- `project-from-idea` - Full orchestration
+- `dotnet-clean-architecture` - Backend implementation
+- `react-scaffold` - Frontend implementation
+- `fullstack-development` - Cross-stack features
+- `docker-infrastructure` - Running the app
+
+## Example Interaction
+
+**User**: "I want a fishing website where people can share spots"
+
+**Claude**:
+> A fishing spots sharing platform - nice! Let me gather requirements quickly.
+>
+> ## Question 1: Target Audience
+>
+> | Option | Description | Implications |
+> |--------|-------------|--------------|
+> | A (Recommended) | Public - anyone views, registered users post | Wider reach, need moderation |
+> | B | Members only - registration required | Tighter community |
+> | C | Invite-only - exclusive | Premium, slower growth |
+>
+> ## Question 2: MVP Features
+>
+> | Option | Description |
+> |--------|-------------|
+> | A | Spots with name, location, description only |
+> | B (Recommended) | Spots + photos + star ratings |
+> | C | Spots + photos + ratings + comments + reviews |
+>
+> ## Question 3: Location Display
+>
+> | Option | Description |
+> |--------|-------------|
+> | A | List view only (simplest) |
+> | B (Recommended) | List + static map per spot |
+> | C | Interactive map with all spots |
+>
+> **Reply with your choices (e.g., "1: A, 2: B, 3: B")**
+
+**User**: "1: A, 2: B, 3: A for MVP"
+
+**Claude**:
+> Perfect! Based on your choices:
+> - Public platform with registration for posting
+> - Spots with photos and ratings
+> - List view for MVP (map can come later)
+>
+> [Generates full specification...]
+>
+> Does this specification look correct? Once approved, I'll scaffold the project.
