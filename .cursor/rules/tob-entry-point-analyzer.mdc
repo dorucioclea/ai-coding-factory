@@ -1,0 +1,111 @@
+---
+description: Analyzes smart contract codebases to identify state-changing entry points for security auditing. Detects externally callable functions that modify state, categorizes them by access level (public, admin, role-restricted, contract-only), and generates structured audit reports. Excludes view/pure/read-only functions. Use when auditing smart contracts (Solidity, Vyper, Solana/Rust, Move, TON, CosmWasm) or when asked to find entry points, audit flows, external functions, access control patterns, or privileged operations.
+globs: ["**/*"]
+alwaysApply: false
+---
+
+
+## Public Entry Points (Unrestricted)
+
+State-changing functions callable by anyone—prioritize for attack surface analysis.
+
+| Function | File | Notes |
+|----------|------|-------|
+| `functionName(params)` | `path/to/file.sol:L42` | Brief note if relevant |
+
+---
+
+## Role-Restricted Entry Points
+
+### Admin / Owner
+| Function | File | Restriction |
+|----------|------|-------------|
+| `setFee(uint256)` | `Config.sol:L15` | `onlyOwner` |
+
+### Governance
+| Function | File | Restriction |
+|----------|------|-------------|
+
+### Guardian / Pauser
+| Function | File | Restriction |
+|----------|------|-------------|
+
+### Other Roles
+| Function | File | Restriction | Role |
+|----------|------|-------------|------|
+
+---
+
+## Restricted (Review Required)
+
+Functions with access control patterns that need manual verification.
+
+| Function | File | Pattern | Why Review |
+|----------|------|---------|------------|
+| `execute(bytes)` | `Executor.sol:L88` | `require(trusted[msg.sender])` | Dynamic trust list |
+
+---
+
+## Contract-Only (Internal Integration Points)
+
+Functions only callable by other contracts—useful for understanding trust boundaries.
+
+| Function | File | Expected Caller |
+|----------|------|-----------------|
+| `onFlashLoan(...)` | `Vault.sol:L200` | Flash loan provider |
+
+---
+
+## Files Analyzed
+
+- `path/to/file1.sol` (X state-changing entry points)
+- `path/to/file2.sol` (X state-changing entry points)
+```
+
+## Filtering
+
+When user specifies a directory filter:
+- Only analyze files within that path
+- Note the filter in the report header
+- Example: "Analyze only `src/core/`" → scope = `src/core/`
+
+## Analysis Guidelines
+
+1. **Be thorough**: Don't skip files. Every state-changing externally callable function matters.
+2. **Be conservative**: When uncertain about access level, flag for review rather than miscategorize.
+3. **Skip read-only**: Exclude `view`, `pure`, and equivalent read-only functions.
+4. **Note inheritance**: If a function's access control comes from a parent contract, note this.
+5. **Track modifiers**: List all access-related modifiers/decorators applied to each function.
+6. **Identify patterns**: Look for common patterns like:
+   - Initializer functions (often unrestricted on first call)
+   - Upgrade functions (high-privilege)
+   - Emergency/pause functions (guardian-level)
+   - Fee/parameter setters (admin-level)
+   - Token transfers and approvals (often public)
+
+## Common Role Patterns by Protocol Type
+
+| Protocol Type | Common Roles |
+|---------------|--------------|
+| DEX | `owner`, `feeManager`, `pairCreator` |
+| Lending | `admin`, `guardian`, `liquidator`, `oracle` |
+| Governance | `proposer`, `executor`, `canceller`, `timelock` |
+| NFT | `minter`, `admin`, `royaltyReceiver` |
+| Bridge | `relayer`, `guardian`, `validator`, `operator` |
+| Vault/Yield | `strategist`, `keeper`, `harvester`, `manager` |
+
+## Rationalizations to Reject
+
+When analyzing entry points, reject these shortcuts:
+- "This function looks standard" → Still classify it; standard functions can have non-standard access control
+- "The modifier name is clear" → Verify the modifier's actual implementation
+- "This is obviously admin-only" → Trace the actual restriction; "obvious" assumptions miss subtle bypasses
+- "I'll skip the callbacks" → Callbacks define trust boundaries; always include them
+- "It doesn't modify much state" → Any state change can be exploited; include all non-view functions
+
+## Error Handling
+
+If a file cannot be parsed:
+1. Note it in the report under "Analysis Warnings"
+2. Continue with remaining files
+3. Suggest manual review for unparsable files

@@ -1,0 +1,6 @@
+---
+description: Four-phase root cause analysis framework. Use when facing test failures, production bugs, unexpected behavior, or performance issues. Prevents symptom-fixing.
+globs: ["**/*"]
+alwaysApply: false
+---
+

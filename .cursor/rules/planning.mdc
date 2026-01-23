@@ -1,0 +1,73 @@
+---
+description: 3-file persistent planning pattern using markdown files. Use at start of complex tasks to maintain state across sessions. Treats filesystem as working memory.
+globs: ["**/*"]
+alwaysApply: false
+---
+
+
+## Session: 2025-01-22
+[Previous session notes...]
+```
+
+## When to Use
+
+- Complex multi-step tasks
+- Tasks spanning multiple sessions
+- When you need to hand off to another developer
+- Features requiring research before implementation
+- Debugging complex issues
+
+## Workflow
+
+### Starting a Task
+1. Create the 3 files in `artifacts/planning/[task-name]/`
+2. Fill in task_plan.md with phases
+3. Begin research, document in findings.md
+
+### During Work
+1. Update progress.md at start and end of each session
+2. Check off items in task_plan.md as completed
+3. Add new discoveries to findings.md
+
+### Before Tool Use (Mental Check)
+- Have I re-read the plan?
+- Am I still on track?
+- Should I update findings?
+
+### After File Writes
+- Update progress.md
+- Mark items complete in task_plan.md
+
+### Before Stopping
+- Is the task complete? If not:
+  - Document current state
+  - Note next actions
+  - Update blockers
+
+## Directory Structure
+
+```
+artifacts/
+└── planning/
+    └── acf-042-add-order-status/
+        ├── task_plan.md
+        ├── findings.md
+        └── progress.md
+```
+
+## Integration with AI Coding Factory
+
+### Story Linkage
+- Always include Story ID in task_plan.md header
+- Link to story file: `artifacts/stories/ACF-###.md`
+
+### Traceability
+- Planning files become part of audit trail
+- Reference in PR descriptions
+- Archive after task completion
+
+### Templates
+Use the planning templates in `.claude/templates/planning/`:
+- `task_plan.md.template`
+- `findings.md.template`
+- `progress.md.template`

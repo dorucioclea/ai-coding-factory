@@ -1,0 +1,6 @@
+---
+description: Create distinctive, production-grade frontend interfaces with high design quality. Use when building web components, pages, or applications. Avoids generic AI aesthetics.
+globs: ["**/*.tsx", "**/*.jsx", "**/*.ts", "**/*.js"]
+alwaysApply: false
+---
+

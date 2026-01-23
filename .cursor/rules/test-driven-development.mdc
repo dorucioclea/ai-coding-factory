@@ -1,0 +1,6 @@
+---
+description: Use when implementing any feature or bugfix, before writing implementation code
+globs: ["**/*Test*.cs", "**/*Tests*.cs", "**/*.test.ts", "**/*.spec.ts"]
+alwaysApply: false
+---
+

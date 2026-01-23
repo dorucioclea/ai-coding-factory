@@ -1,0 +1,6 @@
+---
+description: Test-Driven Development methodology enforcing the RED-GREEN-REFACTOR cycle for systematic, high-quality code development
+globs: ["**/*"]
+alwaysApply: false
+---
+

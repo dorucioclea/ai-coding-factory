@@ -1,0 +1,6 @@
+---
+description: Enforce RED-GREEN-REFACTOR TDD cycle. Use when writing new features, fixing bugs, or modifying behavior. Ensures tests validate actual functionality.
+globs: ["**/*"]
+alwaysApply: false
+---
+

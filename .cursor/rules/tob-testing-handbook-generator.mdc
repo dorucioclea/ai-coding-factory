@@ -1,0 +1,12 @@
+---
+description: >
+globs: ["**/*Test*.cs", "**/*Tests*.cs", "**/*.test.ts", "**/*.spec.ts"]
+alwaysApply: false
+---
+
+
+**For first-time use:** Start with [discovery.md](discovery.md) to understand the handbook analysis process.
+
+**For template reference:** See [templates/](templates/) directory for skill type templates.
+
+**For validation:** See [testing.md](testing.md) for quality assurance methodology.

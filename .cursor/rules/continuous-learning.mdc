@@ -1,0 +1,6 @@
+---
+description: Auto-extract patterns and learnings from sessions to build institutional knowledge and improve future development
+globs: ["**/*"]
+alwaysApply: false
+---
+

@@ -1,0 +1,6 @@
+---
+description: Continuous verification pattern for maintaining code quality through checkpoints and automated validation loops
+globs: ["**/*"]
+alwaysApply: false
+---
+

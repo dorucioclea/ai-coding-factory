@@ -1,0 +1,6 @@
+---
+description: Security-focused code analysis and audit skills. Use when reviewing code for vulnerabilities, performing security audits, or implementing security features.
+globs: ["**/*"]
+alwaysApply: false
+---
+

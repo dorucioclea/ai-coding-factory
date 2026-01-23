@@ -1,0 +1,6 @@
+---
+description: >
+globs: ["**/*Test*.cs", "**/*Tests*.cs", "**/*.test.ts", "**/*.spec.ts"]
+alwaysApply: false
+---
+

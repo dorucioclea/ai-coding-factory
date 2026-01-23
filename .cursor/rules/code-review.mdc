@@ -1,0 +1,6 @@
+---
+description: Systematic code review framework for requesting and providing reviews. Use before merging PRs or when reviewing others' code. Ensures quality and knowledge sharing.
+globs: ["**/*"]
+alwaysApply: false
+---
+
