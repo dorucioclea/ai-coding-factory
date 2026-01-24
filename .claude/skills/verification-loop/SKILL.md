@@ -1,3 +1,13 @@
+---
+name: verification-loop
+description: A comprehensive verification system for ensuring code quality before PRs. Runs build, type check, lint, tests, security scan, and diff review.
+license: MIT
+compatibility: opencode
+metadata:
+  audience: developers
+  workflow: testing
+---
+
 # Verification Loop Skill
 
 A comprehensive verification system for Claude Code sessions.
