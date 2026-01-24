@@ -1,6 +1,11 @@
 ---
 name: audit-context-building
 description: Enables ultra-granular, line-by-line code analysis to build deep architectural context before vulnerability or bug finding.
+license: MIT
+compatibility: opencode
+metadata:
+  audience: security-engineers
+  category: security
 ---
 
 # Deep Context Builder Skill (Ultra-Granular Pure Context Mode)

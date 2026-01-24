@@ -1,6 +1,11 @@
 ---
 name: code-maturity-assessor
-description: Systematic code maturity assessment using Trail of Bits' 9-category framework. Analyzes codebase for arithmetic safety, auditing practices, access controls, complexity, decentralization, documentation, MEV risks, low-level code, and testing. Produces professional scorecard with evidence-based ratings and actionable recommendations. (project, gitignored)
+description: Systematic code maturity assessment using Trail of Bits' 9-category framework. Analyzes codebase for arithmetic safety, auditing practices, access controls, complexity, decentralization, documentation, MEV risks, low-level code, and testing. Produces professional scorecard with evidence-based ratings and actionable recommendations.
+license: MIT
+compatibility: opencode
+metadata:
+  audience: security-engineers
+  category: security-analysis
 ---
 
 # Code Maturity Assessor

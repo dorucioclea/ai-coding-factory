@@ -1,9 +1,11 @@
 ---
-name: aflpp
-type: fuzzer
-description: >
-  AFL++ is a fork of AFL with better fuzzing performance and advanced features.
-  Use for multi-core fuzzing of C/C++ projects.
+name: tob-aflpp
+description: AFL++ is a fork of AFL with better fuzzing performance and advanced features. Use for multi-core fuzzing of C/C++ projects.
+license: MIT
+compatibility: opencode
+metadata:
+  audience: security-engineers
+  category: fuzzing
 ---
 
 # AFL++

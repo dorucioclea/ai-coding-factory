@@ -1,6 +1,11 @@
 ---
 name: brainstorming
-description: "You MUST use this before any creative work - creating features, building components, adding functionality, or modifying behavior. Explores user intent, requirements and design before implementation."
+description: You MUST use this before any creative work - creating features, building components, adding functionality, or modifying behavior. Explores user intent, requirements and design before implementation.
+license: MIT
+compatibility: opencode
+metadata:
+  audience: developers
+  phase: design
 ---
 
 # Brainstorming Ideas Into Designs
@@ -46,28 +51,26 @@ Select the most appropriate brainstorming technique:
 
 | Hat | Focus | Questions to Ask |
 |-----|-------|------------------|
-| ⚪ **White** | Facts | What data do we have? What's missing? |
-| ❤️ **Red** | Feelings | What's our gut reaction? User emotions? |
-| ⚫ **Black** | Risks | What could go wrong? Edge cases? |
-| 💛 **Yellow** | Benefits | What's the best outcome? Quick wins? |
-| 💚 **Green** | Creativity | What if we...? Wild ideas? |
-| 🔵 **Blue** | Process | What's the plan? Next steps? |
+| White | Facts | What data do we have? What's missing? |
+| Red | Feelings | What's our gut reaction? User emotions? |
+| Black | Risks | What could go wrong? Edge cases? |
+| Yellow | Benefits | What's the best outcome? Quick wins? |
+| Green | Creativity | What if we...? Wild ideas? |
+| Blue | Process | What's the plan? Next steps? |
 
 **Use when**: Making architectural decisions or evaluating options
 
 #### Technique 3: User Story Mapping (for new features)
 
-```
-                    User Journey (left to right)
-    ┌─────────┬─────────┬─────────┬─────────┐
-    │ Step 1  │ Step 2  │ Step 3  │ Step 4  │  ← Backbone
-    ├─────────┼─────────┼─────────┼─────────┤
-MVP │ Task A  │ Task D  │ Task G  │ Task J  │  ← Walking Skeleton
-    │ Task B  │ Task E  │ Task H  │         │
-    ├─────────┼─────────┼─────────┼─────────┤
-v2  │ Task C  │ Task F  │ Task I  │ Task K  │  ← Enhancements
-    └─────────┴─────────┴─────────┴─────────┘
-```
+    User Journey (left to right)
+    +----------+----------+----------+----------+
+    | Step 1   | Step 2   | Step 3   | Step 4   |  <- Backbone
+    +----------+----------+----------+----------+
+MVP | Task A   | Task D   | Task G   | Task J   |  <- Walking Skeleton
+    | Task B   | Task E   | Task H   |          |
+    +----------+----------+----------+----------+
+v2  | Task C   | Task F   | Task I   | Task K   |  <- Enhancements
+    +----------+----------+----------+----------+
 
 **Use when**: Defining MVP scope for new features
 
@@ -79,34 +82,32 @@ Instead of "How do we make X work?", ask:
 3. Reverse each into a solution
 
 **Example**:
-- How to make login fail? → Don't validate input → Solution: Add validation
-- How to make it slow? → No caching → Solution: Add Redis cache
-- How to confuse users? → No feedback → Solution: Add loading states
+- How to make login fail? -> Don't validate input -> Solution: Add validation
+- How to make it slow? -> No caching -> Solution: Add Redis cache
+- How to confuse users? -> No feedback -> Solution: Add loading states
 
 **Use when**: Identifying edge cases and failure modes
 
 #### Technique 5: Mind Mapping (for exploration)
 
-```
-                    ┌─── Auth Method
-                    │       ├── Email/Password
-        ┌── Auth ───┤       ├── OAuth
-        │           │       └── Magic Link
-        │           └─── Roles
-        │                   ├── Admin
-        │                   └── User
-Feature ┤
-        │           ┌─── Create
-        │           │       ├── Form
-        ├── CRUD ───┤       └── Validation
-        │           ├── Read
-        │           │       ├── List
-        │           │       └── Detail
-        │           └── Update/Delete
-        │
-        └── UI ─────┬── Desktop
-                    └── Mobile
-```
+                    +--- Auth Method
+                    |       +-- Email/Password
+        +-- Auth ---+       +-- OAuth
+        |           |       +-- Magic Link
+        |           +--- Roles
+        |                   +-- Admin
+        |                   +-- User
+Feature +
+        |           +--- Create
+        |           |       +-- Form
+        +-- CRUD ---+       +-- Validation
+        |           +-- Read
+        |           |       +-- List
+        |           |       +-- Detail
+        |           +-- Update/Delete
+        |
+        +-- UI -----+-- Desktop
+                    +-- Mobile
 
 **Use when**: Initial feature exploration, understanding scope
 
@@ -114,27 +115,25 @@ Feature ┤
 
 After brainstorming, present 2-3 approaches:
 
-```markdown
-## Approaches
-
-### Option A: {Name} (Recommended)
-**Pros**: {benefits}
-**Cons**: {drawbacks}
-**Effort**: {Low/Medium/High}
-**Why recommended**: {reasoning}
-
-### Option B: {Name}
-**Pros**: {benefits}
-**Cons**: {drawbacks}
-**Effort**: {Low/Medium/High}
-
-### Option C: {Name}
-**Pros**: {benefits}
-**Cons**: {drawbacks}
-**Effort**: {Low/Medium/High}
-
-**My recommendation**: Option A because {specific reasons}
-```
+    ## Approaches
+    
+    ### Option A: {Name} (Recommended)
+    **Pros**: {benefits}
+    **Cons**: {drawbacks}
+    **Effort**: {Low/Medium/High}
+    **Why recommended**: {reasoning}
+    
+    ### Option B: {Name}
+    **Pros**: {benefits}
+    **Cons**: {drawbacks}
+    **Effort**: {Low/Medium/High}
+    
+    ### Option C: {Name}
+    **Pros**: {benefits}
+    **Cons**: {drawbacks}
+    **Effort**: {Low/Medium/High}
+    
+    **My recommendation**: Option A because {specific reasons}
 
 ### Phase 4: Design Presentation
 
@@ -163,9 +162,8 @@ Once approach is selected, present design incrementally:
 ### Phase 5: Documentation
 
 After validation, write design to:
-```
-docs/designs/YYYY-MM-DD-{topic}-design.md
-```
+
+    docs/designs/YYYY-MM-DD-{topic}-design.md
 
 Include:
 - Problem statement
@@ -185,17 +183,15 @@ For smaller decisions, use this abbreviated flow:
 3. **Pick one with reasoning** (2-3 sentences)
 4. **Proceed**
 
-```markdown
-**Problem**: How should we handle image uploads?
-
-**Options**:
-1. Store locally (simple, limited scale)
-2. Use S3/Cloudinary (scalable, extra cost)
-3. Base64 in DB (no external deps, bloats DB)
-
-**Decision**: Option 2 (Cloudinary) - scalable, has CDN,
-free tier sufficient for MVP. Can migrate later if needed.
-```
+    **Problem**: How should we handle image uploads?
+    
+    **Options**:
+    1. Store locally (simple, limited scale)
+    2. Use S3/Cloudinary (scalable, extra cost)
+    3. Base64 in DB (no external deps, bloats DB)
+    
+    **Decision**: Option 2 (Cloudinary) - scalable, has CDN,
+    free tier sufficient for MVP. Can migrate later if needed.
 
 ## Key Principles
 
@@ -209,6 +205,6 @@ free tier sufficient for MVP. Can migrate later if needed.
 ## Integration
 
 After brainstorming, continue with:
-- `spec-driven-development` - Detailed requirements
-- `planning` - Implementation planning
-- `/scaffold` - Project setup
+- spec-driven-development - Detailed requirements
+- planning - Implementation planning
+- /scaffold - Project setup

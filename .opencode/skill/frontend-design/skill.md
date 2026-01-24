@@ -1,6 +1,11 @@
 ---
 name: frontend-design
 description: Create distinctive, production-grade frontend interfaces with high design quality. Use when building web components, pages, or applications. Avoids generic AI aesthetics.
+license: MIT
+compatibility: opencode
+metadata:
+  audience: developers
+  stack: frontend
 ---
 
 # Frontend Design

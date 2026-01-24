@@ -1,6 +1,11 @@
 ---
 name: systematic-debugging
 description: Four-phase root cause analysis framework. Use when facing test failures, production bugs, unexpected behavior, or performance issues. Prevents symptom-fixing.
+license: MIT
+compatibility: opencode
+metadata:
+  audience: developers
+  workflow: testing
 ---
 
 # Systematic Debugging

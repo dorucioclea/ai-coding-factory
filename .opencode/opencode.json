@@ -129,14 +129,7 @@
     "../.claude/skills/continuous-learning/SKILL.md",
     "../.claude/skills/strategic-compact/SKILL.md",
     "../.claude/skills/security-review/SKILL.md",
-    "../.claude/skills/clickhouse-io/SKILL.md",
-    "skill/constitution/SKILL.md",
-    "skill/spec-driven-development/SKILL.md",
-    "skill/quick-flow/SKILL.md",
-    "skill/epic-breakdown/SKILL.md",
-    "skill/fullstack-development/SKILL.md",
-    "skill/docker-infrastructure/SKILL.md",
-    "skill/brainstorming/SKILL.md"
+    "../.claude/skills/clickhouse-io/SKILL.md"
   ],
   "mcp": {
     "github": {

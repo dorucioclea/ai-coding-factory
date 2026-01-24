@@ -1,9 +1,11 @@
 ---
-name: atheris
-type: fuzzer
-description: >
-  Atheris is a coverage-guided Python fuzzer based on libFuzzer.
-  Use for fuzzing pure Python code and Python C extensions.
+name: tob-atheris
+description: Atheris is a coverage-guided Python fuzzer based on libFuzzer. Use for fuzzing pure Python code and Python C extensions.
+license: MIT
+compatibility: opencode
+metadata:
+  audience: security-engineers
+  category: fuzzing
 ---
 
 # Atheris

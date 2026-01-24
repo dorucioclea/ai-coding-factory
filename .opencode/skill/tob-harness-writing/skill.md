@@ -1,9 +1,11 @@
 ---
-name: harness-writing
-type: technique
-description: >
-  Techniques for writing effective fuzzing harnesses across languages.
-  Use when creating new fuzz targets or improving existing harness code.
+name: tob-harness-writing
+description: Techniques for writing effective fuzzing harnesses across languages. Use when creating new fuzz targets or improving existing harness code.
+license: MIT
+compatibility: opencode
+metadata:
+  audience: security-engineers
+  category: security
 ---
 
 # Writing Fuzzing Harnesses

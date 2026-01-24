@@ -1,9 +1,11 @@
 ---
-name: cargo-fuzz
-type: fuzzer
-description: >
-  cargo-fuzz is the de facto fuzzing tool for Rust projects using Cargo.
-  Use for fuzzing Rust code with libFuzzer backend.
+name: tob-cargo-fuzz
+description: cargo-fuzz is the de facto fuzzing tool for Rust projects using Cargo. Use for fuzzing Rust code with libFuzzer backend.
+license: MIT
+compatibility: opencode
+metadata:
+  audience: security-engineers
+  category: fuzzing
 ---
 
 # cargo-fuzz

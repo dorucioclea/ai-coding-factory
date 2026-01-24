@@ -1,9 +1,11 @@
 ---
-name: ruzzy
-type: fuzzer
-description: >
-  Ruzzy is a coverage-guided Ruby fuzzer by Trail of Bits.
-  Use for fuzzing pure Ruby code and Ruby C extensions.
+name: tob-ruzzy
+description: Ruzzy is a coverage-guided Ruby fuzzer by Trail of Bits. Use for fuzzing pure Ruby code and Ruby C extensions.
+license: MIT
+compatibility: opencode
+metadata:
+  audience: security-engineers
+  category: fuzzing
 ---
 
 # Ruzzy

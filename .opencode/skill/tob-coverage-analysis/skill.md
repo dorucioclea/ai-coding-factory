@@ -1,9 +1,11 @@
 ---
-name: coverage-analysis
-type: technique
-description: >
-  Coverage analysis measures code exercised during fuzzing.
-  Use when assessing harness effectiveness or identifying fuzzing blockers.
+name: tob-coverage-analysis
+description: Coverage analysis measures code exercised during fuzzing. Use when assessing harness effectiveness or identifying fuzzing blockers.
+license: MIT
+compatibility: opencode
+metadata:
+  audience: security-engineers
+  category: security
 ---
 
 # Coverage Analysis

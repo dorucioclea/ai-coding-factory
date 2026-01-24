@@ -1,6 +1,11 @@
 ---
 name: fullstack-development
 description: Use when building features that span both frontend and backend, or when setting up a new fullstack project. Orchestrates the clean-architecture-solution backend with react-frontend-template.
+license: MIT
+compatibility: opencode
+metadata:
+  audience: developers
+  stack: dotnet-react
 ---
 
 # Fullstack Development
@@ -23,23 +28,23 @@ A typical fullstack project has this structure:
 
 ```
 projects/
-├── {ProjectName}-api/           # .NET backend (from clean-architecture-solution)
-│   ├── src/
-│   │   ├── {ProjectName}.Domain/
-│   │   ├── {ProjectName}.Application/
-│   │   ├── {ProjectName}.Infrastructure/
-│   │   └── {ProjectName}.Api/
-│   └── tests/
-├── {ProjectName}-frontend/      # React frontend (from react-frontend-template)
-│   ├── src/
-│   │   ├── app/
-│   │   ├── components/
-│   │   ├── lib/
-│   │   └── hooks/
-│   └── e2e/
-└── infrastructure/              # Shared Docker setup
-    ├── docker-compose.yml
-    └── .env
++-- {ProjectName}-api/           # .NET backend (from clean-architecture-solution)
+|   +-- src/
+|   |   +-- {ProjectName}.Domain/
+|   |   +-- {ProjectName}.Application/
+|   |   +-- {ProjectName}.Infrastructure/
+|   |   +-- {ProjectName}.Api/
+|   +-- tests/
++-- {ProjectName}-frontend/      # React frontend (from react-frontend-template)
+|   +-- src/
+|   |   +-- app/
+|   |   +-- components/
+|   |   +-- lib/
+|   |   +-- hooks/
+|   +-- e2e/
++-- infrastructure/              # Shared Docker setup
+    +-- docker-compose.yml
+    +-- .env
 ```
 
 ## Setting Up New Fullstack Project
@@ -226,33 +231,6 @@ export function SpotForm({ onSuccess }: { onSuccess?: () => void }) {
 }
 ```
 
-### 7. Frontend: Page
-
-```tsx
-// app/dashboard/spots/page.tsx
-'use client';
-
-import { useFishingSpots } from '@/hooks/use-fishing-spots';
-import { SpotForm } from '@/components/features/fishing-spots/SpotForm';
-import { DataTable } from '@/components/tables';
-
-export default function SpotsPage() {
-  const { data: spots, isLoading } = useFishingSpots();
-
-  return (
-    <div>
-      <h1>Fishing Spots</h1>
-      <SpotForm />
-      {isLoading ? (
-        <p>Loading...</p>
-      ) : (
-        <DataTable data={spots ?? []} columns={spotColumns} />
-      )}
-    </div>
-  );
-}
-```
-
 ## API Contract Pattern
 
 ### Backend Response Format
@@ -284,36 +262,6 @@ export interface ApiResponse<T> {
     limit: number;
   };
 }
-```
-
-## Authentication Flow
-
-### Login Sequence
-
-```
-User                Frontend               Backend                Database
-  |                    |                      |                      |
-  |-- Enter creds ---->|                      |                      |
-  |                    |-- POST /auth/login ->|                      |
-  |                    |                      |-- Validate user ---->|
-  |                    |                      |<-- User data --------|
-  |                    |                      |-- Generate JWT       |
-  |                    |<-- { token, ... } ---|                      |
-  |                    |-- Store in cookies   |                      |
-  |<-- Redirect -------|                      |                      |
-```
-
-### Protected API Call
-
-```
-Frontend                              Backend
-   |                                     |
-   |-- GET /api/resource               |
-   |   Authorization: Bearer {token}  ->|
-   |                                     |-- Validate JWT
-   |                                     |-- Extract user claims
-   |                                     |-- Check permissions
-   |<-- { data: ... } ------------------|
 ```
 
 ## Testing Strategy
@@ -359,49 +307,6 @@ test('can create fishing spot', async ({ page }) => {
   await page.click('button[type="submit"]');
   await expect(page.getByText('Lake Spot')).toBeVisible();
 });
-```
-
-## Debugging Cross-Stack Issues
-
-### API Not Responding
-
-```bash
-# Check if backend is running
-curl http://localhost:5000/health
-
-# Check Docker logs
-docker compose logs api
-```
-
-### CORS Errors
-
-Check browser console for CORS errors. Ensure backend has:
-```csharp
-app.UseCors(policy => policy
-    .WithOrigins("http://localhost:3000")
-    .AllowAnyMethod()
-    .AllowAnyHeader()
-    .AllowCredentials());
-```
-
-### Auth Token Issues
-
-```typescript
-// Debug token in browser console
-console.log(tokenStorage.getAccessToken());
-
-// Check if token is being sent
-// Network tab > Request headers > Authorization
-```
-
-### Database Connection
-
-```bash
-# Check if DB is up
-docker compose exec db psql -U postgres -c "SELECT 1"
-
-# Check connection string in API logs
-docker compose logs api | grep -i connection
 ```
 
 ## Quick Reference

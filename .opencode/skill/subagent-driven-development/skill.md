@@ -1,6 +1,11 @@
 ---
 name: subagent-driven-development
 description: Use when executing implementation plans with independent tasks in the current session
+license: MIT
+compatibility: opencode
+metadata:
+  audience: developers
+  category: general
 ---
 
 # Subagent-Driven Development

@@ -1,6 +1,11 @@
 ---
 name: using-git-worktrees
 description: Use when starting feature work that needs isolation from current workspace or before executing implementation plans - creates isolated git worktrees with smart directory selection and safety verification
+license: MIT
+compatibility: opencode
+metadata:
+  audience: developers
+  workflow: git
 ---
 
 # Using Git Worktrees

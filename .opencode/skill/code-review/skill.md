@@ -1,6 +1,11 @@
 ---
 name: code-review
 description: Systematic code review framework for requesting and providing reviews. Use before merging PRs or when reviewing others' code. Ensures quality and knowledge sharing.
+license: MIT
+compatibility: opencode
+metadata:
+  audience: developers
+  workflow: code-review
 ---
 
 # Code Review

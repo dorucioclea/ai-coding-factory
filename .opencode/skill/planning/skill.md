@@ -1,6 +1,11 @@
 ---
 name: planning-with-files
 description: 3-file persistent planning pattern using markdown files. Use at start of complex tasks to maintain state across sessions. Treats filesystem as working memory.
+license: MIT
+compatibility: opencode
+metadata:
+  audience: developers
+  workflow: planning
 ---
 
 # Planning with Files

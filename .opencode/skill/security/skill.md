@@ -1,6 +1,11 @@
 ---
 name: security-analysis
 description: Security-focused code analysis and audit skills. Use when reviewing code for vulnerabilities, performing security audits, or implementing security features.
+license: MIT
+compatibility: opencode
+metadata:
+  audience: developers
+  category: security
 ---
 
 # Security Analysis

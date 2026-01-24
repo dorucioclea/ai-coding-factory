@@ -1,6 +1,11 @@
 ---
 name: ask-questions-if-underspecified
 description: Clarify requirements before implementing. Use when serious doubts araise.
+license: MIT
+compatibility: opencode
+metadata:
+  audience: security-engineers
+  category: security
 ---
 
 # Ask Questions If Underspecified

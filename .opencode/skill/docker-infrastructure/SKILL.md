@@ -1,6 +1,11 @@
 ---
 name: docker-infrastructure
 description: Use when starting/stopping Docker services, managing databases, running the fullstack application, or troubleshooting container issues. Provides commands for the shared infrastructure setup.
+license: MIT
+compatibility: opencode
+metadata:
+  audience: developers
+  tools: docker
 ---
 
 # Docker Infrastructure Management
@@ -21,12 +26,12 @@ Guide for managing the shared Docker infrastructure that supports both the .NET 
 
 ```
 templates/infrastructure/
-├── docker-compose.yml    # Main compose file
-├── .env.example          # Environment template
-├── .env                  # Your local config (gitignored)
-├── init-scripts/         # Database initialization
-│   └── 00-init.sql
-└── README.md             # Detailed documentation
++-- docker-compose.yml    # Main compose file
++-- .env.example          # Environment template
++-- .env                  # Your local config (gitignored)
++-- init-scripts/         # Database initialization
+|   +-- 00-init.sql
++-- README.md             # Detailed documentation
 ```
 
 ## Quick Commands
@@ -282,20 +287,20 @@ docker system df
 
 ## Integration Points
 
-### Backend → Database
+### Backend to Database
 
 Connection string set via environment:
 ```
 ConnectionStrings__DefaultConnection=Host=db;Database=projectdb;Username=postgres;Password=postgres
 ```
 
-### Backend → Redis
+### Backend to Redis
 
 ```
 ConnectionStrings__Redis=redis:6379
 ```
 
-### Frontend → Backend
+### Frontend to Backend
 
 ```
 NEXT_PUBLIC_API_URL=http://localhost:5000/api

@@ -1,9 +1,11 @@
 ---
-name: semgrep
-type: tool
-description: >
-  Semgrep is a fast static analysis tool for finding bugs and enforcing code standards.
-  Use when scanning code for security issues or integrating into CI/CD pipelines.
+name: tob-semgrep
+description: Semgrep is a fast static analysis tool for finding bugs and enforcing code standards. Use when scanning code for security issues or integrating into CI/CD pipelines.
+license: MIT
+compatibility: opencode
+metadata:
+  audience: security-engineers
+  category: static-analysis
 ---
 
 # Semgrep
