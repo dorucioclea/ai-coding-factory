@@ -1,9 +1,11 @@
 ---
-name: address-sanitizer
-type: technique
-description: >
-  AddressSanitizer detects memory errors during fuzzing.
-  Use when fuzzing C/C++ code to find buffer overflows and use-after-free bugs.
+name: tob-address-sanitizer
+description: AddressSanitizer detects memory errors during fuzzing. Use when fuzzing C/C++ code to find buffer overflows and use-after-free bugs.
+license: MIT
+compatibility: opencode
+metadata:
+  audience: security-engineers
+  category: security
 ---
 
 # AddressSanitizer (ASan)

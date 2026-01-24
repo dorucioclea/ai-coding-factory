@@ -1,14 +1,11 @@
 ---
 name: semgrep-rule-creator
 description: Create custom Semgrep rules for detecting bug patterns and security vulnerabilities. This skill should be used when the user explicitly asks to "create a Semgrep rule", "write a Semgrep rule", "make a Semgrep rule", "build a Semgrep rule", or requests detection of a specific bug pattern, vulnerability, or insecure code pattern using Semgrep.
-allowed-tools:
-  - Bash
-  - Read
-  - Write
-  - Edit
-  - Glob
-  - Grep
-  - WebFetch
+license: MIT
+compatibility: opencode
+metadata:
+  audience: security-engineers
+  category: static-analysis
 ---
 
 # Semgrep Rule Creator

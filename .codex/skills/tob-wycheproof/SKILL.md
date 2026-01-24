@@ -1,9 +1,11 @@
 ---
-name: wycheproof
-type: domain
-description: >
-  Wycheproof provides test vectors for validating cryptographic implementations.
-  Use when testing crypto code for known attacks and edge cases.
+name: tob-wycheproof
+description: Wycheproof provides test vectors for validating cryptographic implementations. Use when testing crypto code for known attacks and edge cases.
+license: MIT
+compatibility: opencode
+metadata:
+  audience: security-engineers
+  category: cryptography
 ---
 
 # Wycheproof

@@ -1,20 +1,12 @@
 ---
 name: spec-driven-development
-description: Use when starting a new project from an idea or vague requirements. Guides through systematic requirement gathering, specification creation, and user questions before any implementation.
-autoTrigger: true
-triggers:
-  - "I want to build"
-  - "build me a"
-  - "create an app"
-  - "I need a website"
-  - "make me a"
-  - "I have an idea"
-  - "let's build"
-  - "help me create"
-modes:
-  - yolo: "Minimal questions, maximum assumptions, fastest path to code"
-  - standard: "Balanced approach with 3 questions per phase"
-  - deep: "Thorough requirement gathering, comprehensive specification"
+description: Transform vague project ideas into actionable specifications through automated, systematic questioning. Guides through requirement gathering before any implementation.
+license: MIT
+compatibility: opencode
+metadata:
+  audience: developers
+  phase: project-start
+  auto-trigger: "true"
 ---
 
 # Spec-Driven Development
@@ -30,9 +22,21 @@ Transform vague ideas into actionable specifications through **automated, system
 - Present questions with suggested answers in table format
 - Make reasonable assumptions for anything not critical
 
+## Trigger Phrases
+
+Activate this skill when user says:
+- "I want to build"
+- "build me a"
+- "create an app"
+- "I need a website"
+- "make me a"
+- "I have an idea"
+- "let's build"
+- "help me create"
+
 ## Modes
 
-### Yolo Mode 🚀
+### Yolo Mode
 
 **Trigger**: User says "yolo", "just build it", "skip questions", or "fast mode"
 
@@ -65,7 +69,7 @@ Scaffolding now... [proceeds immediately]"
 
 ---
 
-### Standard Mode (Default) ⚡
+### Standard Mode (Default)
 
 **Trigger**: Default behavior when project idea detected
 
@@ -78,7 +82,7 @@ Scaffolding now... [proceeds immediately]"
 
 ---
 
-### Deep Mode 🔬
+### Deep Mode
 
 **Trigger**: User says "deep mode", "thorough", "detailed spec", or "comprehensive"
 
@@ -282,7 +286,7 @@ After questions, generate specification in this format:
 # Project Specification: {Project Name}
 
 **Created**: {date}
-**Status**: Draft → Approved
+**Status**: Draft -> Approved
 
 ## Problem Statement
 {1-2 sentences on the problem being solved}
@@ -346,7 +350,7 @@ After user approves spec:
    ```
 
 2. **Create Implementation Plan**
-   - Break into phases (Setup → Core → Features → Polish)
+   - Break into phases (Setup -> Core -> Features -> Polish)
    - Identify parallel work opportunities
 
 3. **Generate Tasks**
@@ -378,48 +382,3 @@ After specification:
 - `react-scaffold` - Frontend implementation
 - `fullstack-development` - Cross-stack features
 - `docker-infrastructure` - Running the app
-
-## Example Interaction
-
-**User**: "I want a fishing website where people can share spots"
-
-**Claude**:
-> A fishing spots sharing platform - nice! Let me gather requirements quickly.
->
-> ## Question 1: Target Audience
->
-> | Option | Description | Implications |
-> |--------|-------------|--------------|
-> | A (Recommended) | Public - anyone views, registered users post | Wider reach, need moderation |
-> | B | Members only - registration required | Tighter community |
-> | C | Invite-only - exclusive | Premium, slower growth |
->
-> ## Question 2: MVP Features
->
-> | Option | Description |
-> |--------|-------------|
-> | A | Spots with name, location, description only |
-> | B (Recommended) | Spots + photos + star ratings |
-> | C | Spots + photos + ratings + comments + reviews |
->
-> ## Question 3: Location Display
->
-> | Option | Description |
-> |--------|-------------|
-> | A | List view only (simplest) |
-> | B (Recommended) | List + static map per spot |
-> | C | Interactive map with all spots |
->
-> **Reply with your choices (e.g., "1: A, 2: B, 3: B")**
-
-**User**: "1: A, 2: B, 3: A for MVP"
-
-**Claude**:
-> Perfect! Based on your choices:
-> - Public platform with registration for posting
-> - Spots with photos and ratings
-> - List view for MVP (map can come later)
->
-> [Generates full specification...]
->
-> Does this specification look correct? Once approved, I'll scaffold the project.

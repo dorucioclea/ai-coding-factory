@@ -1,12 +1,11 @@
 ---
 name: quick-flow
-description: "Lightweight track for simple changes - bug fixes, small features, config updates. Skip the full spec process when it's overkill."
-triggers:
-  - "quick fix"
-  - "small change"
-  - "just add"
-  - "simple update"
-  - "minor tweak"
+description: Lightweight track for simple changes - bug fixes, small features, config updates. Skip the full spec process when it's overkill.
+license: MIT
+compatibility: opencode
+metadata:
+  audience: developers
+  workflow: agile
 ---
 
 # Quick Flow
@@ -21,7 +20,7 @@ Not everything needs a full specification. Quick Flow is the fast track for chan
 
 ## When to Use
 
-### ✅ Good for Quick Flow
+### Good for Quick Flow
 
 | Change Type | Example |
 |-------------|---------|
@@ -32,7 +31,7 @@ Not everything needs a full specification. Quick Flow is the fast track for chan
 | Add field | "Add email to the user form" |
 | Simple endpoint | "Add GET endpoint for user count" |
 
-### ❌ Use Full Spec Instead
+### Use Full Spec Instead
 
 | Change Type | Why |
 |-------------|-----|
@@ -45,9 +44,9 @@ Not everything needs a full specification. Quick Flow is the fast track for chan
 ## The Quick Flow Process
 
 ```
-Describe → Confirm → Implement → Test → Commit
-   │          │          │         │        │
-   └──────────┴──────────┴─────────┴────────┘
+Describe -> Confirm -> Implement -> Test -> Commit
+   |          |          |         |        |
+   +----------+----------+---------+--------+
                    10-30 minutes
 ```
 
@@ -107,19 +106,19 @@ git commit -m "Add last login display to profile page
 
 ### Do
 
-- ✅ Keep changes small and focused
-- ✅ Follow existing patterns exactly
-- ✅ Test before committing
-- ✅ Use clear commit messages
-- ✅ Ask for clarification if unsure
+- Keep changes small and focused
+- Follow existing patterns exactly
+- Test before committing
+- Use clear commit messages
+- Ask for clarification if unsure
 
 ### Don't
 
-- ❌ Refactor "while you're in there"
-- ❌ Add features beyond the request
-- ❌ Skip testing
-- ❌ Make breaking changes
-- ❌ Touch unrelated code
+- Refactor "while you're in there"
+- Add features beyond the request
+- Skip testing
+- Make breaking changes
+- Touch unrelated code
 
 ## Scope Check
 
@@ -224,14 +223,3 @@ Quick Flow integrates with:
 - `tdd` - Write test first even for small changes
 - `verification-before-completion` - Always verify before commit
 - `code-reviewer` - Optional quick review for non-trivial changes
-
-## Commands
-
-```bash
-# Start quick flow explicitly
-"quick flow: add loading spinner to save button"
-
-# Or just describe small changes naturally
-"fix the typo in the header"
-"add the created date to the list view"
-```

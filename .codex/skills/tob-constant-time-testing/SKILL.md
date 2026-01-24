@@ -1,9 +1,11 @@
 ---
-name: constant-time-testing
-type: domain
-description: >
-  Constant-time testing detects timing side channels in cryptographic code.
-  Use when auditing crypto implementations for timing vulnerabilities.
+name: tob-constant-time-testing
+description: Constant-time testing detects timing side channels in cryptographic code. Use when auditing crypto implementations for timing vulnerabilities.
+license: MIT
+compatibility: opencode
+metadata:
+  audience: security-engineers
+  category: cryptography
 ---
 
 # Constant-Time Testing

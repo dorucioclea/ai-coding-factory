@@ -1,6 +1,11 @@
 ---
 name: test-driven-development
 description: Enforce RED-GREEN-REFACTOR TDD cycle. Use when writing new features, fixing bugs, or modifying behavior. Ensures tests validate actual functionality.
+license: MIT
+compatibility: opencode
+metadata:
+  audience: developers
+  workflow: testing
 ---
 
 # Test-Driven Development (TDD)

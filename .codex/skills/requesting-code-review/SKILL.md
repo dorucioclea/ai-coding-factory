@@ -1,6 +1,11 @@
 ---
 name: requesting-code-review
 description: Use when completing tasks, implementing major features, or before merging to verify work meets requirements
+license: MIT
+compatibility: opencode
+metadata:
+  audience: developers
+  workflow: code-review
 ---
 
 # Requesting Code Review

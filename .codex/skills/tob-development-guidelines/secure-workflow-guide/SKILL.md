@@ -1,6 +1,11 @@
 ---
 name: secure-workflow-guide
-description: Guide you through Trail of Bits' 5-step secure development workflow. Runs Slither scans, checks special features (upgradeability/ERC conformance/token integration), generates visual security diagrams, helps document security properties for fuzzing/verification, and reviews manual security areas. (project, gitignored)
+description: Guide you through Trail of Bits' 5-step secure development workflow. Runs Slither scans, checks special features (upgradeability/ERC conformance/token integration), generates visual security diagrams, helps document security properties for fuzzing/verification, and reviews manual security areas.
+license: MIT
+compatibility: opencode
+metadata:
+  audience: security-engineers
+  category: security-guidance
 ---
 
 # Secure Workflow Guide

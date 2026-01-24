@@ -1,6 +1,11 @@
 ---
 name: constitution
 description: Define project principles and non-negotiables before any implementation. Use at project start to establish governance, quality standards, and architectural constraints.
+license: MIT
+compatibility: opencode
+metadata:
+  audience: developers
+  phase: project-start
 ---
 
 # Project Constitution
@@ -104,7 +109,7 @@ Infrastructure implements interfaces defined in Domain/Application.
 
 ### II. Test-Driven Development
 
-Tests MUST be written before implementation. Red → Green → Refactor.
+Tests MUST be written before implementation. Red -> Green -> Refactor.
 
 **Rationale**: Ensures testability, documents behavior, prevents regression
 
@@ -206,93 +211,3 @@ Use semantic versioning for the constitution:
 - **MAJOR**: Breaking changes (principle removed, redefined)
 - **MINOR**: New principle added, guidance expanded
 - **PATCH**: Clarifications, typos, non-semantic changes
-
-## Integration with Other Skills
-
-- **spec-driven-development**: Reference constitution when validating specs
-- **planning**: Check plan against constitution principles
-- **code-review**: Verify changes comply with constitution
-
-## Example Constitution
-
-```markdown
-# FishingSpots Constitution
-
-**Version**: 1.0.0
-**Ratified**: 2024-01-23
-**Last Amended**: 2024-01-23
-
-## Core Principles
-
-### I. Clean Architecture (NON-NEGOTIABLE)
-
-The codebase follows Clean Architecture with strict layer separation:
-- Domain: Zero dependencies, pure business logic
-- Application: Orchestration, depends only on Domain
-- Infrastructure: External concerns, implements Domain interfaces
-- API: Composition root, HTTP concerns only
-
-**Enforcement**: NetArchTest rules in CI pipeline
-
-### II. Test-First Development
-
-All features require tests written BEFORE implementation:
-- Unit tests for Domain logic
-- Integration tests for API endpoints
-- E2E tests for critical user journeys
-
-**Enforcement**: Minimum 80% coverage, PR requires test plan
-
-### III. API-First Design
-
-Backend APIs designed and documented before frontend implementation.
-OpenAPI spec is the contract.
-
-**Enforcement**: API spec required before implementation starts
-
-## Quality Standards
-
-### Code Quality
-- No warnings in build
-- All public APIs documented
-- No TODO comments in main branch
-
-### Testing
-- Domain/Application: 80% minimum
-- Critical paths: 100%
-- E2E: Happy path + top 3 error cases
-
-## Technology Stack
-
-| Layer | Choice | Locked |
-|-------|--------|--------|
-| Backend | .NET 8 | Yes |
-| Frontend | Next.js 14 | Yes |
-| Database | PostgreSQL | Yes |
-| Cache | Redis | No |
-| Auth | JWT | Yes |
-
-## Governance
-
-Changes to this constitution require:
-1. Written proposal with rationale
-2. Impact assessment on existing code
-3. Approval from project owner
-4. Migration plan if breaking
-
----
-This constitution governs all development on FishingSpots.
-```
-
-## Commands
-
-```bash
-# Create constitution interactively
-/constitution create
-
-# Validate code against constitution
-/constitution check
-
-# Propose amendment
-/constitution amend "Add principle about logging"
-```

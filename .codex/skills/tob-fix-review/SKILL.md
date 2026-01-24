@@ -1,18 +1,11 @@
 ---
-name: fix-review
-description: >
-  Verifies that git commits address security audit findings without introducing bugs.
-  This skill should be used when the user asks to "verify these commits fix the audit findings",
-  "check if TOB-XXX was addressed", "review the fix branch", "validate remediation commits",
-  "did these changes address the security report", "post-audit remediation review",
-  "compare fix commits to audit report", or when reviewing commits against security audit reports.
-allowed-tools:
-  - Read
-  - Write
-  - Grep
-  - Glob
-  - Bash
-  - WebFetch
+name: tob-fix-review
+description: Verifies that git commits address security audit findings without introducing bugs. Use when reviewing commits against security audit reports.
+license: MIT
+compatibility: opencode
+metadata:
+  audience: security-engineers
+  category: security
 ---
 
 # Fix Review

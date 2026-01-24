@@ -1,9 +1,11 @@
 ---
-name: fuzzing-obstacles
-type: technique
-description: >
-  Techniques for patching code to overcome fuzzing obstacles.
-  Use when checksums, global state, or other barriers block fuzzer progress.
+name: tob-fuzzing-obstacles
+description: Techniques for patching code to overcome fuzzing obstacles. Use when checksums, global state, or other barriers block fuzzer progress.
+license: MIT
+compatibility: opencode
+metadata:
+  audience: security-engineers
+  category: fuzzing
 ---
 
 # Overcoming Fuzzing Obstacles

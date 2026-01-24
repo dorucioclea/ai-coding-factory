@@ -1,6 +1,11 @@
 ---
 name: epic-breakdown
-description: Organize features into hierarchical structure (Epics → Features → User Stories → Tasks). Use when planning large projects or organizing complex requirements.
+description: Organize features into hierarchical structure (Epics to Features to User Stories to Tasks). Use when planning large projects or organizing complex requirements.
+license: MIT
+compatibility: opencode
+metadata:
+  audience: developers
+  workflow: agile
 ---
 
 # Epic Breakdown
@@ -13,10 +18,10 @@ Break down large projects into manageable, hierarchical pieces that can be plann
 
 ```
 Initiative (optional)
-    └── Epic
-          └── Feature
-                └── User Story
-                      └── Task
+    +-- Epic
+          +-- Feature
+                +-- User Story
+                      +-- Task
 ```
 
 | Level | Size | Duration | Example |
@@ -136,12 +141,12 @@ Start with the big picture. What are the major areas of work?
 **Common Epic patterns**:
 ```
 Product Epics:
-├── User Management (auth, profiles, permissions)
-├── Core Domain (main business functionality)
-├── Admin/Back-office (management tools)
-├── Integrations (external systems)
-├── Reporting/Analytics (dashboards, exports)
-└── Platform (infrastructure, DevOps)
++-- User Management (auth, profiles, permissions)
++-- Core Domain (main business functionality)
++-- Admin/Back-office (management tools)
++-- Integrations (external systems)
++-- Reporting/Analytics (dashboards, exports)
++-- Platform (infrastructure, DevOps)
 ```
 
 ### Step 2: Break Epics into Features
@@ -157,11 +162,11 @@ Each epic contains 3-7 features.
 **Example**:
 ```
 Epic: User Authentication
-├── Feature: Email/Password Auth
-├── Feature: Social Login (Google, GitHub)
-├── Feature: Password Reset
-├── Feature: Two-Factor Authentication
-└── Feature: Session Management
++-- Feature: Email/Password Auth
++-- Feature: Social Login (Google, GitHub)
++-- Feature: Password Reset
++-- Feature: Two-Factor Authentication
++-- Feature: Session Management
 ```
 
 ### Step 3: Break Features into User Stories
@@ -180,11 +185,11 @@ Each feature contains 3-10 user stories.
 **Example**:
 ```
 Feature: Email/Password Auth
-├── US-001: User can register with email/password
-├── US-002: User can log in with credentials
-├── US-003: User sees validation errors on invalid input
-├── US-004: User is redirected after successful login
-└── US-005: User can log out
++-- US-001: User can register with email/password
++-- US-002: User can log in with credentials
++-- US-003: User sees validation errors on invalid input
++-- US-004: User is redirected after successful login
++-- US-005: User can log out
 ```
 
 ### Step 4: Break Stories into Tasks
@@ -200,13 +205,13 @@ Each story contains 2-8 tasks.
 **Example**:
 ```
 US-001: User can register with email/password
-├── T1: Create User entity and migration
-├── T2: Create RegisterCommand and handler
-├── T3: Create RegisterEndpoint
-├── T4: Write integration tests
-├── T5: Create RegisterForm component
-├── T6: Connect form to API
-└── T7: Add E2E test
++-- T1: Create User entity and migration
++-- T2: Create RegisterCommand and handler
++-- T3: Create RegisterEndpoint
++-- T4: Write integration tests
++-- T5: Create RegisterForm component
++-- T6: Connect form to API
++-- T7: Add E2E test
 ```
 
 ## Story Point Reference
@@ -223,63 +228,25 @@ Use Fibonacci for relative sizing:
 | 13 | Very large | Consider splitting |
 | 21+ | Epic-sized | Must split |
 
-## Visualization
-
-### Story Map Format
-
-```
-                        User Journey →
-    ┌─────────────┬─────────────┬─────────────┬─────────────┐
-    │   Browse    │   Select    │   Purchase  │   Review    │
-    ├─────────────┼─────────────┼─────────────┼─────────────┤
-MVP │ View list   │ See details │ Add to cart │ Rate item   │
-    │ Search      │ View photos │ Checkout    │             │
-    ├─────────────┼─────────────┼─────────────┼─────────────┤
-v2  │ Filter      │ Compare     │ Save cart   │ Write review│
-    │ Sort        │ Wishlist    │ Gift option │ Share       │
-    └─────────────┴─────────────┴─────────────┴─────────────┘
-```
-
-### Dependency Graph
-
-```
-     ┌──────────────┐
-     │   US-001     │
-     │  Register    │
-     └──────┬───────┘
-            │
-     ┌──────▼───────┐
-     │   US-002     │
-     │    Login     │
-     └──────┬───────┘
-            │
-    ┌───────┴───────┐
-    │               │
-┌───▼────┐    ┌────▼────┐
-│ US-003 │    │ US-004  │
-│ Profile│    │Dashboard│
-└────────┘    └─────────┘
-```
-
 ## Output Structure
 
 After breakdown, create:
 
 ```
 specs/{project}/
-├── epics/
-│   ├── EPIC-001-user-management.md
-│   ├── EPIC-002-core-domain.md
-│   └── EPIC-003-admin.md
-├── features/
-│   ├── F-001-email-auth.md
-│   ├── F-002-social-login.md
-│   └── ...
-├── stories/
-│   ├── US-001-register.md
-│   ├── US-002-login.md
-│   └── ...
-└── roadmap.md
++-- epics/
+|   +-- EPIC-001-user-management.md
+|   +-- EPIC-002-core-domain.md
+|   +-- EPIC-003-admin.md
++-- features/
+|   +-- F-001-email-auth.md
+|   +-- F-002-social-login.md
+|   +-- ...
++-- stories/
+|   +-- US-001-register.md
+|   +-- US-002-login.md
+|   +-- ...
++-- roadmap.md
 ```
 
 ## Roadmap Template
@@ -311,22 +278,7 @@ specs/{project}/
 - EPIC-004: Analytics
 ```
 
-## Quick Reference
-
-### Commands
-
-```bash
-# Start epic breakdown
-"Let's break down this project into epics"
-
-# Create specific epic
-"Create an epic for user authentication"
-
-# Break feature into stories
-"Break the social login feature into user stories"
-```
-
-### Common Mistakes
+## Common Mistakes
 
 | Mistake | Fix |
 |---------|-----|

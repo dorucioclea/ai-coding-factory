@@ -1,9 +1,11 @@
 ---
-name: codeql
-type: tool
-description: >
-  CodeQL is a static analysis framework that queries code as a database.
-  Use when you need interprocedural analysis or complex data flow tracking.
+name: tob-codeql
+description: CodeQL is a static analysis framework that queries code as a database. Use when you need interprocedural analysis or complex data flow tracking.
+license: MIT
+compatibility: opencode
+metadata:
+  audience: security-engineers
+  category: static-analysis
 ---
 
 # CodeQL

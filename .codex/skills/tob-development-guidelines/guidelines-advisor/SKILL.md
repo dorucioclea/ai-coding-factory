@@ -1,6 +1,11 @@
 ---
 name: guidelines-advisor
-description: Comprehensive smart contract development advisor based on Trail of Bits' best practices. Analyzes codebase to generate documentation/specifications, review architecture, check upgradeability patterns, assess implementation quality, identify pitfalls, review dependencies, and evaluate testing. Provides actionable recommendations. (project, gitignored)
+description: Comprehensive smart contract development advisor based on Trail of Bits' best practices. Analyzes codebase to generate documentation/specifications, review architecture, check upgradeability patterns, assess implementation quality, identify pitfalls, review dependencies, and evaluate testing. Provides actionable recommendations.
+license: MIT
+compatibility: opencode
+metadata:
+  audience: security-engineers
+  category: security-guidance
 ---
 
 # Guidelines Advisor

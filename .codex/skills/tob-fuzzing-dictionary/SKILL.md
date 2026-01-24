@@ -1,9 +1,11 @@
 ---
-name: fuzzing-dictionary
-type: technique
-description: >
-  Fuzzing dictionaries guide fuzzers with domain-specific tokens.
-  Use when fuzzing parsers, protocols, or format-specific code.
+name: tob-fuzzing-dictionary
+description: Fuzzing dictionaries guide fuzzers with domain-specific tokens. Use when fuzzing parsers, protocols, or format-specific code.
+license: MIT
+compatibility: opencode
+metadata:
+  audience: security-engineers
+  category: fuzzing
 ---
 
 # Fuzzing Dictionary

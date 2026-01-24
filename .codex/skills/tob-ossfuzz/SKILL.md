@@ -1,9 +1,11 @@
 ---
-name: ossfuzz
-type: technique
-description: >
-  OSS-Fuzz provides free continuous fuzzing for open source projects.
-  Use when setting up continuous fuzzing infrastructure or enrolling projects.
+name: tob-ossfuzz
+description: OSS-Fuzz provides free continuous fuzzing for open source projects. Use when setting up continuous fuzzing infrastructure or enrolling projects.
+license: MIT
+compatibility: opencode
+metadata:
+  audience: security-engineers
+  category: fuzzing
 ---
 
 # OSS-Fuzz

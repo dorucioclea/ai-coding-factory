@@ -1,9 +1,11 @@
 ---
-name: libafl
-type: fuzzer
-description: >
-  LibAFL is a modular fuzzing library for building custom fuzzers. Use for
-  advanced fuzzing needs, custom mutators, or non-standard fuzzing targets.
+name: tob-libafl
+description: LibAFL is a modular fuzzing library for building custom fuzzers. Use for advanced fuzzing needs, custom mutators, or non-standard fuzzing targets.
+license: MIT
+compatibility: opencode
+metadata:
+  audience: security-engineers
+  category: fuzzing
 ---
 
 # LibAFL

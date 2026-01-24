@@ -1,6 +1,11 @@
 ---
 name: test-driven-development
 description: Use when implementing any feature or bugfix, before writing implementation code
+license: MIT
+compatibility: opencode
+metadata:
+  audience: developers
+  workflow: testing
 ---
 
 # Test-Driven Development (TDD)

@@ -1,9 +1,11 @@
 ---
-name: libfuzzer
-type: fuzzer
-description: >
-  Coverage-guided fuzzer built into LLVM for C/C++ projects. Use for fuzzing
-  C/C++ code that can be compiled with Clang.
+name: tob-libfuzzer
+description: Coverage-guided fuzzer built into LLVM for C/C++ projects. Use for fuzzing C/C++ code that can be compiled with Clang.
+license: MIT
+compatibility: opencode
+metadata:
+  audience: security-engineers
+  category: fuzzing
 ---
 
 # libFuzzer
