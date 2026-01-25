@@ -1,0 +1,92 @@
+{
+  "mcpServers": {
+    "github": {
+      "command": "npx",
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
+      }
+    },
+    "gitlab": {
+      "command": "npx",
+      "env": {
+        "GITLAB_PERSONAL_ACCESS_TOKEN": "${GITLAB_TOKEN}"
+      }
+    },
+    "filesystem": {
+      "command": "npx"
+    },
+    "memory": {
+      "command": "npx"
+    },
+    "sequential-thinking": {
+      "command": "npx"
+    },
+    "brave-search": {
+      "command": "npx",
+      "env": {
+        "BRAVE_API_KEY": "${BRAVE_API_KEY}"
+      }
+    },
+    "context7": {
+      "command": "npx"
+    },
+    "firecrawl": {
+      "command": "npx",
+      "env": {
+        "FIRECRAWL_API_KEY": "${FIRECRAWL_API_KEY}"
+      }
+    },
+    "azure": {
+      "command": "npx",
+      "env": {
+        "AZURE_SUBSCRIPTION_ID": "${AZURE_SUBSCRIPTION_ID}",
+        "AZURE_TENANT_ID": "${AZURE_TENANT_ID}"
+      }
+    },
+    "docker": {
+      "command": "npx"
+    },
+    "postgres": {
+      "command": "npx",
+      "env": {
+        "DATABASE_URL": "${DATABASE_URL}"
+      }
+    },
+    "supabase": {
+      "command": "npx"
+    },
+    "clickhouse": {
+      "command": []
+    },
+    "slack": {
+      "command": "npx",
+      "env": {
+        "SLACK_BOT_TOKEN": "${SLACK_BOT_TOKEN}"
+      }
+    },
+    "time": {
+      "command": "npx"
+    },
+    "vercel": {
+      "command": []
+    },
+    "railway": {
+      "command": "npx"
+    },
+    "cloudflare-docs": {
+      "command": []
+    },
+    "cloudflare-workers-builds": {
+      "command": []
+    },
+    "cloudflare-workers-bindings": {
+      "command": []
+    },
+    "cloudflare-observability": {
+      "command": []
+    },
+    "magic": {
+      "command": "npx"
+    }
+  }
+}
