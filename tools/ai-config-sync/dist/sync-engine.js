@@ -1,0 +1,468 @@
+/**
+ * Sync Engine
+ *
+ * Core synchronization logic for transferring configurations
+ * between AI coding assistants.
+ */
+import { existsSync, cpSync, mkdirSync, symlinkSync, unlinkSync, lstatSync, rmSync } from "node:fs";
+import { join, dirname, relative } from "node:path";
+import ora from "ora";
+import { DatabaseManager } from "./database/index.js";
+import { getAdapter, getAvailableAdapters, } from "./adapters/index.js";
+import { generateJobId } from "./utils/helpers.js";
+export class SyncEngine {
+    db;
+    projectRoot;
+    adapters = new Map();
+    constructor(projectRoot) {
+        this.projectRoot = projectRoot;
+        this.db = new DatabaseManager(projectRoot);
+    }
+    /**
+     * Get or create adapter for a system
+     */
+    getSystemAdapter(systemId) {
+        if (!this.adapters.has(systemId)) {
+            this.adapters.set(systemId, getAdapter(systemId));
+        }
+        return this.adapters.get(systemId);
+    }
+    /**
+     * Execute a full sync operation
+     */
+    async sync(options) {
+        const jobId = generateJobId();
+        const startedAt = new Date();
+        const results = [];
+        const summary = {
+            total: 0,
+            created: 0,
+            updated: 0,
+            skipped: 0,
+            failed: 0,
+            symlinked: 0,
+        };
+        // Create sync job record
+        this.db.createSyncJob({
+            id: jobId,
+            source_system: options.source,
+            target_systems: JSON.stringify(options.targets),
+            artifact_types: JSON.stringify(options.artifactTypes ?? ["skill", "agent", "command", "rule"]),
+            dry_run: options.dryRun ? 1 : 0,
+            force: options.force ? 1 : 0,
+            use_symlinks: options.useSymlinks !== false ? 1 : 0,
+            summary: null,
+        });
+        const spinner = ora({
+            text: `Scanning ${options.source} for artifacts...`,
+            color: "cyan",
+        }).start();
+        try {
+            // Get source adapter and scan artifacts
+            const sourceAdapter = this.getSystemAdapter(options.source);
+            if (!sourceAdapter.isConfigured(this.projectRoot)) {
+                spinner.fail(`Source system ${options.source} is not configured`);
+                throw new Error(`Source system ${options.source} is not configured`);
+            }
+            const artifacts = await sourceAdapter.scanArtifacts(this.projectRoot, {
+                types: options.artifactTypes,
+            });
+            spinner.succeed(`Found ${artifacts.length} artifacts in ${options.source}`);
+            // Update artifacts in database
+            for (const artifact of artifacts) {
+                this.db.upsertArtifact({
+                    id: artifact.id,
+                    name: artifact.name,
+                    type: artifact.type,
+                    description: artifact.description ?? null,
+                    content_hash: artifact.checksum,
+                    source_system: artifact.sourceSystem,
+                    source_path: artifact.sourcePath,
+                    metadata: artifact.metadata ? JSON.stringify(artifact.metadata) : null,
+                });
+            }
+            // Sync to each target
+            for (const target of options.targets) {
+                const targetSpinner = ora({
+                    text: `Syncing to ${target}...`,
+                    color: "blue",
+                }).start();
+                try {
+                    const targetAdapter = this.getSystemAdapter(target);
+                    // Initialize target if needed
+                    if (!targetAdapter.isConfigured(this.projectRoot)) {
+                        await targetAdapter.initialize(this.projectRoot);
+                    }
+                    // Get mapping rules for this source-target pair
+                    const mappingRules = this.db.getMappingRules(options.source, target);
+                    // Sync each artifact
+                    for (const artifact of artifacts) {
+                        summary.total++;
+                        const result = await this.syncArtifact(artifact, sourceAdapter, targetAdapter, mappingRules, options);
+                        results.push(result);
+                        // Update summary
+                        switch (result.operation) {
+                            case "create":
+                                summary.created++;
+                                break;
+                            case "update":
+                                summary.updated++;
+                                break;
+                            case "skip":
+                                summary.skipped++;
+                                break;
+                            case "symlink":
+                                summary.symlinked++;
+                                break;
+                            default:
+                                if (!result.success) {
+                                    summary.failed++;
+                                }
+                        }
+                        // Record result in database
+                        if (!options.dryRun) {
+                            this.db.addSyncResult({
+                                job_id: jobId,
+                                artifactId: result.artifactId,
+                                artifactName: result.artifactName,
+                                artifactType: result.artifactType,
+                                sourceSystem: result.sourceSystem,
+                                targetSystem: result.targetSystem,
+                                operation: result.operation,
+                                success: result.success,
+                                message: result.message,
+                                error: result.error,
+                                sourcePath: result.sourcePath,
+                                targetPath: result.targetPath,
+                            });
+                        }
+                    }
+                    targetSpinner.succeed(`Synced ${artifacts.length} artifacts to ${target}`);
+                }
+                catch (error) {
+                    targetSpinner.fail(`Failed to sync to ${target}: ${error}`);
+                    summary.failed += artifacts.length;
+                }
+            }
+            const completedAt = new Date();
+            // Update job status
+            if (!options.dryRun) {
+                this.db.updateSyncJob(jobId, "completed", summary);
+                this.db.setSetting("last_sync", completedAt.toISOString());
+            }
+            return {
+                jobId,
+                source: options.source,
+                targets: options.targets,
+                startedAt,
+                completedAt,
+                results: summary,
+                details: results,
+            };
+        }
+        catch (error) {
+            spinner.fail(`Sync failed: ${error}`);
+            this.db.updateSyncJob(jobId, "failed", { error: String(error) });
+            throw error;
+        }
+    }
+    /**
+     * Sync a single artifact
+     */
+    async syncArtifact(artifact, _sourceAdapter, targetAdapter, mappingRules, options) {
+        const targetSystem = targetAdapter.systemId;
+        const baseResult = {
+            artifactId: artifact.id,
+            artifactName: artifact.name,
+            artifactType: artifact.type,
+            sourceSystem: options.source,
+            targetSystem,
+            sourcePath: artifact.sourcePath,
+            timestamp: new Date(),
+        };
+        try {
+            // Check if target supports this artifact type
+            const capabilities = targetAdapter.capabilities;
+            const typeCapability = `${artifact.type}s`;
+            if (!capabilities[typeCapability]) {
+                // Need to transform the artifact
+                if (artifact.type === "skill" && capabilities.rules) {
+                    // Transform skill to rule
+                    const transformedArtifact = targetAdapter.transformArtifact(artifact);
+                    return await this.writeArtifact(transformedArtifact, targetAdapter, mappingRules, options, baseResult);
+                }
+                else {
+                    return {
+                        ...baseResult,
+                        operation: "skip",
+                        success: true,
+                        message: `${targetSystem} does not support ${artifact.type} artifacts`,
+                    };
+                }
+            }
+            // Find applicable mapping rule
+            const rule = mappingRules.find((r) => r.artifact_type === artifact.type);
+            const useSymlink = rule?.use_symlink === 1 && options.useSymlinks !== false;
+            // Check existing sync state
+            const syncState = this.db.getSyncState(artifact.id, targetSystem);
+            if (syncState && !options.force) {
+                // Check if artifact has changed
+                if (syncState.synced_hash === artifact.checksum) {
+                    return {
+                        ...baseResult,
+                        operation: "skip",
+                        success: true,
+                        message: "Already up to date",
+                        targetPath: syncState.target_path ?? undefined,
+                    };
+                }
+            }
+            // Transform artifact if needed
+            let finalArtifact = artifact;
+            if (rule?.transform_type && rule.transform_type !== "none") {
+                finalArtifact = targetAdapter.transformArtifact(artifact, {
+                    sourceFormat: "markdown",
+                    targetFormat: rule.transform_type,
+                });
+            }
+            return await this.writeArtifact(finalArtifact, targetAdapter, mappingRules, options, baseResult, useSymlink ? artifact.sourcePath : undefined);
+        }
+        catch (error) {
+            return {
+                ...baseResult,
+                operation: "skip",
+                success: false,
+                error: String(error),
+            };
+        }
+    }
+    /**
+     * Write artifact to target system
+     */
+    async writeArtifact(artifact, targetAdapter, _mappingRules, options, baseResult, symlinkSource) {
+        const targetPath = targetAdapter.getArtifactPath(artifact);
+        if (options.dryRun) {
+            return {
+                ...baseResult,
+                operation: symlinkSource ? "symlink" : "create",
+                success: true,
+                message: `Would ${symlinkSource ? "symlink" : "write"} to ${targetPath}`,
+                targetPath,
+            };
+        }
+        try {
+            if (symlinkSource && options.useSymlinks !== false) {
+                // Handle symlink creation for skills
+                const fullTargetPath = join(this.projectRoot, targetPath);
+                const targetDir = dirname(fullTargetPath);
+                if (!existsSync(targetDir)) {
+                    mkdirSync(targetDir, { recursive: true });
+                }
+                // Check if target already exists
+                try {
+                    const stats = lstatSync(fullTargetPath);
+                    if (stats.isSymbolicLink()) {
+                        // Safe to remove symlinks - they're just pointers
+                        unlinkSync(fullTargetPath);
+                    }
+                    else if (stats.isFile()) {
+                        // Safe to remove single files
+                        unlinkSync(fullTargetPath);
+                    }
+                    else if (stats.isDirectory()) {
+                        // SAFETY: Only delete directories with --force flag
+                        if (options.force) {
+                            // User explicitly requested force - delete and recreate
+                            rmSync(fullTargetPath, { recursive: true, force: true });
+                        }
+                        else {
+                            // Never delete existing directories with content!
+                            // They may contain unique data not derived from source.
+                            return {
+                                ...baseResult,
+                                operation: "skip",
+                                success: false,
+                                error: `Target directory already exists: ${fullTargetPath}. Use --force to overwrite.`,
+                                targetPath,
+                            };
+                        }
+                    }
+                }
+                catch {
+                    // File doesn't exist, which is fine
+                }
+                // For skills, symlink the directory
+                if (artifact.type === "skill") {
+                    const sourceSkillDir = dirname(join(this.projectRoot, symlinkSource));
+                    const relativePath = relative(targetDir, sourceSkillDir);
+                    symlinkSync(relativePath, fullTargetPath);
+                }
+                else {
+                    const sourcePath = join(this.projectRoot, symlinkSource);
+                    const relativePath = relative(targetDir, sourcePath);
+                    symlinkSync(relativePath, fullTargetPath);
+                }
+                // Update sync state
+                this.db.upsertSyncState({
+                    artifact_id: artifact.id,
+                    target_system: targetAdapter.systemId,
+                    target_path: targetPath,
+                    sync_method: "symlink",
+                    synced_hash: artifact.checksum,
+                    last_synced_at: new Date().toISOString(),
+                    status: "synced",
+                    error_message: null,
+                });
+                return {
+                    ...baseResult,
+                    operation: "symlink",
+                    success: true,
+                    message: `Symlinked to ${targetPath}`,
+                    targetPath,
+                };
+            }
+            else {
+                // Copy with full directory structure for skills
+                if (artifact.type === "skill" && symlinkSource) {
+                    const sourceSkillDir = dirname(join(this.projectRoot, symlinkSource));
+                    const targetSkillDir = dirname(join(this.projectRoot, targetPath));
+                    // Copy entire skill directory
+                    if (existsSync(sourceSkillDir)) {
+                        cpSync(sourceSkillDir, targetSkillDir, { recursive: true });
+                    }
+                }
+                else {
+                    await targetAdapter.writeArtifact(this.projectRoot, artifact, {
+                        overwrite: true,
+                        createDirectories: true,
+                        symlinkTarget: symlinkSource,
+                    });
+                }
+                // Update sync state
+                this.db.upsertSyncState({
+                    artifact_id: artifact.id,
+                    target_system: targetAdapter.systemId,
+                    target_path: targetPath,
+                    sync_method: "copy",
+                    synced_hash: artifact.checksum,
+                    last_synced_at: new Date().toISOString(),
+                    status: "synced",
+                    error_message: null,
+                });
+                const syncState = this.db.getSyncState(artifact.id, targetAdapter.systemId);
+                const isUpdate = syncState && syncState.synced_hash;
+                return {
+                    ...baseResult,
+                    operation: isUpdate ? "update" : "create",
+                    success: true,
+                    message: `${isUpdate ? "Updated" : "Created"} ${targetPath}`,
+                    targetPath,
+                };
+            }
+        }
+        catch (error) {
+            // Update sync state with error
+            this.db.upsertSyncState({
+                artifact_id: artifact.id,
+                target_system: targetAdapter.systemId,
+                target_path: targetPath,
+                sync_method: symlinkSource ? "symlink" : "copy",
+                synced_hash: null,
+                last_synced_at: new Date().toISOString(),
+                status: "failed",
+                error_message: String(error),
+            });
+            return {
+                ...baseResult,
+                operation: "skip",
+                success: false,
+                error: String(error),
+                targetPath,
+            };
+        }
+    }
+    /**
+     * Get diff between source and target systems
+     */
+    async diff(source, target, artifactType) {
+        const sourceAdapter = this.getSystemAdapter(source);
+        // Ensure target adapter is initialized (validates system exists)
+        this.getSystemAdapter(target);
+        // Scan source artifacts
+        const sourceArtifacts = await sourceAdapter.scanArtifacts(this.projectRoot, {
+            types: artifactType ? [artifactType] : undefined,
+        });
+        // Update database with current source state
+        for (const artifact of sourceArtifacts) {
+            this.db.upsertArtifact({
+                id: artifact.id,
+                name: artifact.name,
+                type: artifact.type,
+                description: artifact.description ?? null,
+                content_hash: artifact.checksum,
+                source_system: artifact.sourceSystem,
+                source_path: artifact.sourcePath,
+                metadata: artifact.metadata ? JSON.stringify(artifact.metadata) : null,
+            });
+        }
+        // Get diffs from database
+        return this.db.getOutOfSyncArtifacts(source, target, artifactType);
+    }
+    /**
+     * Get status of all systems
+     */
+    async status() {
+        const availableSystems = getAvailableAdapters();
+        const systems = [];
+        for (const systemId of availableSystems) {
+            const adapter = this.getSystemAdapter(systemId);
+            const configured = adapter.isConfigured(this.projectRoot);
+            const artifactCounts = {};
+            if (configured) {
+                const artifacts = await adapter.scanArtifacts(this.projectRoot);
+                for (const artifact of artifacts) {
+                    artifactCounts[artifact.type] = (artifactCounts[artifact.type] ?? 0) + 1;
+                }
+            }
+            systems.push({
+                id: systemId,
+                name: adapter.name,
+                configured,
+                artifactCounts,
+            });
+        }
+        return {
+            systems,
+            lastSync: this.db.getSetting("last_sync"),
+            stats: this.db.getStats(),
+        };
+    }
+    /**
+     * Get recent sync history
+     */
+    getHistory(limit = 10) {
+        const jobs = this.db.getRecentSyncJobs(limit);
+        return jobs.map((job) => ({
+            id: job.id,
+            source: job.source_system,
+            targets: JSON.parse(job.target_systems),
+            status: job.status,
+            startedAt: job.started_at,
+            completedAt: job.completed_at ?? undefined,
+            summary: job.summary ? JSON.parse(job.summary) : undefined,
+        }));
+    }
+    /**
+     * Get results for a specific job
+     */
+    getJobResults(jobId) {
+        return this.db.getSyncResults(jobId);
+    }
+    /**
+     * Close database connection
+     */
+    close() {
+        this.db.close();
+    }
+}
+//# sourceMappingURL=sync-engine.js.map

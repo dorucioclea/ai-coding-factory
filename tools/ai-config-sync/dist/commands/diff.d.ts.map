@@ -1,0 +1,1 @@
+{"version":3,"file":"diff.d.ts","sourceRoot":"","sources":["../../src/commands/diff.ts"],"names":[],"mappings":"AAAA;;;;GAIG;AAQH,MAAM,WAAW,kBAAkB;IACjC,MAAM,CAAC,EAAE,MAAM,CAAC;IAChB,MAAM,CAAC,EAAE,MAAM,CAAC;IAChB,IAAI,CAAC,EAAE,MAAM,CAAC;CACf;AAED,wBAAsB,WAAW,CAC/B,WAAW,EAAE,MAAM,EACnB,OAAO,EAAE,kBAAkB,GAC1B,OAAO,CAAC,IAAI,CAAC,CA0Ef"}
