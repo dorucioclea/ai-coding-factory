@@ -1,15 +1,6 @@
 ---
 name: rn-auth-integration
-description: React Native authentication - JWT auth flows, secure token storage, refresh token patterns, protected routes for Expo apps
-license: MIT
-compatibility: opencode
-metadata:
-  audience: developers
-  workflow: mobile-development
-  version: "1.0.0"
-  platform: react-native
-external_references:
-  - context7: expo-secure-store
+description: "React Native authentication - JWT auth flows, secure token storage, refresh token patterns, protected routes for Expo apps"
 ---
 
 # React Native Auth Integration

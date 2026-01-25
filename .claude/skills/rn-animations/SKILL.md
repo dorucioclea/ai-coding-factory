@@ -1,16 +1,6 @@
 ---
 name: rn-animations
-description: React Native animations - Reanimated 3, gesture handling, micro-interactions, layout animations for mobile UX
-license: MIT
-compatibility: opencode
-metadata:
-  audience: developers
-  workflow: mobile-development
-  version: "1.0.0"
-  platform: react-native
-external_references:
-  - context7: react-native-reanimated
-  - context7: react-native-gesture-handler
+description: "React Native animations - Reanimated 3, gesture handling, micro-interactions, layout animations for mobile UX"
 ---
 
 # React Native Animations

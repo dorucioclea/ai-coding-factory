@@ -1,16 +1,6 @@
 ---
 name: rn-api-integration
-description: React Native API integration - Axios client setup, TanStack Query patterns, interceptors, error handling, offline support
-license: MIT
-compatibility: opencode
-metadata:
-  audience: developers
-  workflow: mobile-development
-  version: "1.0.0"
-  platform: react-native
-external_references:
-  - context7: axios
-  - context7: tanstack-query
+description: "React Native API integration - Axios client setup, TanStack Query patterns, interceptors, error handling, offline support"
 ---
 
 # React Native API Integration
