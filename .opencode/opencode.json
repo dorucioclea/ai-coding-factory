@@ -101,6 +101,42 @@
     "planner": {
       "instructions": "../.claude/agents/planner.md",
       "description": "Feature implementation planning"
+    },
+    "rn-developer": {
+      "instructions": "agent/rn-developer.md",
+      "description": "React Native/Expo implementation specialist"
+    },
+    "rn-navigator": {
+      "instructions": "agent/rn-navigator.md",
+      "description": "React Native navigation and routing expert"
+    },
+    "rn-state-architect": {
+      "instructions": "agent/rn-state-architect.md",
+      "description": "React Native state management specialist"
+    },
+    "rn-performance-guardian": {
+      "instructions": "agent/rn-performance-guardian.md",
+      "description": "React Native performance optimization"
+    },
+    "rn-observability-integrator": {
+      "instructions": "agent/rn-observability-integrator.md",
+      "description": "React Native Sentry/observability setup"
+    },
+    "rn-design-token-guardian": {
+      "instructions": "agent/rn-design-token-guardian.md",
+      "description": "React Native design system enforcement"
+    },
+    "rn-a11y-enforcer": {
+      "instructions": "agent/rn-a11y-enforcer.md",
+      "description": "React Native accessibility compliance"
+    },
+    "rn-test-generator": {
+      "instructions": "agent/rn-test-generator.md",
+      "description": "React Native testing specialist"
+    },
+    "rn-grand-architect": {
+      "instructions": "agent/rn-grand-architect.md",
+      "description": "React Native meta-orchestrator for complex features"
     }
   },
   "plugin": [
@@ -129,7 +165,21 @@
     "../.claude/skills/continuous-learning/SKILL.md",
     "../.claude/skills/strategic-compact/SKILL.md",
     "../.claude/skills/security-review/SKILL.md",
-    "../.claude/skills/clickhouse-io/SKILL.md"
+    "../.claude/skills/clickhouse-io/SKILL.md",
+    "skill/rn-fundamentals/SKILL.md",
+    "skill/rn-navigation/SKILL.md",
+    "skill/rn-state-management/SKILL.md",
+    "skill/rn-native-modules/SKILL.md",
+    "skill/rn-animations/SKILL.md",
+    "skill/rn-testing/SKILL.md",
+    "skill/rn-deployment/SKILL.md",
+    "skill/rn-design-system-foundation/SKILL.md",
+    "skill/rn-design-preset-system/SKILL.md",
+    "skill/rn-observability-setup/SKILL.md",
+    "skill/rn-crash-instrumentation/SKILL.md",
+    "skill/rn-performance-monitoring/SKILL.md",
+    "skill/rn-api-integration/SKILL.md",
+    "skill/rn-auth-integration/SKILL.md"
   ],
   "mcp": {
     "github": {
