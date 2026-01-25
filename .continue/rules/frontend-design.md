@@ -1,0 +1,240 @@
+---
+description: "Create distinctive, production-grade frontend interfaces with high design quality. Use when building web components, pages, or applications. Avoids generic AI aesthetics."
+globs: ["**/*"]
+---
+
+
+# Frontend Design
+
+## Core Mission
+
+Create **distinctive, production-grade frontend interfaces** that avoid generic "AI slop" aesthetics. Every interface should be memorable and intentional.
+
+## Before Writing Code: Design Thinking
+
+Commit to a **BOLD aesthetic direction** by considering:
+
+### 1. Purpose
+- What problem does this interface solve?
+- Who are the target users?
+- What emotions should it evoke?
+
+### 2. Tone (Pick an Extreme)
+- Brutally minimal
+- Maximalist
+- Retro-futuristic
+- Organic
+- Luxury
+- Playful
+- Editorial
+- Brutalist
+- Art deco
+- Soft
+- Industrial
+
+### 3. Constraints
+- Framework requirements (React, Next.js, etc.)
+- Performance budgets
+- Accessibility requirements (WCAG level)
+
+### 4. Differentiation
+- What makes this unforgettable?
+- What will users remember?
+
+## Frontend Aesthetics Guidelines
+
+### Typography
+
+**DO:**
+- Choose distinctive, characterful fonts
+- Pair display fonts with refined body fonts
+- Use variable fonts for flexibility
+- Create typographic hierarchy
+
+**DON'T:**
+- Use Arial, Inter, Roboto (overused)
+- Mix more than 2-3 font families
+- Ignore line-height and letter-spacing
+
+```css
+/* Good Example */
+:root {
+  --font-display: 'Playfair Display', serif;
+  --font-body: 'Source Sans Pro', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+```
+
+### Color & Theme
+
+**DO:**
+- Build cohesive aesthetic using CSS variables
+- Use dominant colors with sharp accents
+- Create dark/light mode variants
+- Consider color accessibility (contrast ratios)
+
+**DON'T:**
+- Use purple gradients (AI cliché)
+- Distribute colors evenly (timid palettes)
+- Ignore color meaning and psychology
+
+```css
+/* Good Example */
+:root {
+  --color-primary: #1a1a2e;
+  --color-accent: #e94560;
+  --color-surface: #16213e;
+  --color-text: #edf2f4;
+}
+```
+
+### Motion
+
+**DO:**
+- Use CSS animations and transitions
+- Implement scroll-triggered effects
+- Add hover states that delight
+- Create staggered reveals on page load
+
+**DON'T:**
+- Animate everything (performance)
+- Use jarring, fast animations
+- Forget reduced-motion preferences
+
+```tsx
+// React Example with Framer Motion
+<motion.div
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ delay: index * 0.1 }}
+>
+  {content}
+</motion.div>
+```
+
+### Spatial Composition
+
+**DO:**
+- Use unexpected layouts
+- Embrace asymmetry
+- Create overlap and depth
+- Break the grid intentionally
+
+**DON'T:**
+- Default to 12-column bootstrap
+- Center everything
+- Use predictable card layouts
+
+### Visual Details
+
+**DO:**
+- Add atmosphere through gradients
+- Use noise textures for depth
+- Create geometric patterns
+- Layer transparencies
+- Add dramatic shadows
+- Use decorative borders
+- Consider custom cursors
+
+## React Component Patterns
+
+### Functional Components
+```tsx
+import { FC, ReactNode } from 'react';
+import { motion } from 'framer-motion';
+import styles from './Card.module.css';
+
+interface CardProps {
+  children: ReactNode;
+  variant?: 'default' | 'elevated' | 'outlined';
+  className?: string;
+}
+
+export const Card: FC<CardProps> = ({
+  children,
+  variant = 'default',
+  className
+}) => {
+  return (
+    <motion.article
+      className={`${styles.card} ${styles[variant]} ${className}`}
+      whileHover={{ scale: 1.02 }}
+      transition={{ type: 'spring', stiffness: 300 }}
+    >
+      {children}
+    </motion.article>
+  );
+};
+```
+
+### Custom Hooks
+```tsx
+import { useState, useEffect } from 'react';
+
+export function useMediaQuery(query: string): boolean {
+  const [matches, setMatches] = useState(false);
+
+  useEffect(() => {
+    const media = window.matchMedia(query);
+    setMatches(media.matches);
+
+    const listener = (e: MediaQueryListEvent) => setMatches(e.matches);
+    media.addEventListener('change', listener);
+
+    return () => media.removeEventListener('change', listener);
+  }, [query]);
+
+  return matches;
+}
+```
+
+## Accessibility Requirements
+
+- Semantic HTML elements
+- ARIA labels where needed
+- Keyboard navigation
+- Focus indicators
+- Color contrast (4.5:1 minimum)
+- Reduced motion support
+
+```tsx
+// Reduced motion support
+const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
+
+<motion.div
+  animate={prefersReducedMotion ? {} : { scale: 1.1 }}
+/>
+```
+
+## What to Avoid
+
+- ❌ Generic AI aesthetics
+- ❌ Overused fonts (Inter, Roboto, Arial)
+- ❌ Purple gradients everywhere
+- ❌ Predictable layouts
+- ❌ Cookie-cutter patterns
+- ❌ Unnecessary complexity
+- ❌ Inaccessible designs
+
+## Complexity Matches Vision
+
+- **Maximalist design** → Elaborate, detailed code
+- **Minimalist design** → Restraint and precision
+
+The goal is **intentionality over intensity**.
+
+## Integration with AI Coding Factory
+
+### Templates
+Use React templates from `.claude/templates/react/`:
+- `component.tsx.template`
+- `hook.ts.template`
+- `page.tsx.template`
+
+### Story Linkage
+- Include `data-story="ACF-###"` on root elements
+- Comment story ID at top of component files
+
+### Testing
+- Create tests using `component.test.tsx.template`
+- Include visual regression tests for complex UIs

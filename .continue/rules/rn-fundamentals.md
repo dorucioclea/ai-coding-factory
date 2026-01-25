@@ -1,0 +1,543 @@
+---
+description: "React Native core concepts - components, styling, layout, Expo basics, TypeScript patterns for mobile development"
+globs: ["**/*"]
+---
+
+
+# React Native Fundamentals
+
+## Overview
+
+Core React Native and Expo development patterns for building production-grade mobile applications. This skill covers component architecture, styling systems, layout patterns, and TypeScript best practices.
+
+## When to Use
+
+- Starting a new React Native/Expo project
+- Building UI components for mobile
+- Understanding React Native layout and styling
+- Implementing responsive mobile designs
+- Learning Expo managed workflow
+
+## When NOT to Use
+
+- Navigation patterns (use `rn-navigation`)
+- State management (use `rn-state-management`)
+- Native module development (use `rn-native-modules`)
+- Animation implementation (use `rn-animations`)
+
+---
+
+## Core Concepts
+
+### Component Architecture
+
+#### Functional Components (Required Pattern)
+
+```typescript
+import React from 'react';
+import { View, Text, StyleSheet, ViewStyle, TextStyle } from 'react-native';
+
+interface CardProps {
+  title: string;
+  subtitle?: string;
+  children: React.ReactNode;
+  style?: ViewStyle;
+}
+
+export function Card({ title, subtitle, children, style }: CardProps) {
+  return (
+    <View style={[styles.container, style]}>
+      <Text style={styles.title}>{title}</Text>
+      {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
+      <View style={styles.content}>{children}</View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1A1A1A',
+    marginBottom: 4,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#666666',
+    marginBottom: 12,
+  },
+  content: {
+    marginTop: 8,
+  },
+});
+```
+
+#### Component File Structure
+
+```
+components/
+├── ui/                    # Atomic design system components
+│   ├── Button/
+│   │   ├── Button.tsx
+│   │   ├── Button.test.tsx
+│   │   └── index.ts
+│   ├── Card/
+│   ├── Input/
+│   └── index.ts           # Barrel export
+├── shared/                # Feature-agnostic reusable components
+│   ├── LoadingScreen.tsx
+│   ├── ErrorView.tsx
+│   └── EmptyState.tsx
+└── features/              # Feature-specific components
+    ├── auth/
+    └── profile/
+```
+
+---
+
+## Styling System
+
+### StyleSheet.create (Required)
+
+Always use `StyleSheet.create` for performance:
+
+```typescript
+import { StyleSheet, Platform } from 'react-native';
+
+const styles = StyleSheet.create({
+  // Base styles
+  container: {
+    flex: 1,
+    padding: 16,
+  },
+
+  // Platform-specific
+  shadow: Platform.select({
+    ios: {
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 8,
+    },
+    android: {
+      elevation: 4,
+    },
+    default: {},
+  }),
+
+  // Responsive (use with useWindowDimensions)
+  fullWidth: {
+    width: '100%',
+  },
+});
+```
+
+### Theme Integration
+
+```typescript
+// theme/tokens/colors.ts
+export const colors = {
+  primary: {
+    50: '#EBF5FF',
+    100: '#E1EFFE',
+    500: '#3B82F6',
+    600: '#2563EB',
+    700: '#1D4ED8',
+  },
+  neutral: {
+    50: '#FAFAFA',
+    100: '#F5F5F5',
+    200: '#E5E5E5',
+    500: '#737373',
+    800: '#262626',
+    900: '#171717',
+  },
+  semantic: {
+    success: '#10B981',
+    warning: '#F59E0B',
+    error: '#EF4444',
+    info: '#3B82F6',
+  },
+} as const;
+
+// Usage with hook
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { colors } from '@/theme';
+
+function ThemedComponent() {
+  const { isDark } = useColorScheme();
+
+  return (
+    <View style={{
+      backgroundColor: isDark ? colors.neutral[900] : colors.neutral[50],
+    }}>
+      <Text style={{
+        color: isDark ? colors.neutral[100] : colors.neutral[800],
+      }}>
+        Themed Text
+      </Text>
+    </View>
+  );
+}
+```
+
+---
+
+## Layout Patterns
+
+### Flexbox Fundamentals
+
+```typescript
+const layoutExamples = StyleSheet.create({
+  // Column layout (default)
+  column: {
+    flexDirection: 'column',
+    alignItems: 'stretch',
+  },
+
+  // Row layout
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  // Centered content
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  // Space between items
+  spaceBetween: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+
+  // Wrap items
+  wrap: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8, // React Native 0.71+
+  },
+});
+```
+
+### Safe Area Handling
+
+```typescript
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+// Method 1: SafeAreaView wrapper
+function ScreenWithSafeArea() {
+  return (
+    <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
+      <View style={{ flex: 1 }}>
+        {/* Content */}
+      </View>
+    </SafeAreaView>
+  );
+}
+
+// Method 2: Manual insets (more control)
+function ScreenWithInsets() {
+  const insets = useSafeAreaInsets();
+
+  return (
+    <View style={{
+      flex: 1,
+      paddingTop: insets.top,
+      paddingBottom: insets.bottom,
+      paddingLeft: insets.left,
+      paddingRight: insets.right,
+    }}>
+      {/* Content */}
+    </View>
+  );
+}
+```
+
+### ScrollView vs FlatList
+
+```typescript
+// ScrollView - for small, static content
+<ScrollView
+  contentContainerStyle={{ padding: 16 }}
+  showsVerticalScrollIndicator={false}
+  keyboardShouldPersistTaps="handled"
+>
+  {/* Static content */}
+</ScrollView>
+
+// FlatList - for dynamic lists (virtualized)
+<FlatList
+  data={items}
+  keyExtractor={(item) => item.id}
+  renderItem={({ item }) => <ItemCard item={item} />}
+  ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+  ListEmptyComponent={<EmptyState />}
+  ListHeaderComponent={<HeaderSection />}
+  contentContainerStyle={{ padding: 16 }}
+  onEndReached={loadMore}
+  onEndReachedThreshold={0.5}
+  refreshControl={
+    <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
+  }
+/>
+```
+
+---
+
+## Expo Essentials
+
+### App Configuration
+
+```typescript
+// app.config.ts
+import { ExpoConfig, ConfigContext } from 'expo/config';
+
+export default ({ config }: ConfigContext): ExpoConfig => ({
+  ...config,
+  name: process.env.EXPO_PUBLIC_APP_NAME || 'MyApp',
+  slug: 'my-app',
+  version: '1.0.0',
+  orientation: 'portrait',
+  icon: './assets/icon.png',
+  userInterfaceStyle: 'automatic',
+  splash: {
+    image: './assets/splash.png',
+    resizeMode: 'contain',
+    backgroundColor: '#ffffff',
+  },
+  ios: {
+    supportsTablet: true,
+    bundleIdentifier: 'com.company.myapp',
+  },
+  android: {
+    adaptiveIcon: {
+      foregroundImage: './assets/adaptive-icon.png',
+      backgroundColor: '#ffffff',
+    },
+    package: 'com.company.myapp',
+  },
+  web: {
+    favicon: './assets/favicon.png',
+  },
+  extra: {
+    apiUrl: process.env.EXPO_PUBLIC_API_URL,
+    sentryDsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
+  },
+  plugins: [
+    'expo-router',
+    'expo-secure-store',
+    ['@sentry/react-native/expo', {
+      organization: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT,
+    }],
+  ],
+});
+```
+
+### Common Expo APIs
+
+```typescript
+// Device info
+import * as Device from 'expo-device';
+import Constants from 'expo-constants';
+
+const deviceInfo = {
+  brand: Device.brand,
+  modelName: Device.modelName,
+  osVersion: Device.osVersion,
+  appVersion: Constants.expoConfig?.version,
+};
+
+// Haptics feedback
+import * as Haptics from 'expo-haptics';
+
+function ButtonWithHaptics({ onPress, children }) {
+  const handlePress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    onPress();
+  };
+
+  return <Pressable onPress={handlePress}>{children}</Pressable>;
+}
+
+// Image handling
+import { Image } from 'expo-image';
+
+<Image
+  source={{ uri: imageUrl }}
+  style={{ width: 100, height: 100 }}
+  contentFit="cover"
+  placeholder={blurhash}
+  transition={200}
+/>
+```
+
+---
+
+## TypeScript Patterns
+
+### Type Definitions
+
+```typescript
+// types/components.ts
+import { ViewStyle, TextStyle, ImageStyle } from 'react-native';
+
+export type StyleProp<T> = T | T[] | undefined;
+
+export interface BaseComponentProps {
+  testID?: string;
+  style?: StyleProp<ViewStyle>;
+}
+
+// Discriminated unions for component variants
+export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
+export type ButtonSize = 'sm' | 'md' | 'lg';
+
+export interface ButtonProps extends BaseComponentProps {
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  disabled?: boolean;
+  loading?: boolean;
+  onPress: () => void;
+  children: React.ReactNode;
+}
+```
+
+### Generic Components
+
+```typescript
+interface ListProps<T> {
+  data: T[];
+  renderItem: (item: T, index: number) => React.ReactNode;
+  keyExtractor: (item: T) => string;
+  emptyMessage?: string;
+}
+
+function GenericList<T>({
+  data,
+  renderItem,
+  keyExtractor,
+  emptyMessage = 'No items',
+}: ListProps<T>) {
+  if (data.length === 0) {
+    return <EmptyState message={emptyMessage} />;
+  }
+
+  return (
+    <View>
+      {data.map((item, index) => (
+        <View key={keyExtractor(item)}>
+          {renderItem(item, index)}
+        </View>
+      ))}
+    </View>
+  );
+}
+```
+
+---
+
+## Performance Best Practices
+
+### Memoization
+
+```typescript
+import React, { memo, useMemo, useCallback } from 'react';
+
+// Memoize expensive renders
+const ExpensiveList = memo(function ExpensiveList({ items }: { items: Item[] }) {
+  return (
+    <FlatList
+      data={items}
+      renderItem={({ item }) => <ItemCard item={item} />}
+      keyExtractor={(item) => item.id}
+    />
+  );
+});
+
+// Memoize callbacks
+function ParentComponent() {
+  const [count, setCount] = useState(0);
+
+  const handlePress = useCallback(() => {
+    setCount(c => c + 1);
+  }, []);
+
+  const computedValue = useMemo(() => {
+    return expensiveComputation(count);
+  }, [count]);
+
+  return <ChildComponent onPress={handlePress} value={computedValue} />;
+}
+```
+
+### Image Optimization
+
+```typescript
+// Use expo-image instead of Image from react-native
+import { Image } from 'expo-image';
+
+// Configure caching
+Image.prefetch([imageUrl1, imageUrl2]);
+
+// Use appropriate contentFit
+<Image
+  source={{ uri: url }}
+  style={{ width: '100%', aspectRatio: 16 / 9 }}
+  contentFit="cover"
+  cachePolicy="memory-disk"
+/>
+```
+
+---
+
+## Context7 Integration
+
+When uncertain about React Native APIs or Expo features, query Context7:
+
+```
+1. Use resolve-library-id to find: "react-native" or "expo"
+2. Query specific topics:
+   - "React Native FlatList optimization"
+   - "Expo Router file-based routing"
+   - "React Native StyleSheet performance"
+```
+
+---
+
+## Common Mistakes to Avoid
+
+| Mistake | Correct Approach |
+|---------|------------------|
+| Inline styles everywhere | Use StyleSheet.create |
+| Using ScrollView for lists | Use FlatList/SectionList |
+| Ignoring SafeAreaView | Always handle safe areas |
+| Class components | Use functional components with hooks |
+| Direct state mutation | Use immutable updates |
+| Missing TypeScript types | Define interfaces for all props |
+| Large component files | Split into smaller, focused components |
+
+---
+
+## Related Skills
+
+- `rn-navigation` - Navigation and routing
+- `rn-state-management` - State management patterns
+- `rn-animations` - Animation implementation
+- `rn-design-system-foundation` - Design tokens and theming

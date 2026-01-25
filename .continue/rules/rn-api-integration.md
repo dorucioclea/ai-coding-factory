@@ -1,0 +1,726 @@
+---
+description: "React Native API integration - Axios client setup, TanStack Query patterns, interceptors, error handling, offline support"
+globs: ["**/*"]
+---
+
+
+# React Native API Integration
+
+## Overview
+
+Complete API integration patterns for React Native applications using Axios and TanStack Query. Matches the patterns used in the react-frontend-template for consistency across web and mobile platforms.
+
+## When to Use
+
+- Setting up API client infrastructure
+- Implementing data fetching with caching
+- Adding authentication interceptors
+- Handling API errors consistently
+- Building offline-first mobile experiences
+
+## When NOT to Use
+
+- GraphQL APIs (use Apollo Client instead)
+- WebSocket connections (use dedicated WS library)
+- Simple one-off requests (use fetch directly)
+
+---
+
+## API Client Setup
+
+### Axios Instance
+
+```typescript
+// services/api/apiClient.ts
+import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
+import Constants from 'expo-constants';
+import * as Sentry from '@sentry/react-native';
+
+import { authStorage } from '@/services/auth/authStorage';
+import { store } from '@/store';
+import { logout, refreshToken } from '@/slices/auth.slice';
+
+const API_URL = Constants.expoConfig?.extra?.apiUrl || process.env.EXPO_PUBLIC_API_URL;
+
+// Create instance
+export const apiClient: AxiosInstance = axios.create({
+  baseURL: API_URL,
+  timeout: 30000,
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  },
+});
+
+// Request interceptor - Add auth token
+apiClient.interceptors.request.use(
+  async (config: InternalAxiosRequestConfig) => {
+    const token = await authStorage.getAccessToken();
+
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    // Add request ID for tracing
+    config.headers['X-Request-ID'] = generateRequestId();
+
+    // Add breadcrumb
+    Sentry.addBreadcrumb({
+      category: 'http',
+      message: `${config.method?.toUpperCase()} ${config.url}`,
+      level: 'info',
+      data: {
+        method: config.method,
+        url: config.url,
+        baseURL: config.baseURL,
+      },
+    });
+
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Response interceptor - Handle errors and token refresh
+apiClient.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  async (error: AxiosError) => {
+    const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+
+    // Handle 401 - Attempt token refresh
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      try {
+        const result = await store.dispatch(refreshToken());
+
+        if (refreshToken.fulfilled.match(result)) {
+          const newToken = result.payload.accessToken;
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          return apiClient(originalRequest);
+        }
+      } catch (refreshError) {
+        // Refresh failed - logout user
+        store.dispatch(logout());
+        return Promise.reject(error);
+      }
+    }
+
+    // Transform error for consistent handling
+    const apiError = transformApiError(error);
+
+    // Report to Sentry
+    if (apiError.status >= 500) {
+      Sentry.captureException(error, {
+        tags: {
+          'error.type': 'api_error',
+          'error.status': apiError.status.toString(),
+        },
+        extra: {
+          url: originalRequest?.url,
+          method: originalRequest?.method,
+        },
+      });
+    }
+
+    return Promise.reject(apiError);
+  }
+);
+
+// Error transformation
+interface ApiError {
+  status: number;
+  code: string;
+  message: string;
+  details?: Record<string, string[]>;
+}
+
+function transformApiError(error: AxiosError): ApiError {
+  if (error.response) {
+    // Server responded with error
+    const data = error.response.data as any;
+    return {
+      status: error.response.status,
+      code: data?.code || 'SERVER_ERROR',
+      message: data?.message || data?.title || 'An error occurred',
+      details: data?.errors,
+    };
+  }
+
+  if (error.request) {
+    // No response received
+    return {
+      status: 0,
+      code: 'NETWORK_ERROR',
+      message: 'Network error. Please check your connection.',
+    };
+  }
+
+  // Request setup error
+  return {
+    status: 0,
+    code: 'REQUEST_ERROR',
+    message: error.message,
+  };
+}
+
+function generateRequestId(): string {
+  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+}
+```
+
+### Query Client Configuration
+
+```typescript
+// services/api/queryClient.ts
+import { QueryClient, QueryCache, MutationCache } from '@tanstack/react-query';
+import * as Sentry from '@sentry/react-native';
+
+export const queryClient = new QueryClient({
+  queryCache: new QueryCache({
+    onError: (error, query) => {
+      // Only report errors that aren't network errors
+      if ((error as any).status >= 500) {
+        Sentry.captureException(error, {
+          tags: { 'query.key': JSON.stringify(query.queryKey) },
+        });
+      }
+    },
+  }),
+  mutationCache: new MutationCache({
+    onError: (error, _variables, _context, mutation) => {
+      if ((error as any).status >= 500) {
+        Sentry.captureException(error, {
+          tags: { 'mutation.key': mutation.options.mutationKey?.toString() },
+        });
+      }
+    },
+  }),
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000,        // 5 minutes
+      gcTime: 30 * 60 * 1000,          // 30 minutes
+      retry: 2,
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+      refetchOnWindowFocus: false,     // Not applicable for mobile
+      refetchOnReconnect: true,        // Important for mobile connectivity
+      networkMode: 'offlineFirst',     // Use cached data when offline
+    },
+    mutations: {
+      retry: 1,
+      networkMode: 'offlineFirst',
+    },
+  },
+});
+```
+
+### Query Provider
+
+```typescript
+// services/api/QueryProvider.tsx
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from './queryClient';
+
+export function QueryProvider({ children }: { children: React.ReactNode }) {
+  return (
+    <QueryClientProvider client={queryClient}>
+      {children}
+    </QueryClientProvider>
+  );
+}
+```
+
+---
+
+## Service Layer Pattern
+
+### Base Service
+
+```typescript
+// services/api/baseService.ts
+import { apiClient } from './apiClient';
+import { AxiosRequestConfig } from 'axios';
+
+export class BaseService {
+  protected async get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
+    const response = await apiClient.get<T>(url, config);
+    return response.data;
+  }
+
+  protected async post<T, D = unknown>(url: string, data?: D, config?: AxiosRequestConfig): Promise<T> {
+    const response = await apiClient.post<T>(url, data, config);
+    return response.data;
+  }
+
+  protected async put<T, D = unknown>(url: string, data?: D, config?: AxiosRequestConfig): Promise<T> {
+    const response = await apiClient.put<T>(url, data, config);
+    return response.data;
+  }
+
+  protected async patch<T, D = unknown>(url: string, data?: D, config?: AxiosRequestConfig): Promise<T> {
+    const response = await apiClient.patch<T>(url, data, config);
+    return response.data;
+  }
+
+  protected async delete<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
+    const response = await apiClient.delete<T>(url, config);
+    return response.data;
+  }
+}
+```
+
+### Domain Service Example
+
+```typescript
+// services/api/productService.ts
+import { BaseService } from './baseService';
+import {
+  Product,
+  ProductList,
+  CreateProductDto,
+  UpdateProductDto,
+  ProductFilters,
+} from '@/types/product.types';
+
+class ProductService extends BaseService {
+  private readonly basePath = '/api/products';
+
+  async getAll(filters?: ProductFilters): Promise<ProductList> {
+    return this.get<ProductList>(this.basePath, {
+      params: filters,
+    });
+  }
+
+  async getById(id: string): Promise<Product> {
+    return this.get<Product>(`${this.basePath}/${id}`);
+  }
+
+  async create(data: CreateProductDto): Promise<Product> {
+    return this.post<Product>(this.basePath, data);
+  }
+
+  async update(id: string, data: UpdateProductDto): Promise<Product> {
+    return this.put<Product>(`${this.basePath}/${id}`, data);
+  }
+
+  async delete(id: string): Promise<void> {
+    return this.delete<void>(`${this.basePath}/${id}`);
+  }
+
+  async search(query: string): Promise<Product[]> {
+    return this.get<Product[]>(`${this.basePath}/search`, {
+      params: { q: query },
+    });
+  }
+
+  async toggleFavorite(id: string, isFavorite: boolean): Promise<Product> {
+    return this.patch<Product>(`${this.basePath}/${id}/favorite`, {
+      isFavorite,
+    });
+  }
+}
+
+export const productService = new ProductService();
+```
+
+---
+
+## Query Hooks Pattern
+
+### Query Keys
+
+```typescript
+// services/api/queryKeys.ts
+export const queryKeys = {
+  products: {
+    all: ['products'] as const,
+    lists: () => [...queryKeys.products.all, 'list'] as const,
+    list: (filters: ProductFilters) => [...queryKeys.products.lists(), filters] as const,
+    details: () => [...queryKeys.products.all, 'detail'] as const,
+    detail: (id: string) => [...queryKeys.products.details(), id] as const,
+    search: (query: string) => [...queryKeys.products.all, 'search', query] as const,
+  },
+
+  users: {
+    all: ['users'] as const,
+    me: () => [...queryKeys.users.all, 'me'] as const,
+    detail: (id: string) => [...queryKeys.users.all, 'detail', id] as const,
+  },
+
+  // Add more domains as needed
+} as const;
+```
+
+### Complete Hook Example
+
+```typescript
+// hooks/api/useProducts.ts
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  useInfiniteQuery,
+} from '@tanstack/react-query';
+import { queryKeys } from '@/services/api/queryKeys';
+import { productService } from '@/services/api/productService';
+import { Product, ProductFilters, CreateProductDto, UpdateProductDto } from '@/types/product.types';
+
+// List with pagination
+export function useProductsInfinite(filters?: ProductFilters) {
+  return useInfiniteQuery({
+    queryKey: queryKeys.products.list(filters ?? {}),
+    queryFn: ({ pageParam = 1 }) =>
+      productService.getAll({ ...filters, page: pageParam }),
+    getNextPageParam: (lastPage) =>
+      lastPage.hasMore ? lastPage.page + 1 : undefined,
+    initialPageParam: 1,
+  });
+}
+
+// Single product
+export function useProduct(id: string) {
+  return useQuery({
+    queryKey: queryKeys.products.detail(id),
+    queryFn: () => productService.getById(id),
+    enabled: !!id,
+  });
+}
+
+// Search
+export function useProductSearch(query: string) {
+  return useQuery({
+    queryKey: queryKeys.products.search(query),
+    queryFn: () => productService.search(query),
+    enabled: query.length >= 2,
+    staleTime: 1000 * 60, // 1 minute
+  });
+}
+
+// Create
+export function useCreateProduct() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: CreateProductDto) => productService.create(data),
+    onSuccess: (newProduct) => {
+      // Add to cache
+      queryClient.setQueryData(
+        queryKeys.products.detail(newProduct.id),
+        newProduct
+      );
+      // Invalidate lists
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.products.lists(),
+      });
+    },
+  });
+}
+
+// Update with optimistic update
+export function useUpdateProduct() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: UpdateProductDto }) =>
+      productService.update(id, data),
+
+    onMutate: async ({ id, data }) => {
+      await queryClient.cancelQueries({
+        queryKey: queryKeys.products.detail(id),
+      });
+
+      const previousProduct = queryClient.getQueryData<Product>(
+        queryKeys.products.detail(id)
+      );
+
+      queryClient.setQueryData(
+        queryKeys.products.detail(id),
+        (old: Product | undefined) => old ? { ...old, ...data } : old
+      );
+
+      return { previousProduct };
+    },
+
+    onError: (err, { id }, context) => {
+      if (context?.previousProduct) {
+        queryClient.setQueryData(
+          queryKeys.products.detail(id),
+          context.previousProduct
+        );
+      }
+    },
+
+    onSettled: (_, __, { id }) => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.products.detail(id),
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.products.lists(),
+      });
+    },
+  });
+}
+
+// Delete
+export function useDeleteProduct() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => productService.delete(id),
+    onSuccess: (_, deletedId) => {
+      queryClient.removeQueries({
+        queryKey: queryKeys.products.detail(deletedId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.products.lists(),
+      });
+    },
+  });
+}
+```
+
+---
+
+## Offline Support
+
+### Network Status Hook
+
+```typescript
+// hooks/useNetworkStatus.ts
+import { useEffect, useState } from 'react';
+import NetInfo, { NetInfoState } from '@react-native-community/netinfo';
+import { onlineManager } from '@tanstack/react-query';
+import * as Sentry from '@sentry/react-native';
+
+export function useNetworkStatus() {
+  const [isOnline, setIsOnline] = useState(true);
+  const [networkType, setNetworkType] = useState<string | null>(null);
+
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener((state: NetInfoState) => {
+      const online = state.isConnected ?? true;
+
+      setIsOnline(online);
+      setNetworkType(state.type);
+
+      // Sync with TanStack Query
+      onlineManager.setOnline(online);
+
+      // Update Sentry context
+      Sentry.setTag('network.connected', online ? 'yes' : 'no');
+      Sentry.setTag('network.type', state.type);
+
+      if (!online) {
+        Sentry.addBreadcrumb({
+          category: 'network',
+          message: 'Device went offline',
+          level: 'warning',
+        });
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  return { isOnline, networkType };
+}
+```
+
+### Offline-Aware Component
+
+```typescript
+// components/shared/OfflineNotice.tsx
+import { View, Text, StyleSheet } from 'react-native';
+import { useNetworkStatus } from '@/hooks/useNetworkStatus';
+import { colors } from '@/theme';
+
+export function OfflineNotice() {
+  const { isOnline } = useNetworkStatus();
+
+  if (isOnline) return null;
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.text}>
+        You're offline. Some features may be unavailable.
+      </Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: colors.semantic.warning,
+    padding: 12,
+    alignItems: 'center',
+  },
+  text: {
+    color: colors.neutral[900],
+    fontSize: 14,
+    fontWeight: '500',
+  },
+});
+```
+
+---
+
+## Error Handling Components
+
+### API Error Display
+
+```typescript
+// components/shared/ApiErrorView.tsx
+import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { AlertCircle, RefreshCcw } from 'lucide-react-native';
+import { colors } from '@/theme';
+
+interface ApiErrorViewProps {
+  error: {
+    status: number;
+    code: string;
+    message: string;
+  };
+  onRetry?: () => void;
+}
+
+export function ApiErrorView({ error, onRetry }: ApiErrorViewProps) {
+  const isNetworkError = error.status === 0;
+  const isServerError = error.status >= 500;
+
+  return (
+    <View style={styles.container}>
+      <AlertCircle
+        color={isServerError ? colors.semantic.error : colors.semantic.warning}
+        size={48}
+      />
+      <Text style={styles.title}>
+        {isNetworkError ? 'Connection Error' : 'Something went wrong'}
+      </Text>
+      <Text style={styles.message}>{error.message}</Text>
+      {onRetry && (
+        <Pressable style={styles.retryButton} onPress={onRetry}>
+          <RefreshCcw color={colors.neutral[50]} size={20} />
+          <Text style={styles.retryText}>Try Again</Text>
+        </Pressable>
+      )}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: colors.neutral[800],
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  message: {
+    fontSize: 14,
+    color: colors.neutral[500],
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  retryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.primary[500],
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+    gap: 8,
+  },
+  retryText: {
+    color: colors.neutral[50],
+    fontWeight: '600',
+    fontSize: 16,
+  },
+});
+```
+
+---
+
+## Type Definitions
+
+```typescript
+// types/api.types.ts
+export interface PaginatedResponse<T> {
+  data: T[];
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+  hasMore: boolean;
+}
+
+export interface ApiError {
+  status: number;
+  code: string;
+  message: string;
+  details?: Record<string, string[]>;
+}
+
+// types/product.types.ts
+export interface Product {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  imageUrl: string;
+  category: string;
+  isFavorite: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProductFilters {
+  category?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  search?: string;
+  page?: number;
+  pageSize?: number;
+}
+
+export type ProductList = PaginatedResponse<Product>;
+
+export interface CreateProductDto {
+  name: string;
+  description: string;
+  price: number;
+  category: string;
+}
+
+export interface UpdateProductDto extends Partial<CreateProductDto> {}
+```
+
+---
+
+## Context7 Integration
+
+Query Context7 for API patterns:
+
+```
+1. resolve-library-id: "tanstack-query" or "axios"
+2. Query: "TanStack Query infinite scroll"
+3. Query: "Axios interceptors refresh token"
+```
+
+---
+
+## Related Skills
+
+- `rn-state-management` - State management patterns
+- `rn-auth-integration` - Auth-specific API flows
+- `rn-observability-setup` - API error tracking
+- `rn-fundamentals` - Component patterns
