@@ -1,16 +1,6 @@
 ---
 name: rn-fundamentals
-description: React Native core concepts - components, styling, layout, Expo basics, TypeScript patterns for mobile development
-license: MIT
-compatibility: opencode
-metadata:
-  audience: developers
-  workflow: mobile-development
-  version: "1.0.0"
-  platform: react-native
-external_references:
-  - context7: react-native
-  - context7: expo
+description: "React Native core concepts - components, styling, layout, Expo basics, TypeScript patterns for mobile development"
 ---
 
 # React Native Fundamentals

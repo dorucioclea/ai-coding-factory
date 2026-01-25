@@ -1,15 +1,6 @@
 ---
 name: rn-observability-setup
-description: Mobile observability with Sentry - error tracking, performance monitoring, session replay, crash reporting, source maps for React Native/Expo
-license: MIT
-compatibility: opencode
-metadata:
-  audience: developers
-  workflow: mobile-development
-  version: "1.0.0"
-  platform: react-native
-external_references:
-  - context7: sentry-react-native
+description: "Mobile observability with Sentry - error tracking, performance monitoring, session replay, crash reporting, source maps for React Native/Expo"
 ---
 
 # React Native Observability Setup

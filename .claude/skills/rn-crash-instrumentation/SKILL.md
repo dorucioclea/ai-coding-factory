@@ -1,15 +1,6 @@
 ---
 name: rn-crash-instrumentation
-description: React Native crash reporting - error boundaries, native crash capture, context attachment, Sentry advanced configuration
-license: MIT
-compatibility: opencode
-metadata:
-  audience: developers
-  workflow: mobile-development
-  version: "1.0.0"
-  platform: react-native
-external_references:
-  - context7: sentry-react-native
+description: "React Native crash reporting - error boundaries, native crash capture, context attachment, Sentry advanced configuration"
 ---
 
 # React Native Crash Instrumentation

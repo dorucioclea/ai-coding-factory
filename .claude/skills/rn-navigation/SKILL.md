@@ -1,16 +1,6 @@
 ---
 name: rn-navigation
-description: React Native navigation patterns - Expo Router, React Navigation, deep linking, tab/stack/drawer navigation, authentication flows
-license: MIT
-compatibility: opencode
-metadata:
-  audience: developers
-  workflow: mobile-development
-  version: "1.0.0"
-  platform: react-native
-external_references:
-  - context7: expo-router
-  - context7: react-navigation
+description: "React Native navigation patterns - Expo Router, React Navigation, deep linking, tab/stack/drawer navigation, authentication flows"
 ---
 
 # React Native Navigation

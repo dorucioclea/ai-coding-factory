@@ -1,15 +1,6 @@
 ---
 name: rn-deployment
-description: React Native deployment - EAS Build, App Store/Play Store submission, OTA updates, CI/CD pipelines for Expo apps
-license: MIT
-compatibility: opencode
-metadata:
-  audience: developers
-  workflow: mobile-development
-  version: "1.0.0"
-  platform: react-native
-external_references:
-  - context7: expo
+description: "React Native deployment - EAS Build, App Store/Play Store submission, OTA updates, CI/CD pipelines for Expo apps"
 ---
 
 # React Native Deployment

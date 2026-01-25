@@ -1,16 +1,6 @@
 ---
 name: rn-testing
-description: React Native testing - Jest unit tests, React Native Testing Library, Detox E2E, Maestro flows for Expo apps
-license: MIT
-compatibility: opencode
-metadata:
-  audience: developers
-  workflow: mobile-development
-  version: "1.0.0"
-  platform: react-native
-external_references:
-  - context7: testing-library-react-native
-  - context7: detox
+description: "React Native testing - Jest unit tests, React Native Testing Library, Detox E2E, Maestro flows for Expo apps"
 ---
 
 # React Native Testing

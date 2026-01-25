@@ -1,15 +1,6 @@
 ---
 name: rn-performance-monitoring
-description: React Native performance - screen load tracking, network tracing, app start measurement, performance budgets
-license: MIT
-compatibility: opencode
-metadata:
-  audience: developers
-  workflow: mobile-development
-  version: "1.0.0"
-  platform: react-native
-external_references:
-  - context7: sentry-react-native
+description: "React Native performance - screen load tracking, network tracing, app start measurement, performance budgets"
 ---
 
 # React Native Performance Monitoring

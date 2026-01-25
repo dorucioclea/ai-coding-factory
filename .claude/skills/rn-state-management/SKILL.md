@@ -1,17 +1,6 @@
 ---
 name: rn-state-management
-description: React Native state management - Redux Toolkit, TanStack Query, Zustand, AsyncStorage persistence, optimistic updates
-license: MIT
-compatibility: opencode
-metadata:
-  audience: developers
-  workflow: mobile-development
-  version: "1.0.0"
-  platform: react-native
-external_references:
-  - context7: redux-toolkit
-  - context7: tanstack-query
-  - context7: zustand
+description: "React Native state management - Redux Toolkit, TanStack Query, Zustand, AsyncStorage persistence, optimistic updates"
 ---
 
 # React Native State Management

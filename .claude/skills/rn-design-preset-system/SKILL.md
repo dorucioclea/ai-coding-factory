@@ -1,15 +1,6 @@
 ---
 name: rn-design-preset-system
-description: React Native design presets - switch between minimalist modern, glass aesthetic, and other curated design styles
-license: MIT
-compatibility: opencode
-metadata:
-  audience: developers
-  workflow: mobile-development
-  version: "1.0.0"
-  platform: react-native
-external_references:
-  - context7: react-native
+description: "React Native design presets - switch between minimalist modern, glass aesthetic, and other curated design styles"
 ---
 
 # React Native Design Preset System

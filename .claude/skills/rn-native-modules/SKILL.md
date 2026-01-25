@@ -1,15 +1,6 @@
 ---
 name: rn-native-modules
-description: React Native native modules - JSI, Turbo Modules, Fabric, native bridging for iOS (Swift/ObjC) and Android (Kotlin/Java)
-license: MIT
-compatibility: opencode
-metadata:
-  audience: developers
-  workflow: mobile-development
-  version: "1.0.0"
-  platform: react-native
-external_references:
-  - context7: react-native
+description: "React Native native modules - JSI, Turbo Modules, Fabric, native bridging for iOS (Swift/ObjC) and Android (Kotlin/Java)"
 ---
 
 # React Native Native Modules

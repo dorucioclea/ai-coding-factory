@@ -1,15 +1,6 @@
 ---
 name: rn-design-system-foundation
-description: React Native design system - design tokens, theming, component library foundation with minimalist modern preset
-license: MIT
-compatibility: opencode
-metadata:
-  audience: developers
-  workflow: mobile-development
-  version: "1.0.0"
-  platform: react-native
-external_references:
-  - context7: react-native
+description: "React Native design system - design tokens, theming, component library foundation with minimalist modern preset"
 ---
 
 # React Native Design System Foundation
