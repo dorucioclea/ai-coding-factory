@@ -1,0 +1,6 @@
+---
+description: Use when building features that span both frontend and backend, or when setting up a new fullstack project. Orchestrates the clean-architecture-solution backend with react-frontend-template.
+globs: ["**/*"]
+alwaysApply: false
+---
+

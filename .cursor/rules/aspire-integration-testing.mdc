@@ -1,0 +1,6 @@
+---
+description: Write integration tests using .NET Aspire's testing facilities with xUnit. Covers test fixtures, distributed application setup, endpoint discovery, and patterns for testing ASP.NET Core apps with real dependencies.
+globs: ["**/*Test*.cs", "**/*Tests*.cs", "**/*.test.ts", "**/*.spec.ts"]
+alwaysApply: false
+---
+

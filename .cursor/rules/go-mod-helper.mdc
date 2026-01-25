@@ -1,0 +1,6 @@
+---
+description: Go module system, dependency management, and project configuration assistance.
+globs: ["**/*"]
+alwaysApply: false
+---
+

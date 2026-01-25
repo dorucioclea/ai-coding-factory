@@ -1,0 +1,6 @@
+---
+description: Smart git merge conflict resolution with context analysis, pattern detection, and automated resol...
+globs: ["**/*"]
+alwaysApply: false
+---
+

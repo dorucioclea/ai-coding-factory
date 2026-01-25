@@ -1,0 +1,29 @@
+---
+description: Save, organize, search, and retrieve code snippets with tags, categories, and smart search capabi...
+globs: ["**/*"]
+alwaysApply: false
+---
+
+title: "Async Retry with Backoff"
+language: javascript
+category: error-handling
+tags: [async, retry, error-handling, resilience]
+framework: nodejs
+version: 1.2.0
+author: team
+created: 2024-01-15
+updated: 2024-01-20
+---
+```
+
+## Notes
+
+- Keep snippets focused and single-purpose
+- Include error handling in examples
+- Document performance characteristics
+- Test snippets before saving
+- Use consistent coding style
+- Add comments for complex logic
+- Version snippets when making changes
+- Share snippets within team
+- Regular cleanup of outdated snippets

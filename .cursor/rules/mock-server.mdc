@@ -1,0 +1,6 @@
+---
+description: Create and manage mock API servers for development and testing.
+globs: ["**/*"]
+alwaysApply: false
+---
+

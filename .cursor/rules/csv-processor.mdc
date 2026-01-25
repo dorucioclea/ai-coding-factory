@@ -1,0 +1,6 @@
+---
+description: Parse, transform, and analyze CSV files with advanced data manipulation capabilities.
+globs: ["**/*"]
+alwaysApply: false
+---
+

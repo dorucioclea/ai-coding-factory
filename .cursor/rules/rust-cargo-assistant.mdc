@@ -1,0 +1,6 @@
+---
+description: Cargo build system, crate management, and Rust project configuration assistance.
+globs: ["**/*"]
+alwaysApply: false
+---
+

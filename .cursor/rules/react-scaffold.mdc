@@ -1,0 +1,6 @@
+---
+description: Use when creating React/Next.js frontend projects, adding React components, or implementing frontend features. References the react-frontend-template and best practices.
+globs: ["**/*.tsx", "**/*.jsx", "**/*.ts", "**/*.js"]
+alwaysApply: false
+---
+

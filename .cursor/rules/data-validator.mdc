@@ -1,0 +1,176 @@
+---
+description: Validate data against schemas, business rules, and data quality standards.
+globs: ["**/*"]
+alwaysApply: false
+---
+
+
+## Summary
+
+"""
+
+    # Completeness check
+    completeness = check_completeness(df)
+    report += f"- **Overall Completeness:** {completeness['overall_completeness']}%\n"
+
+    # Duplicates check
+    duplicates = check_duplicates(df)
+    report += f"- **Duplicate Rows:** {duplicates['duplicate_count']:,} ({duplicates['duplicate_percent']}%)\n"
+
+    # Schema validation
+    if schema:
+        schema_result = validate_dataframe_schema(df, schema)
+        status = "✅ Pass" if schema_result['valid'] else f"❌ Fail ({len(schema_result['errors'])} errors)"
+        report += f"- **Schema Validation:** {status}\n"
+
+    report += "\n---\n\n## Completeness Analysis\n\n"
+
+    report += "| Column | Non-Null | Null Count | Completeness |\n"
+    report += "|--------|----------|------------|-------------|\n"
+
+    for col, stats in completeness['columns'].items():
+        report += f"| {col} | {stats['non_null_count']:,} | {stats['null_count']:,} | {stats['completeness_percent']}% |\n"
+
+    # Schema validation details
+    if schema and not schema_result['valid']:
+        report += "\n---\n\n## Schema Validation Errors\n\n"
+
+        for error in schema_result['errors']:
+            report += f"### {error['type'].replace('_', ' ').title()}\n\n"
+
+            if error['type'] == 'wrong_type':
+                report += f"- **Column:** {error['column']}\n"
+                report += f"- **Expected:** {error['expected']}\n"
+                report += f"- **Actual:** {error['actual']}\n\n"
+
+            elif error['type'] in ['null_values', 'duplicate_values']:
+                report += f"- **Column:** {error['column']}\n"
+                report += f"- **Count:** {error['count']:,}\n\n"
+
+            elif error['type'] == 'pattern_mismatch':
+                report += f"- **Column:** {error['column']}\n"
+                report += f"- **Pattern:** `{error['pattern']}`\n"
+                report += f"- **Invalid Count:** {error['count']:,}\n\n"
+
+    # Format validation
+    format_results = validate_formats_in_dataframe(df)
+
+    if format_results:
+        report += "\n---\n\n## Format Validation\n\n"
+
+        for col, result in format_results.items():
+            report += f"### {col} ({result['type']})\n\n"
+            report += f"- **Valid:** {result['valid_count']:,}\n"
+            report += f"- **Invalid:** {result['invalid_count']:,}\n"
+
+            if result['invalid_samples']:
+                report += f"\n**Invalid Samples:**\n"
+                for sample in result['invalid_samples']:
+                    report += f"- `{sample}`\n"
+
+            report += "\n"
+
+    # Data quality score
+    quality_score = calculate_quality_score(df, schema, duplicates, completeness)
+
+    report += f"\n---\n\n## Data Quality Score\n\n"
+    report += f"### Overall Score: {quality_score['overall']}/100\n\n"
+
+    for dimension, score in quality_score['dimensions'].items():
+        report += f"- **{dimension}:** {score}/100\n"
+
+    return report
+
+def calculate_quality_score(df, schema, duplicates, completeness):
+    """Calculate data quality score"""
+
+    scores = {}
+
+    # Completeness score
+    scores['Completeness'] = completeness['overall_completeness']
+
+    # Uniqueness score
+    scores['Uniqueness'] = 100 - duplicates['duplicate_percent']
+
+    # Validity score (if schema provided)
+    if schema:
+        schema_result = validate_dataframe_schema(df, schema)
+        error_rate = len(schema_result['errors']) / (len(df) * len(df.columns))
+        scores['Validity'] = max(0, 100 - (error_rate * 100))
+    else:
+        scores['Validity'] = 100
+
+    # Overall score
+    overall = sum(scores.values()) / len(scores)
+
+    return {
+        'overall': round(overall, 1),
+        'dimensions': {k: round(v, 1) for k, v in scores.items()}
+    }
+```
+
+## Best Practices
+
+1. **Define clear validation rules** before implementation
+2. **Validate early** in the data pipeline
+3. **Provide detailed error messages** for debugging
+4. **Use schema validation** for API contracts
+5. **Implement business rule validation** separately from schema
+6. **Log validation failures** for monitoring
+7. **Generate validation reports** for auditing
+8. **Handle validation errors gracefully**
+9. **Test validation rules** with edge cases
+10. **Version control** validation schemas and rules
+
+## Common Validation Patterns
+
+### API Request Validation
+```python
+def validate_api_request(request_data, endpoint):
+    """Validate API request data"""
+
+    schemas = {
+        '/users': user_schema,
+        '/orders': order_schema,
+        '/products': product_schema
+    }
+
+    schema = schemas.get(endpoint)
+    if not schema:
+        return {'valid': False, 'error': 'Unknown endpoint'}
+
+    return validate_json_schema(request_data, schema)
+```
+
+### Batch Data Validation
+```python
+def validate_batch(records, validator):
+    """Validate batch of records"""
+
+    results = []
+
+    for i, record in enumerate(records):
+        result = validator.validate(record)
+        result['record_index'] = i
+
+        if not result['valid']:
+            results.append(result)
+
+    return {
+        'total_records': len(records),
+        'valid_records': len(records) - len(results),
+        'invalid_records': len(results),
+        'failures': results
+    }
+```
+
+## Notes
+
+- Always validate at system boundaries
+- Use appropriate validation levels (syntax, semantic, business)
+- Cache validation results for performance
+- Provide clear error messages for users
+- Log validation metrics for monitoring
+- Consider validation performance for large datasets
+- Use streaming validation for big data
+- Keep validation rules maintainable and testable

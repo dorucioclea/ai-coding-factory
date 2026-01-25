@@ -1,0 +1,6 @@
+---
+description: Test webhook integrations locally with tunneling, inspection, and debugging tools.
+globs: ["**/*Test*.cs", "**/*Tests*.cs", "**/*.test.ts", "**/*.spec.ts"]
+alwaysApply: false
+---
+

@@ -1,0 +1,255 @@
+---
+description: Monitor system resources (CPU, memory, disk, network) during development and production.
+globs: ["**/*"]
+alwaysApply: false
+---
+
+
+## Executive Summary
+
+**Overall Health**: 🟢 Good
+**Critical Alerts**: 0
+**Warnings**: 3
+**Average CPU**: 45%
+**Average Memory**: 62%
+**Disk Usage**: 58%
+
+---
+
+## CPU Metrics
+
+**Average**: 45%
+**Peak**: 87% (at 14:30)
+**Minimum**: 12% (at 03:00)
+
+**Load Average**:
+- 1 min: 2.34
+- 5 min: 2.12
+- 15 min: 1.98
+
+**Top CPU Processes**:
+1. node (PID 1234): 34%
+2. postgres (PID 5678): 12%
+3. redis (PID 9012): 5%
+
+**Timeline**:
+```
+00:00 ████░░░░░░  12%
+06:00 ████████░░  35%
+12:00 ███████████ 52%
+14:30 █████████████████ 87% ⚠️ PEAK
+18:00 ████████░░  38%
+23:00 █████░░░░░  18%
+```
+
+---
+
+## Memory Metrics
+
+**Total**: 16 GB
+**Average Used**: 9.92 GB (62%)
+**Peak**: 13.6 GB (85%) ⚠️
+**Swap Used**: 0 GB
+
+**Memory Breakdown**:
+- Application: 6.4 GB (40%)
+- Database: 2.4 GB (15%)
+- Cache: 1.12 GB (7%)
+- System: 0.8 GB (5%)
+- Free: 5.28 GB (33%)
+
+**Top Memory Processes**:
+1. node (PID 1234): 6.4 GB
+2. postgres (PID 5678): 2.4 GB
+3. redis (PID 9012): 1.12 GB
+
+**Memory Timeline**:
+```
+00:00 ████████░░  58%
+06:00 ████████░░  62%
+12:00 █████████░  68%
+14:30 █████████████ 85% ⚠️ PEAK
+18:00 ████████░░  65%
+23:00 ████████░░  60%
+```
+
+---
+
+## Disk Metrics
+
+**Total**: 500 GB
+**Used**: 290 GB (58%)
+**Free**: 210 GB (42%)
+
+**Disk I/O**:
+- Read: 12.3 GB/day
+- Write: 8.7 GB/day
+- Average IOPS: 234
+
+**Largest Directories**:
+1. /var/log: 45 GB (15.5%)
+2. /var/lib/postgresql: 89 GB (30.7%)
+3. /app/uploads: 67 GB (23.1%)
+4. /var/lib/redis: 23 GB (7.9%)
+
+**Growth Trend**: +2.3 GB/day
+**Estimated Full**: 91 days
+
+---
+
+## Network Metrics
+
+**Traffic**:
+- Sent: 234 GB
+- Received: 456 GB
+- Total: 690 GB
+
+**Bandwidth**:
+- Average: 80 Mbps
+- Peak: 450 Mbps (at 15:00)
+
+**Connections**:
+- Established: 1,234
+- Time Wait: 456
+- Close Wait: 23
+
+**Top Talkers**:
+1. 192.168.1.100: 45 GB
+2. 10.0.0.50: 34 GB
+3. 172.16.0.20: 28 GB
+
+---
+
+## Alerts & Warnings
+
+### Critical (0)
+None
+
+### Warnings (3)
+
+1. **High CPU at 14:30**
+   - Peak: 87%
+   - Duration: 15 minutes
+   - Cause: Scheduled report generation
+   - Action: Consider moving to off-peak hours
+
+2. **High Memory at 14:30**
+   - Peak: 85%
+   - Duration: 20 minutes
+   - Cause: Large dataset processing
+   - Action: Implement streaming or pagination
+
+3. **Log Directory Growing**
+   - Size: 45 GB
+   - Growth: 1.2 GB/day
+   - Action: Implement log rotation and archiving
+
+---
+
+## Recommendations
+
+### Immediate Actions
+1. ✓ Implement log rotation (reduce from 45 GB to <10 GB)
+2. ✓ Schedule resource-intensive tasks during off-peak hours
+3. ✓ Add memory limit to application (max 8 GB)
+
+### Short Term
+1. Monitor memory usage trend for potential leak
+2. Optimize report generation queries
+3. Add caching for frequently accessed data
+4. Archive old database data
+
+### Long Term
+1. Consider vertical scaling (upgrade to 32 GB RAM)
+2. Implement horizontal scaling for peak hours
+3. Move file uploads to object storage (S3)
+4. Set up predictive alerting
+
+---
+
+## Capacity Planning
+
+**Current Capacity**: 🟢 Good
+
+**Projections** (next 3 months):
+- CPU: Will remain within acceptable range
+- Memory: May need upgrade if trend continues
+- Disk: Need to address log growth
+- Network: Current capacity sufficient
+
+**Recommended Actions**:
+- Monitor memory usage weekly
+- Implement log archiving within 1 week
+- Plan for storage expansion in 6 months
+```
+
+## Alerting Thresholds
+
+### CPU
+- **Warning**: > 70% for 5 minutes
+- **Critical**: > 85% for 5 minutes
+
+### Memory
+- **Warning**: > 80% used
+- **Critical**: > 90% used
+
+### Disk
+- **Warning**: > 80% used
+- **Critical**: > 90% used
+
+### Network
+- **Warning**: > 80% bandwidth
+- **Critical**: Connection errors > 100/min
+
+## Tools & Integration
+
+### Monitoring Tools
+- **Prometheus**: Metrics collection
+- **Grafana**: Visualization and dashboards
+- **Datadog**: Full-stack monitoring
+- **New Relic**: Application performance
+- **CloudWatch**: AWS monitoring
+- **htop**: Interactive process viewer
+- **glances**: System monitoring (CLI)
+
+### Node.js Monitoring
+```javascript
+// Using prom-client for Prometheus
+const client = require('prom-client');
+
+const register = new client.Registry();
+
+// CPU metric
+const cpuUsage = new client.Gauge({
+  name: 'process_cpu_usage_percent',
+  help: 'Process CPU usage percentage',
+  registers: [register]
+});
+
+// Memory metric
+const memoryUsage = new client.Gauge({
+  name: 'process_memory_usage_bytes',
+  help: 'Process memory usage in bytes',
+  registers: [register]
+});
+
+// Update metrics every 5 seconds
+setInterval(() => {
+  const usage = process.cpuUsage();
+  cpuUsage.set(usage.user + usage.system);
+
+  const mem = process.memoryUsage();
+  memoryUsage.set(mem.heapUsed);
+}, 5000);
+```
+
+## Notes
+
+- Monitor regularly, not just when issues occur
+- Set up automated alerts for critical thresholds
+- Keep historical data for trend analysis
+- Correlate resource usage with application events
+- Use monitoring data for capacity planning
+- Establish baselines for normal behavior
+- Don't over-alert (alert fatigue)
+- Document unusual patterns and their causes

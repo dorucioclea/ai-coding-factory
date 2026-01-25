@@ -1,0 +1,6 @@
+---
+description: Generate comprehensive OpenAPI/Swagger specifications from existing code and APIs.
+globs: ["**/*"]
+alwaysApply: false
+---
+

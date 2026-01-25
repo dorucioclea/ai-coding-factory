@@ -1,0 +1,6 @@
+---
+description: bdd-dotnet skill rules
+globs: ["**/*.cs", "**/*.csproj", "**/*.sln"]
+alwaysApply: false
+---
+

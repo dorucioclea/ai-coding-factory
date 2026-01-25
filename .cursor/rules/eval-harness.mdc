@@ -1,0 +1,6 @@
+---
+description: eval-harness skill rules
+globs: ["**/*"]
+alwaysApply: false
+---
+

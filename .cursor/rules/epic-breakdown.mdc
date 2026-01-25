@@ -1,0 +1,6 @@
+---
+description: Organize features into hierarchical structure (Epics → Features → User Stories → Tasks). Use when planning large projects or organizing complex requirements.
+globs: ["**/*"]
+alwaysApply: false
+---
+

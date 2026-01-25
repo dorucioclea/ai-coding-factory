@@ -1,0 +1,6 @@
+---
+description: Auto-generate comprehensive API documentation with examples, schemas, and interactive tools.
+globs: ["**/*"]
+alwaysApply: false
+---
+

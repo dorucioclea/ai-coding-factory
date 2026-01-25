@@ -1,0 +1,6 @@
+---
+description: add-serena skill rules
+globs: ["**/*"]
+alwaysApply: false
+---
+

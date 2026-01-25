@@ -1,0 +1,6 @@
+---
+description: Maven build system, dependency management, and Java project configuration assistance.
+globs: ["**/*"]
+alwaysApply: false
+---
+

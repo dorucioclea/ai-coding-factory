@@ -1,0 +1,6 @@
+---
+description: Interactive database query builder for generating optimized SQL and NoSQL queries.
+globs: ["**/*"]
+alwaysApply: false
+---
+

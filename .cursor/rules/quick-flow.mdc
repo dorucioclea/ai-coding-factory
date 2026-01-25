@@ -1,0 +1,6 @@
+---
+description: Lightweight track for simple changes - bug fixes, small features, config updates. Skip the full spec process when it's overkill.
+globs: ["**/*"]
+alwaysApply: false
+---
+

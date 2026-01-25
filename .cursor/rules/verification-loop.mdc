@@ -1,5 +1,5 @@
 ---
-description: Continuous verification pattern for maintaining code quality through checkpoints and automated validation loops
+description: A comprehensive verification system for ensuring code quality before PRs. Runs build, type check, lint, tests, security scan, and diff review.
 globs: ["**/*"]
 alwaysApply: false
 ---

@@ -1,24 +1,6 @@
 ---
-description: Backend development patterns for API design and database
-globs: ["**/*.cs", "**/Controllers/**", "**/Services/**"]
+description: Backend architecture patterns, API design, database optimization, and server-side best practices for Node.js, Express, and Next.js API routes.
+globs: ["**/*"]
 alwaysApply: false
 ---
 
-# Backend Patterns
-
-## API Design
-- Use RESTful conventions
-- Return appropriate HTTP status codes
-- Use DTOs for request/response, never expose entities
-- Version your APIs
-
-## Database
-- Use Repository pattern with Unit of Work
-- Implement Specification pattern for complex queries
-- Use EF Core migrations
-- Optimize with .AsNoTracking() for read-only queries
-
-## Error Handling
-- Use Result pattern for business logic errors
-- Use ProblemDetails for API errors
-- Never expose internal error details to clients

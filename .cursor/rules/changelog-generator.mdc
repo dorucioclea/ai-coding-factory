@@ -1,0 +1,6 @@
+---
+description: Automatically generate changelogs from git commits following conventional commits, semantic versi...
+globs: ["**/*"]
+alwaysApply: false
+---
+

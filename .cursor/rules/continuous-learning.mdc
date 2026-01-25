@@ -1,5 +1,5 @@
 ---
-description: Auto-extract patterns and learnings from sessions to build institutional knowledge and improve future development
+description: Automatically extract reusable patterns from Claude Code sessions and save them as learned skills for future use.
 globs: ["**/*"]
 alwaysApply: false
 ---

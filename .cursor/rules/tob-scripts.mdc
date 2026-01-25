@@ -1,0 +1,6 @@
+---
+description: Trail of Bits utility scripts collection - helper scripts for security testing workflows
+globs: ["**/*"]
+alwaysApply: false
+---
+

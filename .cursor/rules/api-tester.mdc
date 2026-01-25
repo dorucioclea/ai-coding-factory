@@ -1,0 +1,6 @@
+---
+description: Quick API endpoint testing with comprehensive request/response validation.
+globs: ["**/*Test*.cs", "**/*Tests*.cs", "**/*.test.ts", "**/*.spec.ts"]
+alwaysApply: false
+---
+

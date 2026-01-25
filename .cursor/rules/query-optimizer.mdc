@@ -1,0 +1,6 @@
+---
+description: Analyze and optimize SQL queries for better performance and efficiency.
+globs: ["**/*"]
+alwaysApply: false
+---
+

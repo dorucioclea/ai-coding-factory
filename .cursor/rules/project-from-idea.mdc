@@ -1,0 +1,6 @@
+---
+description: Use when user wants to create a new project from scratch, has an idea for an app, or says build me a... - orchestrates the full journey from concept to working code using templates.
+globs: ["**/*"]
+alwaysApply: false
+---
+

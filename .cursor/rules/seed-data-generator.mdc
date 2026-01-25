@@ -1,0 +1,6 @@
+---
+description: Generate realistic test data for database development, testing, and demos.
+globs: ["**/*"]
+alwaysApply: false
+---
+

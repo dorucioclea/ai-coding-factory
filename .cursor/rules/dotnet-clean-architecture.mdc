@@ -1,0 +1,6 @@
+---
+description: Use when creating .NET backend projects, implementing domain entities, CQRS handlers, or working with Clean Architecture patterns. References the clean-architecture-solution template.
+globs: ["**/*.cs", "**/*.csproj", "**/*.sln"]
+alwaysApply: false
+---
+

@@ -1,0 +1,6 @@
+---
+description: Use when starting/stopping Docker services, managing databases, running the fullstack application, or troubleshooting container issues. Provides commands for the shared infrastructure setup.
+globs: ["**/*"]
+alwaysApply: false
+---
+
