@@ -99,6 +99,21 @@ export const crashTests = {
 
 ---
 
+## Context7 Integration
+
+When uncertain about Sentry crash reporting APIs, query Context7:
+
+```
+1. Use resolve-library-id to find: "sentry-react-native"
+2. Query specific topics:
+   - "Sentry React Native error boundaries"
+   - "Sentry scope context attachment"
+   - "Sentry native crash testing"
+   - "Sentry user and device context"
+```
+
+---
+
 ## Related Skills
 
 - `rn-observability-setup` - Full Sentry setup

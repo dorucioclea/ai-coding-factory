@@ -75,6 +75,20 @@ export const glassAesthetic = {
 
 ---
 
+## Context7 Integration
+
+When uncertain about theming or design system patterns, query Context7:
+
+```
+1. Use resolve-library-id to find: "react-native", "expo"
+2. Query specific topics:
+   - "React Native dark mode theming"
+   - "Expo appearance preferences"
+   - "React Native design tokens architecture"
+```
+
+---
+
 ## Related Skills
 
 - `rn-design-system-foundation` - Token architecture

@@ -146,6 +146,21 @@ eas update --branch production --message "v1.0.1 release"
 
 ---
 
+## Context7 Integration
+
+When uncertain about EAS or deployment configurations, query Context7:
+
+```
+1. Use resolve-library-id to find: "expo", "eas"
+2. Query specific topics:
+   - "EAS Build configuration options"
+   - "Expo OTA updates configuration"
+   - "App Store submission requirements"
+   - "EAS secrets management"
+```
+
+---
+
 ## Related Skills
 
 - `rn-observability-setup` - Source maps for Sentry

@@ -72,6 +72,21 @@ export function useScreenTransaction(screenName: string) {
 
 ---
 
+## Context7 Integration
+
+When uncertain about performance monitoring APIs, query Context7:
+
+```
+1. Use resolve-library-id to find: "sentry-react-native"
+2. Query specific topics:
+   - "Sentry React Native transactions"
+   - "Sentry performance measurements"
+   - "Sentry custom spans"
+   - "React Native performance profiling"
+```
+
+---
+
 ## Related Skills
 
 - `rn-observability-setup` - Full setup

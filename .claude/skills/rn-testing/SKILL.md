@@ -613,6 +613,21 @@ jobs:
 
 ---
 
+## Context7 Integration
+
+When uncertain about testing APIs or patterns, query Context7:
+
+```
+1. Use resolve-library-id to find: "jest", "testing-library", "detox"
+2. Query specific topics:
+   - "Jest mock functions and timers"
+   - "React Native Testing Library queries"
+   - "Detox device actions and matchers"
+   - "MSW request handlers React Native"
+```
+
+---
+
 ## Related Skills
 
 - `rn-fundamentals` - Component patterns

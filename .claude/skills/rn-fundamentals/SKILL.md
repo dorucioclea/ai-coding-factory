@@ -506,7 +506,7 @@ Image.prefetch([imageUrl1, imageUrl2]);
 
 ---
 
-## Context7 MCP Integration
+## Context7 Integration
 
 When uncertain about React Native APIs or Expo features, query Context7:
 
