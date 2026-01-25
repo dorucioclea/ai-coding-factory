@@ -544,6 +544,20 @@ When uncertain about React Native APIs or Expo features, query Context7:
 
 ---
 
+## Context7 Integration
+
+When uncertain about React Native APIs or Expo features, query Context7:
+
+```
+1. Use resolve-library-id to find: "react-native" or "expo"
+2. Query specific topics:
+   - "React Native FlatList optimization"
+   - "Expo Router file-based routing"
+   - "React Native StyleSheet performance"
+```
+
+---
+
 ## Related Skills
 
 - `rn-navigation` - Navigation and routing
