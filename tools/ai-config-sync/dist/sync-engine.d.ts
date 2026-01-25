@@ -14,6 +14,8 @@ export interface SyncOptions {
     force?: boolean;
     useSymlinks?: boolean;
     verbose?: boolean;
+    /** Delete artifacts from targets that no longer exist in source */
+    syncDeletions?: boolean;
 }
 export interface SyncSummary {
     jobId: string;
@@ -28,6 +30,7 @@ export interface SyncSummary {
         skipped: number;
         failed: number;
         symlinked: number;
+        deleted: number;
     };
     details: SyncResult[];
 }
@@ -52,6 +55,10 @@ export declare class SyncEngine {
      * Write artifact to target system
      */
     private writeArtifact;
+    /**
+     * Sync deletions: remove artifacts from target that no longer exist in source
+     */
+    private syncDeletions;
     /**
      * Get diff between source and target systems
      */

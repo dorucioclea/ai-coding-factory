@@ -213,6 +213,14 @@ export class DatabaseManager {
     `)
             .run(state);
     }
+    /**
+     * Delete sync state for an artifact-target pair
+     */
+    deleteSyncState(artifactId, targetSystem) {
+        this.db
+            .prepare("DELETE FROM artifact_sync_state WHERE artifact_id = ? AND target_system = ?")
+            .run(artifactId, targetSystem);
+    }
     // ==========================================================================
     // Sync Job Operations
     // ==========================================================================

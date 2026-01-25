@@ -4,12 +4,37 @@
  * Core synchronization logic for transferring configurations
  * between AI coding assistants.
  */
-import { existsSync, cpSync, mkdirSync, symlinkSync, unlinkSync, lstatSync, rmSync } from "node:fs";
+import { existsSync, cpSync, mkdirSync, symlinkSync, unlinkSync, lstatSync, rmSync, readlinkSync } from "node:fs";
 import { join, dirname, relative } from "node:path";
 import ora from "ora";
 import { DatabaseManager } from "./database/index.js";
 import { getAdapter, getAvailableAdapters, } from "./adapters/index.js";
 import { generateJobId } from "./utils/helpers.js";
+/**
+ * Check if a path is a symlink pointing to a source within .claude/
+ */
+function isClaudeSymlink(projectRoot, targetPath) {
+    try {
+        const fullPath = join(projectRoot, targetPath);
+        const stats = lstatSync(fullPath);
+        if (!stats.isSymbolicLink())
+            return false;
+        const linkTarget = readlinkSync(fullPath);
+        // Check if the symlink points to something in .claude/
+        return linkTarget.includes(".claude") || linkTarget.includes("claude");
+    }
+    catch {
+        return false;
+    }
+}
+/**
+ * Check if a directory was created by this sync tool (has sync state in DB)
+ */
+function isSyncedDirectory(db, targetSystem, targetPath) {
+    const syncStates = db.getSyncStatesForTarget(targetSystem);
+    return syncStates.some(state => state.target_path === targetPath ||
+        state.target_path?.startsWith(targetPath + "/"));
+}
 export class SyncEngine {
     db;
     projectRoot;
@@ -41,6 +66,7 @@ export class SyncEngine {
             skipped: 0,
             failed: 0,
             symlinked: 0,
+            deleted: 0,
         };
         // Create sync job record
         this.db.createSyncJob({
@@ -137,7 +163,38 @@ export class SyncEngine {
                             });
                         }
                     }
-                    targetSpinner.succeed(`Synced ${artifacts.length} artifacts to ${target}`);
+                    // Handle deletions: remove artifacts from target that no longer exist in source
+                    if (options.syncDeletions) {
+                        const deletionResults = await this.syncDeletions(options.source, target, artifacts, targetAdapter, options);
+                        for (const result of deletionResults) {
+                            results.push(result);
+                            summary.total++;
+                            if (result.operation === "delete" && result.success) {
+                                summary.deleted++;
+                            }
+                            else if (!result.success) {
+                                summary.failed++;
+                            }
+                            // Record deletion in database
+                            if (!options.dryRun) {
+                                this.db.addSyncResult({
+                                    job_id: jobId,
+                                    artifactId: result.artifactId,
+                                    artifactName: result.artifactName,
+                                    artifactType: result.artifactType,
+                                    sourceSystem: result.sourceSystem,
+                                    targetSystem: result.targetSystem,
+                                    operation: result.operation,
+                                    success: result.success,
+                                    message: result.message,
+                                    error: result.error,
+                                    sourcePath: result.sourcePath,
+                                    targetPath: result.targetPath,
+                                });
+                            }
+                        }
+                    }
+                    targetSpinner.succeed(`Synced ${artifacts.length} artifacts to ${target}${summary.deleted > 0 ? ` (${summary.deleted} deleted)` : ""}`);
                 }
                 catch (error) {
                     targetSpinner.fail(`Failed to sync to ${target}: ${error}`);
@@ -270,19 +327,21 @@ export class SyncEngine {
                         unlinkSync(fullTargetPath);
                     }
                     else if (stats.isDirectory()) {
-                        // SAFETY: Only delete directories with --force flag
-                        if (options.force) {
-                            // User explicitly requested force - delete and recreate
+                        // Check if this directory was created by previous sync (safe to replace)
+                        // or if it's native content (needs --force to replace)
+                        const wasSynced = isSyncedDirectory(this.db, targetAdapter.systemId, targetPath);
+                        const isSymlinked = isClaudeSymlink(this.projectRoot, targetPath);
+                        if (isSymlinked || wasSynced || options.force) {
+                            // Safe to replace: it's a symlink, was synced before, or user requested --force
                             rmSync(fullTargetPath, { recursive: true, force: true });
                         }
                         else {
-                            // Never delete existing directories with content!
-                            // They may contain unique data not derived from source.
+                            // This is native content - don't delete without --force
                             return {
                                 ...baseResult,
                                 operation: "skip",
                                 success: false,
-                                error: `Target directory already exists: ${fullTargetPath}. Use --force to overwrite.`,
+                                error: `Target directory contains native content: ${fullTargetPath}. Use --force to overwrite.`,
                                 targetPath,
                             };
                         }
@@ -380,6 +439,76 @@ export class SyncEngine {
                 targetPath,
             };
         }
+    }
+    /**
+     * Sync deletions: remove artifacts from target that no longer exist in source
+     */
+    async syncDeletions(sourceSystem, targetSystem, currentSourceArtifacts, targetAdapter, options) {
+        const results = [];
+        // Get all previously synced artifacts for this source→target pair
+        const syncStates = this.db.getSyncStatesForTarget(targetSystem);
+        const currentSourceIds = new Set(currentSourceArtifacts.map(a => a.id));
+        for (const syncState of syncStates) {
+            // Check if this artifact still exists in source
+            const artifact = this.db.getArtifact(syncState.artifact_id);
+            if (!artifact)
+                continue;
+            // Only process artifacts from our source system
+            if (artifact.source_system !== sourceSystem)
+                continue;
+            // Check if artifact type matches filter
+            if (options.artifactTypes && !options.artifactTypes.includes(artifact.type)) {
+                continue;
+            }
+            // If artifact no longer exists in current source scan, it was deleted
+            if (!currentSourceIds.has(syncState.artifact_id)) {
+                const baseResult = {
+                    artifactId: syncState.artifact_id,
+                    artifactName: artifact.name,
+                    artifactType: artifact.type,
+                    sourceSystem,
+                    targetSystem,
+                    sourcePath: artifact.source_path,
+                    timestamp: new Date(),
+                };
+                if (options.dryRun) {
+                    results.push({
+                        ...baseResult,
+                        operation: "delete",
+                        success: true,
+                        message: `Would delete ${syncState.target_path}`,
+                        targetPath: syncState.target_path ?? undefined,
+                    });
+                }
+                else {
+                    try {
+                        // Delete from target
+                        if (syncState.target_path) {
+                            await targetAdapter.deleteArtifact(this.projectRoot, syncState.target_path);
+                        }
+                        // Remove sync state
+                        this.db.deleteSyncState(syncState.artifact_id, targetSystem);
+                        results.push({
+                            ...baseResult,
+                            operation: "delete",
+                            success: true,
+                            message: `Deleted ${syncState.target_path}`,
+                            targetPath: syncState.target_path ?? undefined,
+                        });
+                    }
+                    catch (error) {
+                        results.push({
+                            ...baseResult,
+                            operation: "delete",
+                            success: false,
+                            error: String(error),
+                            targetPath: syncState.target_path ?? undefined,
+                        });
+                    }
+                }
+            }
+        }
+        return results;
     }
     /**
      * Get diff between source and target systems

@@ -18,6 +18,8 @@ export interface SyncCommandOptions {
   force?: boolean;
   noSymlinks?: boolean;
   verbose?: boolean;
+  /** Delete artifacts from targets that no longer exist in source */
+  delete?: boolean;
 }
 
 export async function syncCommand(
@@ -52,6 +54,7 @@ export async function syncCommand(
       force: options.force,
       useSymlinks: !options.noSymlinks,
       verbose: options.verbose,
+      syncDeletions: options.delete,
     };
 
     const summary = await engine.sync(syncOptions);
@@ -104,6 +107,7 @@ function printSummary(summary: SyncSummary, verbose?: boolean): void {
     ["Created", chalk.green(results.created.toString())],
     ["Updated", chalk.blue(results.updated.toString())],
     ["Symlinked", chalk.cyan(results.symlinked.toString())],
+    ["Deleted", results.deleted > 0 ? chalk.magenta(results.deleted.toString()) : "0"],
     ["Skipped", chalk.yellow(results.skipped.toString())],
     ["Failed", results.failed > 0 ? chalk.red(results.failed.toString()) : "0"],
   ];

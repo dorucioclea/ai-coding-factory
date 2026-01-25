@@ -56,6 +56,7 @@ program
   )
   .option("-n, --dry-run", "Show what would be synced without making changes")
   .option("-f, --force", "Force sync even if already up to date")
+  .option("-d, --delete", "Delete artifacts from targets that no longer exist in source")
   .option("--no-symlinks", "Copy files instead of creating symlinks")
   .option("-v, --verbose", "Show detailed output")
   .action(async (options) => {

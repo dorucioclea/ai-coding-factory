@@ -135,6 +135,10 @@ export declare class DatabaseManager {
      */
     upsertSyncState(state: Omit<SyncStateRecord, "id">): void;
     /**
+     * Delete sync state for an artifact-target pair
+     */
+    deleteSyncState(artifactId: string, targetSystem: SystemId): void;
+    /**
      * Create a new sync job
      */
     createSyncJob(job: Omit<SyncJobRecord, "started_at" | "completed_at" | "status">): void;
