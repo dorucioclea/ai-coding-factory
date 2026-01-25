@@ -79,6 +79,14 @@
     {
       "name": "codebase",
       "params": {}
+    },
+    {
+      "name": "file",
+      "params": {
+        "files": [
+          ".continue/SKILL_INDEX.md"
+        ]
+      }
     }
   ],
   "slashCommands": [
