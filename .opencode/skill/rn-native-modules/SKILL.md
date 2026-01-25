@@ -182,6 +182,20 @@ dependencies {
 
 ---
 
+## Context7 Integration
+
+When uncertain about native module APIs, query Context7:
+
+```
+1. Use resolve-library-id to find: "react-native"
+2. Query specific topics:
+   - "React Native Turbo Modules setup"
+   - "React Native JSI native modules"
+   - "React Native Fabric components"
+```
+
+---
+
 ## Related Skills
 
 - `rn-fundamentals` - Core React Native

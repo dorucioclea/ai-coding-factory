@@ -167,6 +167,20 @@ export function useAnimatedPress(config = { scale: 0.95 }) {
 
 ---
 
+## Context7 Integration
+
+When uncertain about Reanimated or gesture APIs, query Context7:
+
+```
+1. Use resolve-library-id to find: "react-native-reanimated", "react-native-gesture-handler"
+2. Query specific topics:
+   - "Reanimated shared value animations"
+   - "React Native Gesture Handler pan gesture"
+   - "Reanimated layout animations"
+```
+
+---
+
 ## Related Skills
 
 - `rn-fundamentals` - Component patterns
