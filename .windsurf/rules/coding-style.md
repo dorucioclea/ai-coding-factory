@@ -1,0 +1,1 @@
+../../.claude/rules/coding-style.md
