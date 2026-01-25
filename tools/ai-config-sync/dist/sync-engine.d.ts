@@ -93,6 +93,69 @@ export declare class SyncEngine {
      */
     getJobResults(jobId: string): SyncResult[];
     /**
+     * Sync MCP server configurations between systems
+     */
+    syncMcpServers(options: {
+        source: SystemId;
+        targets: SystemId[];
+        dryRun?: boolean;
+        verbose?: boolean;
+    }): Promise<{
+        synced: number;
+        skipped: number;
+        failed: number;
+        details: Array<{
+            target: SystemId;
+            servers: string[];
+            status: "success" | "skipped" | "failed";
+            message?: string;
+        }>;
+    }>;
+    /**
+     * Generate a compact skill index from Claude skills
+     * Returns a markdown document with skill names, descriptions, and categories
+     */
+    generateSkillIndex(options?: {
+        verbose?: boolean;
+    }): Promise<{
+        content: string;
+        skillCount: number;
+        categories: Record<string, string[]>;
+    }>;
+    /**
+     * Extract description from skill content (first paragraph after frontmatter)
+     */
+    private extractDescription;
+    /**
+     * Categorize a skill based on its name and description
+     */
+    private categorizeSkill;
+    /**
+     * Sync skill index to limited systems (Gemini, Aider, Continue, Cody)
+     */
+    syncSkillIndex(options?: {
+        targets?: SystemId[];
+        dryRun?: boolean;
+        verbose?: boolean;
+    }): Promise<{
+        synced: number;
+        skipped: number;
+        failed: number;
+        details: Array<{
+            target: SystemId;
+            status: "success" | "skipped" | "failed";
+            message?: string;
+        }>;
+    }>;
+    /**
+     * Write skill index to a specific system
+     */
+    private writeSkillIndex;
+    /**
+     * Update system configuration to reference the skill index
+     */
+    private updateSystemConfigForSkillIndex;
+    /**
      * Close database connection
      */
     close(): void;

@@ -132,11 +132,14 @@ export class CursorAdapter extends BaseAdapter {
         return join(this.paths.root, `${artifact.name}.mdc`);
     }
     /**
-     * Transform a skill artifact to Cursor .mdc rule format
+     * Transform a skill or agent artifact to Cursor .mdc rule format
      */
     transformArtifact(artifact, _options) {
         if (artifact.type === "skill") {
             return this.skillToRule(artifact);
+        }
+        if (artifact.type === "agent") {
+            return this.agentToRule(artifact);
         }
         if (artifact.type === "rule" && artifact.sourceSystem !== "cursor") {
             return this.ruleToMdc(artifact);
@@ -198,6 +201,50 @@ export class CursorAdapter extends BaseAdapter {
             metadata: { ...skill.metadata, sourceSkill: skill.name },
             sourceSystem: "cursor",
             sourcePath: join(this.paths.rules, `${skill.name}.mdc`),
+            checksum: this.generateChecksum(content),
+            lastModified: new Date(),
+            globs,
+            alwaysApply: false,
+        };
+    }
+    /**
+     * Convert an agent to a Cursor .mdc rule
+     */
+    agentToRule(agent) {
+        const { body } = this.parseYamlFrontmatter(agent.content);
+        // Agents become rules that apply to all files (they're context/guidance)
+        const globs = ["**/*"];
+        const description = agent.description ?? `${agent.name} agent guidance`;
+        // Build enhanced content with agent metadata
+        let enhancedContent = `# ${agent.name} Agent\n\n`;
+        if (agent.description) {
+            enhancedContent += `**Purpose:** ${agent.description}\n\n`;
+        }
+        if (agent.role) {
+            enhancedContent += `**Role:** ${agent.role}\n\n`;
+        }
+        if (agent.tools) {
+            const toolsList = Array.isArray(agent.tools) ? agent.tools : String(agent.tools).split(/[,\s]+/).filter(Boolean);
+            if (toolsList.length > 0) {
+                enhancedContent += `**Tools:** ${toolsList.join(", ")}\n\n`;
+            }
+        }
+        enhancedContent += `---\n\n${body}`;
+        const frontmatter = this.generateYamlFrontmatter({
+            description,
+            globs,
+            alwaysApply: false,
+        });
+        const content = `${frontmatter}\n\n${enhancedContent}`;
+        return {
+            id: generateArtifactId(`agent-${agent.name}`, "rule", "cursor"),
+            name: `agent-${agent.name}`,
+            type: "rule",
+            description,
+            content,
+            metadata: { ...agent.metadata, sourceAgent: agent.name },
+            sourceSystem: "cursor",
+            sourcePath: join(this.paths.rules, `agent-${agent.name}.mdc`),
             checksum: this.generateChecksum(content),
             lastModified: new Date(),
             globs,

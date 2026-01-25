@@ -243,10 +243,24 @@ export class SyncEngine {
             const typeCapability = `${artifact.type}s`;
             if (!capabilities[typeCapability]) {
                 // Need to transform the artifact
-                if (artifact.type === "skill" && capabilities.rules) {
-                    // Transform skill to rule
+                if ((artifact.type === "skill" || artifact.type === "agent") && capabilities.rules) {
+                    // Transform skill or agent to rule
                     const transformedArtifact = targetAdapter.transformArtifact(artifact);
                     return await this.writeArtifact(transformedArtifact, targetAdapter, mappingRules, options, baseResult);
+                }
+                else if (artifact.type === "command" && capabilities.rules) {
+                    // Transform command to rule (as documentation)
+                    const transformedArtifact = targetAdapter.transformArtifact(artifact);
+                    if (transformedArtifact.type === "rule") {
+                        return await this.writeArtifact(transformedArtifact, targetAdapter, mappingRules, options, baseResult);
+                    }
+                    // If no transformation available, skip
+                    return {
+                        ...baseResult,
+                        operation: "skip",
+                        success: true,
+                        message: `${targetSystem} does not support ${artifact.type} artifacts`,
+                    };
                 }
                 else {
                     return {
@@ -586,6 +600,437 @@ export class SyncEngine {
      */
     getJobResults(jobId) {
         return this.db.getSyncResults(jobId);
+    }
+    /**
+     * Sync MCP server configurations between systems
+     */
+    async syncMcpServers(options) {
+        const results = {
+            synced: 0,
+            skipped: 0,
+            failed: 0,
+            details: [],
+        };
+        const spinner = ora({
+            text: `Reading MCP servers from ${options.source}...`,
+            color: "cyan",
+        }).start();
+        try {
+            // Get source adapter and read MCP servers
+            const sourceAdapter = this.getSystemAdapter(options.source);
+            if (!sourceAdapter.capabilities.mcpServers) {
+                spinner.fail(`Source system ${options.source} does not support MCP servers`);
+                return results;
+            }
+            // Check if the adapter has MCP server methods
+            if (!("readMcpServers" in sourceAdapter)) {
+                spinner.fail(`Source adapter ${options.source} does not implement MCP server reading`);
+                return results;
+            }
+            const servers = await sourceAdapter.readMcpServers(this.projectRoot);
+            if (servers.length === 0) {
+                spinner.warn(`No MCP servers found in ${options.source}`);
+                return results;
+            }
+            spinner.succeed(`Found ${servers.length} MCP servers in ${options.source}`);
+            // Sync to each target
+            for (const target of options.targets) {
+                const targetSpinner = ora({
+                    text: `Syncing MCP servers to ${target}...`,
+                    color: "blue",
+                }).start();
+                try {
+                    const targetAdapter = this.getSystemAdapter(target);
+                    // Check if target supports MCP servers
+                    if (!targetAdapter.capabilities.mcpServers) {
+                        targetSpinner.warn(`${target} does not support MCP servers, skipping`);
+                        results.skipped++;
+                        results.details.push({
+                            target,
+                            servers: [],
+                            status: "skipped",
+                            message: "MCP servers not supported",
+                        });
+                        continue;
+                    }
+                    // Initialize target if needed
+                    if (!targetAdapter.isConfigured(this.projectRoot)) {
+                        await targetAdapter.initialize(this.projectRoot);
+                    }
+                    // Check if the adapter has MCP server write methods
+                    if (!("writeMcpServers" in targetAdapter)) {
+                        targetSpinner.warn(`${target} adapter does not implement MCP server writing`);
+                        results.skipped++;
+                        results.details.push({
+                            target,
+                            servers: [],
+                            status: "skipped",
+                            message: "MCP server writing not implemented",
+                        });
+                        continue;
+                    }
+                    if (options.dryRun) {
+                        targetSpinner.succeed(`Would sync ${servers.length} MCP servers to ${target}`);
+                        results.synced++;
+                        results.details.push({
+                            target,
+                            servers: servers.map((s) => s.name),
+                            status: "success",
+                            message: "Dry run - no changes made",
+                        });
+                        continue;
+                    }
+                    // Transform servers for the target system
+                    const transformedServers = servers.map((server) => ({
+                        ...server,
+                        id: server.id.replace(options.source, target),
+                        sourceSystem: target,
+                    }));
+                    // Write MCP servers to target
+                    await targetAdapter.writeMcpServers(this.projectRoot, transformedServers);
+                    targetSpinner.succeed(`Synced ${servers.length} MCP servers to ${target}`);
+                    results.synced++;
+                    results.details.push({
+                        target,
+                        servers: servers.map((s) => s.name),
+                        status: "success",
+                    });
+                }
+                catch (error) {
+                    targetSpinner.fail(`Failed to sync MCP servers to ${target}: ${error}`);
+                    results.failed++;
+                    results.details.push({
+                        target,
+                        servers: [],
+                        status: "failed",
+                        message: String(error),
+                    });
+                }
+            }
+            return results;
+        }
+        catch (error) {
+            spinner.fail(`Failed to read MCP servers: ${error}`);
+            results.failed++;
+            return results;
+        }
+    }
+    /**
+     * Generate a compact skill index from Claude skills
+     * Returns a markdown document with skill names, descriptions, and categories
+     */
+    async generateSkillIndex(options = {}) {
+        const spinner = ora({
+            text: "Scanning skills for index generation...",
+            color: "cyan",
+        }).start();
+        try {
+            const claudeAdapter = this.getSystemAdapter("claude");
+            const artifacts = await claudeAdapter.scanArtifacts(this.projectRoot, {
+                types: ["skill"],
+            });
+            const skills = artifacts.filter((a) => a.type === "skill");
+            if (skills.length === 0) {
+                spinner.warn("No skills found");
+                return { content: "", skillCount: 0, categories: {} };
+            }
+            // Categorize skills by extracting category from name or path
+            const categories = {
+                "Development": [],
+                "Testing": [],
+                "Security": [],
+                "Documentation": [],
+                "Planning": [],
+                "Mobile": [],
+                "Backend": [],
+                "Frontend": [],
+                "DevOps": [],
+                "General": [],
+            };
+            for (const skill of skills) {
+                const name = skill.name;
+                const description = skill.description ?? this.extractDescription(skill.content);
+                // Categorize based on name patterns
+                const category = this.categorizeSkill(name, description);
+                if (!categories[category]) {
+                    categories[category] = [];
+                }
+                categories[category].push({ name, description });
+            }
+            // Generate compact markdown index
+            let content = `# Skill Index
+
+This document provides a compact reference to all available Claude skills.
+**To use a skill:** Simply reference it by name (e.g., "use the debugging skill").
+
+---
+
+## Quick Reference
+
+| Skill | Description |
+|-------|-------------|
+`;
+            // Sort skills alphabetically
+            const allSkills = skills
+                .map((s) => ({
+                name: s.name,
+                description: s.description ?? this.extractDescription(s.content),
+            }))
+                .sort((a, b) => a.name.localeCompare(b.name));
+            for (const skill of allSkills) {
+                const shortDesc = skill.description.length > 80
+                    ? skill.description.slice(0, 77) + "..."
+                    : skill.description;
+                content += `| \`${skill.name}\` | ${shortDesc} |\n`;
+            }
+            content += `\n---\n\n## Skills by Category\n\n`;
+            // Add categorized sections (only non-empty categories)
+            const categoryMap = {};
+            for (const [category, skillList] of Object.entries(categories)) {
+                if (skillList.length === 0)
+                    continue;
+                categoryMap[category] = skillList.map((s) => s.name);
+                content += `### ${category}\n\n`;
+                for (const skill of skillList.sort((a, b) => a.name.localeCompare(b.name))) {
+                    content += `- **${skill.name}**: ${skill.description}\n`;
+                }
+                content += "\n";
+            }
+            content += `---\n\n*Generated by ai-config-sync • ${skills.length} skills indexed*\n`;
+            spinner.succeed(`Generated skill index with ${skills.length} skills`);
+            if (options.verbose) {
+                console.log(`  Categories: ${Object.keys(categoryMap).join(", ")}`);
+            }
+            return {
+                content,
+                skillCount: skills.length,
+                categories: categoryMap,
+            };
+        }
+        catch (error) {
+            spinner.fail(`Failed to generate skill index: ${error}`);
+            throw error;
+        }
+    }
+    /**
+     * Extract description from skill content (first paragraph after frontmatter)
+     */
+    extractDescription(content) {
+        // Remove YAML frontmatter
+        const withoutFrontmatter = content.replace(/^---[\s\S]*?---\n*/, "");
+        // Get first meaningful paragraph (skip headers)
+        const lines = withoutFrontmatter.split("\n");
+        for (const line of lines) {
+            const trimmed = line.trim();
+            if (trimmed && !trimmed.startsWith("#") && !trimmed.startsWith(">") && !trimmed.startsWith("-")) {
+                return trimmed.length > 100 ? trimmed.slice(0, 97) + "..." : trimmed;
+            }
+        }
+        return "No description available";
+    }
+    /**
+     * Categorize a skill based on its name and description
+     */
+    categorizeSkill(name, description) {
+        const combined = `${name} ${description}`.toLowerCase();
+        if (combined.includes("test") || combined.includes("tdd") || combined.includes("e2e") || combined.includes("jest") || combined.includes("playwright")) {
+            return "Testing";
+        }
+        if (combined.includes("security") || combined.includes("audit") || combined.includes("vulnerability") || combined.includes("tob-")) {
+            return "Security";
+        }
+        if (combined.includes("doc") || combined.includes("readme") || combined.includes("changelog")) {
+            return "Documentation";
+        }
+        if (combined.includes("plan") || combined.includes("brainstorm") || combined.includes("epic") || combined.includes("spec")) {
+            return "Planning";
+        }
+        if (combined.includes("rn-") || combined.includes("react-native") || combined.includes("mobile") || combined.includes("expo")) {
+            return "Mobile";
+        }
+        if (combined.includes("dotnet") || combined.includes("csharp") || combined.includes("backend") || combined.includes("api") || combined.includes("akka")) {
+            return "Backend";
+        }
+        if (combined.includes("react") || combined.includes("frontend") || combined.includes("ui") || combined.includes("design")) {
+            return "Frontend";
+        }
+        if (combined.includes("docker") || combined.includes("deploy") || combined.includes("ci") || combined.includes("kubernetes") || combined.includes("git")) {
+            return "DevOps";
+        }
+        if (combined.includes("debug") || combined.includes("refactor") || combined.includes("code-review") || combined.includes("build")) {
+            return "Development";
+        }
+        return "General";
+    }
+    /**
+     * Sync skill index to limited systems (Gemini, Aider, Continue, Cody)
+     */
+    async syncSkillIndex(options = {}) {
+        // Default targets are the limited systems
+        const limitedSystems = ["gemini", "aider", "continue", "cody"];
+        const targets = options.targets ?? limitedSystems;
+        const results = {
+            synced: 0,
+            skipped: 0,
+            failed: 0,
+            details: [],
+        };
+        // Generate the skill index
+        const { content, skillCount } = await this.generateSkillIndex({
+            verbose: options.verbose,
+        });
+        if (skillCount === 0) {
+            console.log("No skills to index");
+            return results;
+        }
+        const spinner = ora({
+            text: "Syncing skill index to limited systems...",
+            color: "cyan",
+        }).start();
+        for (const target of targets) {
+            // Only sync to limited systems
+            if (!limitedSystems.includes(target)) {
+                results.skipped++;
+                results.details.push({
+                    target,
+                    status: "skipped",
+                    message: "Not a limited system (has native skill support)",
+                });
+                continue;
+            }
+            try {
+                const adapter = this.getSystemAdapter(target);
+                // Initialize if needed
+                if (!adapter.isConfigured(this.projectRoot)) {
+                    await adapter.initialize(this.projectRoot);
+                }
+                if (options.dryRun) {
+                    results.synced++;
+                    results.details.push({
+                        target,
+                        status: "success",
+                        message: `Would write skill index (${skillCount} skills)`,
+                    });
+                    continue;
+                }
+                // Write the skill index file
+                await this.writeSkillIndex(target, content);
+                results.synced++;
+                results.details.push({
+                    target,
+                    status: "success",
+                    message: `Wrote skill index with ${skillCount} skills`,
+                });
+            }
+            catch (error) {
+                results.failed++;
+                results.details.push({
+                    target,
+                    status: "failed",
+                    message: String(error),
+                });
+            }
+        }
+        if (results.synced > 0) {
+            spinner.succeed(`Synced skill index to ${results.synced} system(s)`);
+        }
+        else if (results.failed > 0) {
+            spinner.fail("Failed to sync skill index");
+        }
+        else {
+            spinner.warn("No systems to sync skill index to");
+        }
+        return results;
+    }
+    /**
+     * Write skill index to a specific system
+     */
+    async writeSkillIndex(target, content) {
+        const { writeFileSync, mkdirSync, existsSync } = await import("node:fs");
+        const { join, dirname } = await import("node:path");
+        let targetPath;
+        switch (target) {
+            case "gemini":
+                // Append to GEMINI.md or create SKILL_INDEX.md
+                targetPath = join(this.projectRoot, "SKILL_INDEX.md");
+                break;
+            case "aider":
+                // Write to .aider/SKILL_INDEX.md and reference in config
+                targetPath = join(this.projectRoot, ".aider", "SKILL_INDEX.md");
+                break;
+            case "continue":
+                // Write to .continue/SKILL_INDEX.md
+                targetPath = join(this.projectRoot, ".continue", "SKILL_INDEX.md");
+                break;
+            case "cody":
+                // Write to .sourcegraph/SKILL_INDEX.md
+                targetPath = join(this.projectRoot, ".sourcegraph", "SKILL_INDEX.md");
+                break;
+            default:
+                throw new Error(`Unsupported target for skill index: ${target}`);
+        }
+        const targetDir = dirname(targetPath);
+        if (!existsSync(targetDir)) {
+            mkdirSync(targetDir, { recursive: true });
+        }
+        writeFileSync(targetPath, content);
+        // Update system config to reference the skill index
+        await this.updateSystemConfigForSkillIndex(target);
+    }
+    /**
+     * Update system configuration to reference the skill index
+     */
+    async updateSystemConfigForSkillIndex(target) {
+        const { readFileSync, writeFileSync, existsSync } = await import("node:fs");
+        const { join } = await import("node:path");
+        switch (target) {
+            case "aider": {
+                // Update .aider.conf.yml to include SKILL_INDEX.md in read files
+                const configPath = join(this.projectRoot, ".aider.conf.yml");
+                if (existsSync(configPath)) {
+                    let config = readFileSync(configPath, "utf-8");
+                    if (!config.includes("SKILL_INDEX.md")) {
+                        // Add to read section
+                        if (config.includes("read:")) {
+                            config = config.replace(/read:\n/, "read:\n  - .aider/SKILL_INDEX.md\n");
+                        }
+                        else {
+                            config += "\nread:\n  - .aider/SKILL_INDEX.md\n";
+                        }
+                        writeFileSync(configPath, config);
+                    }
+                }
+                break;
+            }
+            case "continue": {
+                // Update .continue/config.json to include skill index in context
+                const configPath = join(this.projectRoot, ".continue", "config.json");
+                if (existsSync(configPath)) {
+                    try {
+                        const config = JSON.parse(readFileSync(configPath, "utf-8"));
+                        if (!config.contextProviders) {
+                            config.contextProviders = [];
+                        }
+                        // Check if file context provider exists for skill index
+                        const hasSkillIndex = config.contextProviders.some((p) => p.name === "file" && p.params?.files?.includes(".continue/SKILL_INDEX.md"));
+                        if (!hasSkillIndex) {
+                            config.contextProviders.push({
+                                name: "file",
+                                params: {
+                                    files: [".continue/SKILL_INDEX.md"],
+                                },
+                            });
+                            writeFileSync(configPath, JSON.stringify(config, null, 2));
+                        }
+                    }
+                    catch {
+                        // Config might be malformed, skip
+                    }
+                }
+                break;
+            }
+            // Gemini and Cody don't need config updates - they read files directly
+        }
     }
     /**
      * Close database connection

@@ -23,6 +23,7 @@ import type {
   RuleArtifact,
   McpServerArtifact,
   SkillArtifact,
+  AgentArtifact,
 } from "../models/types.js";
 import { generateArtifactId } from "../models/types.js";
 import { BaseAdapter, type ScanOptions, type WriteOptions, type TransformOptions } from "./base.js";
@@ -220,11 +221,14 @@ export class WindsurfAdapter extends BaseAdapter {
   }
 
   /**
-   * Transform a skill artifact to Windsurf markdown rule
+   * Transform a skill or agent artifact to Windsurf markdown rule
    */
   transformArtifact(artifact: Artifact, _options?: TransformOptions): Artifact {
     if (artifact.type === "skill") {
       return this.skillToRule(artifact as SkillArtifact);
+    }
+    if (artifact.type === "agent") {
+      return this.agentToRule(artifact as AgentArtifact);
     }
     if (artifact.type === "rule" && artifact.sourceSystem !== "windsurf") {
       return this.normalizeRule(artifact as RuleArtifact);
@@ -258,6 +262,44 @@ export class WindsurfAdapter extends BaseAdapter {
       checksum: this.generateChecksum(content),
       lastModified: new Date(),
       globs: skill.globs,
+      alwaysApply: false,
+    };
+  }
+
+  /**
+   * Convert an agent to a Windsurf markdown rule
+   */
+  private agentToRule(agent: AgentArtifact): RuleArtifact {
+    const { body } = this.parseYamlFrontmatter(agent.content);
+
+    // Build content with agent metadata as markdown
+    let content = `# ${agent.name} Agent\n\n`;
+    if (agent.description) {
+      content += `**Purpose:** ${agent.description}\n\n`;
+    }
+    if (agent.role) {
+      content += `**Role:** ${agent.role}\n\n`;
+    }
+    if (agent.tools) {
+      const toolsList = Array.isArray(agent.tools) ? agent.tools : String(agent.tools).split(/[,\s]+/).filter(Boolean);
+      if (toolsList.length > 0) {
+        content += `**Tools:** ${toolsList.join(", ")}\n\n`;
+      }
+    }
+    content += `---\n\n${body}`;
+
+    return {
+      id: generateArtifactId(`agent-${agent.name}`, "rule", "windsurf"),
+      name: `agent-${agent.name}`,
+      type: "rule",
+      description: agent.description ?? `${agent.name} agent guidance`,
+      content,
+      metadata: { ...agent.metadata, sourceAgent: agent.name },
+      sourceSystem: "windsurf",
+      sourcePath: join(this.paths.rules!, `agent-${agent.name}.md`),
+      checksum: this.generateChecksum(content),
+      lastModified: new Date(),
+      globs: ["**/*"],
       alwaysApply: false,
     };
   }

@@ -24,13 +24,17 @@ export declare class WindsurfAdapter extends BaseAdapter {
     deleteArtifact(projectRoot: string, artifactPath: string): Promise<void>;
     getArtifactPath(artifact: Artifact): string;
     /**
-     * Transform a skill artifact to Windsurf markdown rule
+     * Transform a skill or agent artifact to Windsurf markdown rule
      */
     transformArtifact(artifact: Artifact, _options?: TransformOptions): Artifact;
     /**
      * Convert a skill to a Windsurf markdown rule
      */
     private skillToRule;
+    /**
+     * Convert an agent to a Windsurf markdown rule
+     */
+    private agentToRule;
     /**
      * Normalize a rule from another system
      */

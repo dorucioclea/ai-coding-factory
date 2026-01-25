@@ -183,6 +183,24 @@ export const McpServerArtifact = BaseArtifact.extend({
 export type McpServerArtifact = z.infer<typeof McpServerArtifact>;
 
 /**
+ * Context artifact (for context files)
+ */
+export const ContextArtifact = BaseArtifact.extend({
+  type: z.literal("context"),
+  contextType: z.enum(["file", "directory", "url"]).default("file"),
+});
+export type ContextArtifact = z.infer<typeof ContextArtifact>;
+
+/**
+ * Instruction artifact (for system instructions like CLAUDE.md, GEMINI.md)
+ */
+export const InstructionArtifact = BaseArtifact.extend({
+  type: z.literal("instruction"),
+  format: z.enum(["markdown", "json", "yaml"]).default("markdown"),
+});
+export type InstructionArtifact = z.infer<typeof InstructionArtifact>;
+
+/**
  * Union of all artifact types
  */
 export type Artifact =
@@ -192,6 +210,8 @@ export type Artifact =
   | HookArtifact
   | RuleArtifact
   | McpServerArtifact
+  | ContextArtifact
+  | InstructionArtifact
   | BaseArtifact;
 
 // =============================================================================

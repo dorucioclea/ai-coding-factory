@@ -16,7 +16,7 @@ import { Command } from "commander";
 import chalk from "chalk";
 import { resolve } from "node:path";
 import { existsSync } from "node:fs";
-import { syncCommand, statusCommand, diffCommand, initCommand, historyCommand, systemsCommand, } from "./commands/index.js";
+import { syncCommand, statusCommand, diffCommand, initCommand, historyCommand, systemsCommand, mcpSyncCommand, skillIndexCommand, } from "./commands/index.js";
 const program = new Command();
 program
     .name("ai-config-sync")
@@ -90,6 +90,29 @@ program
     .action(async (options) => {
     const projectRoot = resolveProjectRoot(program.opts().project);
     await systemsCommand(projectRoot, options);
+});
+// MCP sync command
+program
+    .command("mcp")
+    .description("Sync MCP server configurations between systems")
+    .option("-s, --source <system>", "Source system (default: claude)")
+    .option("-t, --targets <systems...>", "Target systems (default: opencode, cursor, codex, windsurf)")
+    .option("-n, --dry-run", "Show what would be synced without making changes")
+    .option("-v, --verbose", "Show detailed output")
+    .action(async (options) => {
+    const projectRoot = resolveProjectRoot(program.opts().project);
+    await mcpSyncCommand(projectRoot, options);
+});
+// Skill index command
+program
+    .command("skill-index")
+    .description("Generate and sync skill index to limited systems (Gemini, Aider, Continue, Cody)")
+    .option("-t, --targets <systems...>", "Target systems (default: gemini, aider, continue, cody)")
+    .option("-n, --dry-run", "Show what would be synced without making changes")
+    .option("-v, --verbose", "Show detailed output")
+    .action(async (options) => {
+    const projectRoot = resolveProjectRoot(program.opts().project);
+    await skillIndexCommand(projectRoot, options);
 });
 // Parse and execute
 program.parse();

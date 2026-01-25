@@ -153,6 +153,20 @@ export const McpServerArtifact = BaseArtifact.extend({
     env: z.record(z.string()).optional(),
     enabled: z.boolean().default(false),
 });
+/**
+ * Context artifact (for context files)
+ */
+export const ContextArtifact = BaseArtifact.extend({
+    type: z.literal("context"),
+    contextType: z.enum(["file", "directory", "url"]).default("file"),
+});
+/**
+ * Instruction artifact (for system instructions like CLAUDE.md, GEMINI.md)
+ */
+export const InstructionArtifact = BaseArtifact.extend({
+    type: z.literal("instruction"),
+    format: z.enum(["markdown", "json", "yaml"]).default("markdown"),
+});
 // =============================================================================
 // Sync Schemas
 // =============================================================================

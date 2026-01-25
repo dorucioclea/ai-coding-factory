@@ -423,9 +423,93 @@ export declare const McpServerArtifact: z.ZodObject<{
 }>;
 export type McpServerArtifact = z.infer<typeof McpServerArtifact>;
 /**
+ * Context artifact (for context files)
+ */
+export declare const ContextArtifact: z.ZodObject<{
+    id: z.ZodString;
+    name: z.ZodString;
+    description: z.ZodOptional<z.ZodString>;
+    content: z.ZodString;
+    metadata: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnknown>>;
+    sourceSystem: z.ZodEnum<["claude", "opencode", "cursor", "codex", "windsurf", "aider", "gemini", "continue", "cody"]>;
+    sourcePath: z.ZodString;
+    checksum: z.ZodString;
+    lastModified: z.ZodDate;
+} & {
+    type: z.ZodLiteral<"context">;
+    contextType: z.ZodDefault<z.ZodEnum<["file", "directory", "url"]>>;
+}, "strip", z.ZodTypeAny, {
+    type: "context";
+    id: string;
+    name: string;
+    content: string;
+    sourceSystem: "claude" | "opencode" | "cursor" | "codex" | "windsurf" | "aider" | "gemini" | "continue" | "cody";
+    sourcePath: string;
+    checksum: string;
+    lastModified: Date;
+    contextType: "file" | "directory" | "url";
+    description?: string | undefined;
+    metadata?: Record<string, unknown> | undefined;
+}, {
+    type: "context";
+    id: string;
+    name: string;
+    content: string;
+    sourceSystem: "claude" | "opencode" | "cursor" | "codex" | "windsurf" | "aider" | "gemini" | "continue" | "cody";
+    sourcePath: string;
+    checksum: string;
+    lastModified: Date;
+    description?: string | undefined;
+    metadata?: Record<string, unknown> | undefined;
+    contextType?: "file" | "directory" | "url" | undefined;
+}>;
+export type ContextArtifact = z.infer<typeof ContextArtifact>;
+/**
+ * Instruction artifact (for system instructions like CLAUDE.md, GEMINI.md)
+ */
+export declare const InstructionArtifact: z.ZodObject<{
+    id: z.ZodString;
+    name: z.ZodString;
+    description: z.ZodOptional<z.ZodString>;
+    content: z.ZodString;
+    metadata: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnknown>>;
+    sourceSystem: z.ZodEnum<["claude", "opencode", "cursor", "codex", "windsurf", "aider", "gemini", "continue", "cody"]>;
+    sourcePath: z.ZodString;
+    checksum: z.ZodString;
+    lastModified: z.ZodDate;
+} & {
+    type: z.ZodLiteral<"instruction">;
+    format: z.ZodDefault<z.ZodEnum<["markdown", "json", "yaml"]>>;
+}, "strip", z.ZodTypeAny, {
+    type: "instruction";
+    id: string;
+    name: string;
+    content: string;
+    sourceSystem: "claude" | "opencode" | "cursor" | "codex" | "windsurf" | "aider" | "gemini" | "continue" | "cody";
+    sourcePath: string;
+    checksum: string;
+    lastModified: Date;
+    format: "json" | "markdown" | "yaml";
+    description?: string | undefined;
+    metadata?: Record<string, unknown> | undefined;
+}, {
+    type: "instruction";
+    id: string;
+    name: string;
+    content: string;
+    sourceSystem: "claude" | "opencode" | "cursor" | "codex" | "windsurf" | "aider" | "gemini" | "continue" | "cody";
+    sourcePath: string;
+    checksum: string;
+    lastModified: Date;
+    description?: string | undefined;
+    metadata?: Record<string, unknown> | undefined;
+    format?: "json" | "markdown" | "yaml" | undefined;
+}>;
+export type InstructionArtifact = z.infer<typeof InstructionArtifact>;
+/**
  * Union of all artifact types
  */
-export type Artifact = SkillArtifact | AgentArtifact | CommandArtifact | HookArtifact | RuleArtifact | McpServerArtifact | BaseArtifact;
+export type Artifact = SkillArtifact | AgentArtifact | CommandArtifact | HookArtifact | RuleArtifact | McpServerArtifact | ContextArtifact | InstructionArtifact | BaseArtifact;
 /**
  * Sync operation types
  */

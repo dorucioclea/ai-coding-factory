@@ -10,6 +10,10 @@ export { OpenCodeAdapter } from "./opencode.js";
 export { CursorAdapter } from "./cursor.js";
 export { CodexAdapter } from "./codex.js";
 export { WindsurfAdapter } from "./windsurf.js";
+export { AiderAdapter } from "./aider.js";
+export { GeminiAdapter } from "./gemini.js";
+export { ContinueAdapter } from "./continue.js";
+export { CodyAdapter } from "./cody.js";
 import type { SystemId } from "../models/types.js";
 import type { SystemAdapter } from "./base.js";
 /**

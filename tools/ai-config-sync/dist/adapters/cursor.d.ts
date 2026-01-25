@@ -20,13 +20,17 @@ export declare class CursorAdapter extends BaseAdapter {
     deleteArtifact(projectRoot: string, artifactPath: string): Promise<void>;
     getArtifactPath(artifact: Artifact): string;
     /**
-     * Transform a skill artifact to Cursor .mdc rule format
+     * Transform a skill or agent artifact to Cursor .mdc rule format
      */
     transformArtifact(artifact: Artifact, _options?: TransformOptions): Artifact;
     /**
      * Convert a skill to a Cursor .mdc rule
      */
     private skillToRule;
+    /**
+     * Convert an agent to a Cursor .mdc rule
+     */
+    private agentToRule;
     /**
      * Convert a rule from another system to Cursor .mdc format
      */

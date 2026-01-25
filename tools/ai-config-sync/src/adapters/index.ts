@@ -11,6 +11,10 @@ export { OpenCodeAdapter } from "./opencode.js";
 export { CursorAdapter } from "./cursor.js";
 export { CodexAdapter } from "./codex.js";
 export { WindsurfAdapter } from "./windsurf.js";
+export { AiderAdapter } from "./aider.js";
+export { GeminiAdapter } from "./gemini.js";
+export { ContinueAdapter } from "./continue.js";
+export { CodyAdapter } from "./cody.js";
 
 import type { SystemId } from "../models/types.js";
 import type { SystemAdapter } from "./base.js";
@@ -19,6 +23,10 @@ import { OpenCodeAdapter } from "./opencode.js";
 import { CursorAdapter } from "./cursor.js";
 import { CodexAdapter } from "./codex.js";
 import { WindsurfAdapter } from "./windsurf.js";
+import { AiderAdapter } from "./aider.js";
+import { GeminiAdapter } from "./gemini.js";
+import { ContinueAdapter } from "./continue.js";
+import { CodyAdapter } from "./cody.js";
 
 /**
  * Registry of all available adapters
@@ -29,18 +37,10 @@ const adapters: Record<SystemId, () => SystemAdapter> = {
   cursor: () => new CursorAdapter(),
   codex: () => new CodexAdapter(),
   windsurf: () => new WindsurfAdapter(),
-  aider: () => {
-    throw new Error("Aider adapter not yet implemented");
-  },
-  gemini: () => {
-    throw new Error("Gemini adapter not yet implemented");
-  },
-  continue: () => {
-    throw new Error("Continue adapter not yet implemented");
-  },
-  cody: () => {
-    throw new Error("Cody adapter not yet implemented");
-  },
+  aider: () => new AiderAdapter(),
+  gemini: () => new GeminiAdapter(),
+  continue: () => new ContinueAdapter(),
+  cody: () => new CodyAdapter(),
 };
 
 /**
