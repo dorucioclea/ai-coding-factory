@@ -1,9 +1,57 @@
 ---
-description: Use when starting a new project from an idea or vague requirements. Guides through systematic requirement gathering, specification creation, and user questions before any implementation.
+description: "Use when starting a new project from an idea or vague requirements. Guides through systematic requirement gathering, specification creation, and user questions before any implementation."
 globs: ["**/*"]
 alwaysApply: false
 ---
 
+
+# Spec-Driven Development
+
+## Overview
+
+Transform vague ideas into actionable specifications through **automated, systematic questioning**. This skill triggers automatically when a project idea is detected.
+
+**Core Principles:**
+- Never ask "should I use spec-driven development?" - just do it
+- Never ask "should I use the templates?" - always use them
+- Maximum 3 clarification questions per phase (in Standard mode)
+- Present questions with suggested answers in table format
+- Make reasonable assumptions for anything not critical
+
+## Modes
+
+### Yolo Mode 🚀
+
+**Trigger**: User says "yolo", "just build it", "skip questions", or "fast mode"
+
+**Behavior**:
+- Ask **0-1 questions** (only if truly ambiguous)
+- Make **maximum assumptions** based on common patterns
+- Generate specification immediately
+- Scaffold and start implementation without waiting
+
+**Assumptions in Yolo Mode**:
+- Public app with user registration
+- Standard CRUD for main entity
+- Email/password auth
+- List view for MVP (no maps/complex UI)
+- Basic features only (no comments, ratings, etc. unless core to concept)
+- PostgreSQL + Redis + .NET + Next.js stack
+
+**Example**:
+```
+User: "Build me a recipe sharing app, yolo mode"
+
+Claude: "Going full yolo! Building a recipe sharing platform with:
+- User registration/login
+- Create, view, browse recipes
+- Basic search
+- Clean Architecture backend + Next.js frontend
+
+Scaffolding now... [proceeds immediately]"
+```
+
+---
 
 ### Standard Mode (Default) ⚡
 

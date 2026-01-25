@@ -1,9 +1,31 @@
 ---
-description: Mobile observability with Sentry - error tracking, performance monitoring, session replay, crash reporting, source maps for React Native/Expo
-globs: ["**/*"]
+description: "Mobile observability with Sentry - error tracking, performance monitoring, session replay, crash reporting, source maps for React Native/Expo"
+globs: ["**/*.tsx", "**/*.jsx", "**/*.ts", "**/*.js"]
 alwaysApply: false
 ---
 
+
+# React Native Observability Setup
+
+## Overview
+
+Complete observability setup for React Native/Expo applications using Sentry. Covers error tracking, performance monitoring, crash reporting, source map configuration, and EAS Build integration.
+
+## When to Use
+
+- Setting up observability in new React Native projects
+- Configuring Sentry for Expo managed workflow
+- Adding crash reporting and error tracking
+- Implementing performance monitoring
+- Setting up source maps for readable stack traces
+
+## When NOT to Use
+
+- Backend observability (use .NET Serilog patterns)
+- Analytics-only requirements (use analytics SDKs)
+- Simple logging (use console + dev tools first)
+
+---
 
 ## Full Integration Setup
 

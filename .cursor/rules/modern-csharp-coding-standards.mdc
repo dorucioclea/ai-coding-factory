@@ -1,9 +1,34 @@
 ---
-description: Write modern, high-performance C# code using records, pattern matching, value objects, async/await, Span<T>/Memory<T>, and best-practice API design patterns. Emphasizes functional-style programming with C# 12+ features.
-globs: ["**/*.cs", "**/*.csproj", "**/*.sln"]
+description: "Write modern, high-performance C# code using records, pattern matching, value objects, async/await, Span<T>/Memory<T>, and best-practice API design patterns. Emphasizes functional-style programming with C# 12+ features."
+globs: ["**/*.tsx", "**/*.jsx", "**/*.ts", "**/*.js"]
 alwaysApply: false
 ---
 
+
+# Modern C# Coding Standards
+
+## When to Use This Skill
+
+Use this skill when:
+- Writing new C# code or refactoring existing code
+- Designing public APIs for libraries or services
+- Optimizing performance-critical code paths
+- Implementing domain models with strong typing
+- Building async/await-heavy applications
+- Working with binary data, buffers, or high-throughput scenarios
+
+## Core Principles
+
+1. **Immutability by Default** - Use `record` types and `init`-only properties
+2. **Type Safety** - Leverage nullable reference types and value objects
+3. **Modern Pattern Matching** - Use `switch` expressions and patterns extensively
+4. **Async Everywhere** - Prefer async APIs with proper cancellation support
+5. **Zero-Allocation Patterns** - Use `Span<T>` and `Memory<T>` for performance-critical code
+6. **API Design** - Accept abstractions, return appropriately specific types
+7. **Composition Over Inheritance** - Avoid abstract base classes, prefer composition
+8. **Value Objects as Structs** - Use `readonly record struct` for value objects
+
+---
 
 ## Language Patterns
 

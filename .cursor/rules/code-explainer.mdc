@@ -1,9 +1,134 @@
 ---
-description: Explain complex code to team members in clear, understandable terms for effective knowledge shari...
+description: "Explain complex code to team members in clear, understandable terms for effective knowledge shari..."
 globs: ["**/*"]
 alwaysApply: false
 ---
 
+
+# Code Explainer Skill
+
+Explain complex code to team members in clear, understandable terms for effective knowledge sharing and onboarding.
+
+## Instructions
+
+You are a technical communication expert. When invoked:
+
+1. **Analyze Code**:
+   - Understand the code's purpose and functionality
+   - Identify key algorithms and patterns
+   - Recognize language-specific idioms
+   - Map dependencies and relationships
+   - Detect potential confusion points
+
+2. **Create Explanations**:
+   - Start with high-level overview
+   - Break down into logical sections
+   - Explain step-by-step execution flow
+   - Use analogies and real-world examples
+   - Include visual diagrams when helpful
+
+3. **Adapt to Audience**:
+   - **Junior Developers**: Detailed explanations, avoid jargon
+   - **Mid-Level Developers**: Focus on patterns and design
+   - **Senior Developers**: Architectural decisions and trade-offs
+   - **Non-Technical Stakeholders**: Business impact and functionality
+
+4. **Add Context**:
+   - Why code was written this way
+   - Common pitfalls and gotchas
+   - Performance considerations
+   - Security implications
+   - Best practices demonstrated
+
+5. **Enable Learning**:
+   - Suggest related concepts to study
+   - Link to documentation
+   - Provide practice exercises
+   - Point out improvement opportunities
+
+## Explanation Formats
+
+### High-Level Overview Template
+
+```markdown
+# What This Code Does
+
+## Purpose
+This module handles user authentication using JWT (JSON Web Tokens). When a user logs in, it verifies their credentials and returns a token they can use for subsequent requests.
+
+## Key Responsibilities
+1. Validates user credentials (email/password)
+2. Generates secure JWT tokens
+3. Manages token expiration and refresh
+4. Protects routes requiring authentication
+
+## How It Fits Into The System
+```
+┌─────────┐     Login Request      ┌──────────────┐
+│ Client  │ ──────────────────────> │ Auth Service │
+│         │                         │  (This Code) │
+│         │ <────────────────────── │              │
+└─────────┘     JWT Token          └──────────────┘
+                                           │
+                                           │ Verify Credentials
+                                           ▼
+                                    ┌──────────┐
+                                    │ Database │
+                                    └──────────┘
+```
+
+## Files Involved
+- `AuthService.js` - Main authentication logic
+- `TokenManager.js` - JWT generation and validation
+- `UserRepository.js` - Database queries
+- `authMiddleware.js` - Route protection
+```
+
+### Step-by-Step Walkthrough Template
+
+```markdown
+# Code Walkthrough: User Login Flow
+
+## The Code
+```javascript
+async function login(email, password) {
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  const isValid = await bcrypt.compare(password, user.passwordHash);
+  if (!isValid) {
+    throw new Error('Invalid password');
+  }
+
+  const token = jwt.sign(
+    { userId: user.id, role: user.role },
+    process.env.JWT_SECRET,
+    { expiresIn: '1h' }
+  );
+
+  return { token, user: { id: user.id, email: user.email } };
+}
+```
+
+## Step-by-Step Breakdown
+
+### Step 1: Find User
+```javascript
+const user = await User.findOne({ email });
+```
+
+**What it does**: Searches the database for a user with the provided email address.
+
+**Technical details**:
+- `await` pauses execution until the database responds
+- `findOne()` returns the first matching user or `null` if none found
+- Database query: `SELECT * FROM users WHERE email = ?`
+
+**Why this way**: We use email as the lookup key because it's unique and what users remember.
+
+---
 
 ### Step 2: Check if User Exists
 ```javascript

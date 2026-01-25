@@ -1,9 +1,25 @@
 ---
-description: React Native testing - Jest unit tests, React Native Testing Library, Detox E2E, Maestro flows for Expo apps
-globs: ["**/*Test*.cs", "**/*Tests*.cs", "**/*.test.ts", "**/*.spec.ts"]
+description: "React Native testing - Jest unit tests, React Native Testing Library, Detox E2E, Maestro flows for Expo apps"
+globs: ["**/*.tsx", "**/*.jsx", "**/*.ts", "**/*.js"]
 alwaysApply: false
 ---
 
+
+# React Native Testing
+
+## Overview
+
+Comprehensive testing patterns for React Native/Expo applications including unit tests with Jest, component tests with React Native Testing Library, and E2E tests with Detox and Maestro.
+
+## When to Use
+
+- Writing unit tests for utilities and hooks
+- Testing React Native components
+- Creating E2E test flows
+- Setting up CI testing pipelines
+- Implementing TDD for mobile features
+
+---
 
 ## Test Pyramid
 

@@ -1,9 +1,92 @@
 ---
-description: Define project principles and non-negotiables before any implementation. Use at project start to establish governance, quality standards, and architectural constraints.
+description: "Define project principles and non-negotiables before any implementation. Use at project start to establish governance, quality standards, and architectural constraints."
 globs: ["**/*"]
 alwaysApply: false
 ---
 
+
+# Project Constitution
+
+## Overview
+
+A constitution defines the **non-negotiable principles** that govern a project. It's created once at project inception and referenced throughout development to ensure consistency.
+
+Think of it as a contract between all contributors (human and AI) about how the project will be built.
+
+## When to Use
+
+- Starting a new project (before any code)
+- Onboarding to an existing project without clear principles
+- After significant team/scope changes
+- When there's confusion about "how we do things"
+
+## The Constitution Document
+
+Create at `docs/constitution.md` or `memory/constitution.md`:
+
+```markdown
+# {Project Name} Constitution
+
+**Version**: 1.0.0
+**Ratified**: {date}
+**Last Amended**: {date}
+
+## Core Principles
+
+### I. {Principle Name}
+
+{Description of the non-negotiable rule}
+
+**Rationale**: {Why this matters}
+
+**Enforcement**: {How violations are detected/prevented}
+
+### II. {Principle Name}
+...
+
+## Quality Standards
+
+### Code Quality
+- {Standard 1}
+- {Standard 2}
+
+### Testing Requirements
+- {Requirement 1}
+- {Requirement 2}
+
+### Documentation Requirements
+- {Requirement 1}
+
+## Architectural Constraints
+
+### Technology Stack
+| Layer | Choice | Rationale |
+|-------|--------|-----------|
+| Backend | .NET 8 | {why} |
+| Frontend | Next.js 14 | {why} |
+| Database | PostgreSQL | {why} |
+
+### Patterns Required
+- {Pattern 1}: {when to use}
+- {Pattern 2}: {when to use}
+
+### Patterns Prohibited
+- {Anti-pattern 1}: {why prohibited}
+
+## Governance
+
+### Amendment Process
+1. Propose change with rationale
+2. Document impact on existing code
+3. Get approval from {stakeholders}
+4. Update version (semver)
+
+### Compliance
+- All PRs must verify constitution compliance
+- Violations require explicit justification and approval
+- Constitution supersedes all other documentation
+
+---
 **This constitution governs all development on this project.**
 ```
 

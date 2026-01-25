@@ -1,9 +1,259 @@
 ---
-description: Generate database schema diagrams, ERDs, and documentation from database schemas.
+description: "Generate database schema diagrams, ERDs, and documentation from database schemas."
 globs: ["**/*"]
 alwaysApply: false
 ---
 
+
+# Schema Visualizer Skill
+
+Generate database schema diagrams, ERDs, and documentation from database schemas.
+
+## Instructions
+
+You are a database schema visualization expert. When invoked:
+
+1. **Analyze Database Schema**:
+   - Inspect database structure (tables, columns, types)
+   - Identify relationships (foreign keys, references)
+   - Detect indexes and constraints
+   - Understand data model patterns
+
+2. **Generate Visualizations**:
+   - Create Entity Relationship Diagrams (ERD)
+   - Generate Mermaid diagrams for documentation
+   - Produce schema documentation in various formats
+   - Show table relationships and cardinality
+
+3. **Detect Schema from Code**:
+   - Parse ORM models (Prisma, TypeORM, SQLAlchemy)
+   - Extract schema from migration files
+   - Analyze database dump files
+   - Read CREATE TABLE statements
+
+4. **Provide Insights**:
+   - Identify missing indexes
+   - Suggest normalization improvements
+   - Highlight potential performance issues
+   - Recommend relationship optimizations
+
+## Supported Formats
+
+- **Diagrams**: Mermaid ERD, PlantUML, dbdiagram.io
+- **Documentation**: Markdown tables, JSON schema, YAML
+- **Schema Sources**: SQL dumps, ORM models, migration files, live database connection
+
+## Usage Examples
+
+```
+@schema-visualizer
+@schema-visualizer --from-prisma schema.prisma
+@schema-visualizer --from-migrations
+@schema-visualizer --format mermaid
+@schema-visualizer --analyze-relationships
+```
+
+## Mermaid ERD Examples
+
+### Basic E-Commerce Schema
+```mermaid
+erDiagram
+    USERS ||--o{ ORDERS : places
+    USERS {
+        int id PK
+        string username
+        string email UK
+        string password_hash
+        boolean active
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    ORDERS ||--|{ ORDER_ITEMS : contains
+    ORDERS {
+        int id PK
+        int user_id FK
+        decimal total_amount
+        string status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    PRODUCTS ||--o{ ORDER_ITEMS : "ordered in"
+    PRODUCTS {
+        int id PK
+        string name
+        text description
+        decimal price
+        int stock_quantity
+        int category_id FK
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    ORDER_ITEMS {
+        int id PK
+        int order_id FK
+        int product_id FK
+        int quantity
+        decimal price
+    }
+
+    CATEGORIES ||--o{ PRODUCTS : contains
+    CATEGORIES {
+        int id PK
+        string name
+        int parent_id FK "NULL allowed"
+        timestamp created_at
+    }
+
+    USERS ||--o{ REVIEWS : writes
+    PRODUCTS ||--o{ REVIEWS : receives
+    REVIEWS {
+        int id PK
+        int user_id FK
+        int product_id FK
+        int rating
+        text comment
+        timestamp created_at
+    }
+```
+
+### Multi-Tenant SaaS Application
+```mermaid
+erDiagram
+    ORGANIZATIONS ||--o{ USERS : employs
+    ORGANIZATIONS {
+        int id PK
+        string name
+        string slug UK
+        string plan
+        timestamp created_at
+    }
+
+    USERS ||--o{ PROJECTS : creates
+    USERS {
+        int id PK
+        int organization_id FK
+        string email UK
+        string name
+        string role
+        timestamp created_at
+    }
+
+    PROJECTS ||--o{ TASKS : contains
+    PROJECTS {
+        int id PK
+        int organization_id FK
+        int owner_id FK
+        string name
+        text description
+        string status
+        timestamp created_at
+    }
+
+    TASKS ||--o{ COMMENTS : has
+    TASKS {
+        int id PK
+        int project_id FK
+        int assignee_id FK
+        string title
+        text description
+        string priority
+        string status
+        timestamp due_date
+        timestamp created_at
+    }
+
+    USERS ||--o{ COMMENTS : writes
+    COMMENTS {
+        int id PK
+        int task_id FK
+        int user_id FK
+        text content
+        timestamp created_at
+    }
+
+    USERS ||--o{ TASKS : "assigned to"
+```
+
+### Blog Platform Schema
+```mermaid
+erDiagram
+    USERS ||--o{ POSTS : authors
+    USERS ||--o{ COMMENTS : writes
+    USERS {
+        int id PK
+        string username UK
+        string email UK
+        string bio
+        string avatar_url
+        timestamp created_at
+    }
+
+    POSTS ||--o{ COMMENTS : receives
+    POSTS ||--o{ POST_TAGS : has
+    POSTS {
+        int id PK
+        int author_id FK
+        string title
+        string slug UK
+        text content
+        string status
+        timestamp published_at
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    COMMENTS ||--o{ COMMENTS : replies
+    COMMENTS {
+        int id PK
+        int post_id FK
+        int user_id FK
+        int parent_id FK "NULL allowed"
+        text content
+        timestamp created_at
+    }
+
+    TAGS ||--o{ POST_TAGS : tagged
+    TAGS {
+        int id PK
+        string name UK
+        string slug UK
+    }
+
+    POST_TAGS {
+        int post_id FK
+        int tag_id FK
+    }
+```
+
+## Schema Documentation Formats
+
+### Markdown Table Format
+```markdown
+# Database Schema Documentation
+
+## Users Table
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| id | INTEGER | PRIMARY KEY, AUTO_INCREMENT | Unique user identifier |
+| username | VARCHAR(50) | UNIQUE, NOT NULL | User's login name |
+| email | VARCHAR(255) | UNIQUE, NOT NULL | User's email address |
+| password_hash | VARCHAR(255) | NOT NULL | Bcrypt hashed password |
+| active | BOOLEAN | DEFAULT true | Account active status |
+| created_at | TIMESTAMP | DEFAULT NOW() | Account creation time |
+| updated_at | TIMESTAMP | DEFAULT NOW() | Last update time |
+
+**Indexes:**
+- `idx_users_email` on (email)
+- `idx_users_username` on (username)
+
+**Foreign Keys:**
+- None
+
+---
 
 ## Orders Table
 

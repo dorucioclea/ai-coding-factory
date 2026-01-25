@@ -1,9 +1,72 @@
 ---
-description: data-dotnet skill rules
+description: "data-dotnet rules"
 globs: ["**/*.cs", "**/*.csproj", "**/*.sln"]
 alwaysApply: false
 ---
 
+# EF Core Data Persistence Layer - Hexagonal Architecture Adapter
+
+## Overview
+
+This skill provides a comprehensive guide to implementing the data persistence layer using Entity Framework Core as an adapter in a hexagonal architecture (ports and adapters pattern). The data layer is a **library that encapsulates its implementation internally** and **exposes DI registration publicly** for wiring into applications.
+
+This skill complements the `ddd-dotnet-basics.md` skill and assumes familiarity with Domain layer patterns.
+
+### Key Architecture Principles
+
+```
+┌─────────────────────────────────────────────┐
+│        Domain (Ports)                       │
+│  - IRepository<TAggregate, TKey>            │
+│  - IQueryRepository<TAggregate>             │
+│  - IUnitOfWork                              │
+│  - Aggregates & Entities                    │
+└─────────────────────────────────────────────┘
+                     ▲
+                     │ (implements)
+                     │
+┌─────────────────────────────────────────────┐
+│        Data (Adapter - Infrastructure)      │
+│  - DbContext                                │
+│  - Entity Configurations                    │
+│  - Repository Implementations               │
+│  - UnitOfWork Implementation                │
+│  - Service Registrations (DI)               │
+└─────────────────────────────────────────────┘
+```
+
+**Key Benefits:**
+- **Testability**: In-memory database for unit/integration tests
+- **Separation of Concerns**: Domain knows nothing about EF Core
+- **CQRS Support**: Separate read/write repository base classes
+- **Schema Organization**: Multiple database schemas for bounded contexts
+- **Convention-based Registration**: Automatic repository discovery and registration
+
+---
+
+## Project Structure
+
+```
+Pikot.LMP.Adapters.Data/
+├── DataContext.cs                    # Main DbContext
+├── UnitOfWork.cs                     # Transaction coordinator
+├── ServiceRegistrations.cs           # DI setup (public API)
+├── EntityConfigurations/             # Fluent configurations
+│   ├── ConfigHelper.cs               # Reusable config utilities
+│   ├── ShipperOrderConfiguration.cs
+│   ├── PackageConfiguration.cs
+│   └── ...
+├── Repositories/                     # Repository implementations
+│   ├── RepositoryBase.cs             # Write repository base
+│   ├── QueryRepositoryBase.cs        # Read repository base
+│   ├── ShipperOrderRepository.cs
+│   ├── ShipperOrderQueryRepository.cs
+│   └── ...
+└── Migrations/                       # EF Core migrations
+    └── ...
+```
+
+---
 
 ## DbContext Configuration
 

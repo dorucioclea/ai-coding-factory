@@ -1,6 +1,411 @@
 ---
-description: Use when creating .NET backend projects, implementing domain entities, CQRS handlers, or working with Clean Architecture patterns. References the clean-architecture-solution template.
+description: "Use when creating .NET backend projects, implementing domain entities, CQRS handlers, or working with Clean Architecture patterns. References the clean-architecture-solution template."
 globs: ["**/*.cs", "**/*.csproj", "**/*.sln"]
 alwaysApply: false
 ---
 
+
+# .NET Clean Architecture
+
+## Overview
+
+Guide for building enterprise .NET 8 backends using the Clean Architecture template. Ensures proper layer separation, domain-driven design, and CQRS patterns.
+
+## When to Use
+
+- Creating new .NET backend project
+- Adding domain entities or value objects
+- Implementing commands/queries (CQRS)
+- Creating repository implementations
+- Adding API endpoints
+- Working with the clean-architecture-solution template
+
+## Template Reference
+
+**Location:** `templates/clean-architecture-solution/`
+
+**Tech Stack:**
+- .NET 8 LTS
+- ASP.NET Core (Controllers)
+- Entity Framework Core 8 + PostgreSQL
+- MediatR (CQRS)
+- FluentValidation
+- AutoMapper
+- Serilog (structured logging)
+- xUnit + Moq + FluentAssertions
+- Docker + Kubernetes ready
+
+## Layer Architecture
+
+```
+┌─────────────────────────────────────────────────────┐
+│                      API Layer                       │
+│  Controllers, Middleware, DI Configuration           │
+│  Depends on: All layers                             │
+└────────────────────┬────────────────────────────────┘
+                     │
+┌────────────────────▼────────────────────────────────┐
+│               Infrastructure Layer                   │
+│  EF Core, Repositories, External Services           │
+│  Depends on: Domain, Application                    │
+└────────────────────┬────────────────────────────────┘
+                     │
+┌────────────────────▼────────────────────────────────┐
+│                Application Layer                     │
+│  Commands, Queries, DTOs, Validators                │
+│  Depends on: Domain only                            │
+└────────────────────┬────────────────────────────────┘
+                     │
+┌────────────────────▼────────────────────────────────┐
+│                  Domain Layer                        │
+│  Entities, Value Objects, Domain Events             │
+│  Depends on: NOTHING (zero dependencies)            │
+└─────────────────────────────────────────────────────┘
+```
+
+**CRITICAL:** Domain NEVER references other layers.
+
+## Key Files to Know
+
+| Purpose | Location | Notes |
+|---------|----------|-------|
+| Entities | `Domain/Entities/` | Inherit from `Entity` |
+| Value Objects | `Domain/ValueObjects/` | Inherit from `ValueObject` |
+| Repo Interfaces | `Domain/Repositories/` | Define contracts |
+| Commands | `Application/Commands/{Feature}/` | CQRS write operations |
+| Queries | `Application/Queries/{Feature}/` | CQRS read operations |
+| DTOs | `Application/DTOs/` | Data transfer objects |
+| Validators | With commands | FluentValidation |
+| Repo Impl | `Infrastructure/Repositories/` | EF Core implementation |
+| DbContext | `Infrastructure/Persistence/` | ApplicationDbContext |
+| Controllers | `Api/Controllers/` | HTTP endpoints |
+
+## Adding New Features
+
+### 1. Domain Entity
+
+```csharp
+// Domain/Entities/FishingSpot.cs
+public class FishingSpot : Entity, IAggregateRoot
+{
+    public string Name { get; private set; } = null!;
+    public Location Location { get; private set; } = null!;
+    public FishSpecies[] Species { get; private set; } = [];
+
+    private FishingSpot() { } // EF Core
+
+    public static FishingSpot Create(string name, Location location)
+    {
+        var spot = new FishingSpot
+        {
+            Id = Guid.NewGuid(),
+            Name = name,
+            Location = location,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        spot.AddDomainEvent(new FishingSpotCreatedEvent(spot.Id));
+        return spot;
+    }
+
+    public void UpdateName(string name)
+    {
+        Name = name;
+        UpdatedAt = DateTime.UtcNow;
+    }
+}
+```
+
+### 2. Value Object
+
+```csharp
+// Domain/ValueObjects/Location.cs
+public class Location : ValueObject
+{
+    public decimal Latitude { get; }
+    public decimal Longitude { get; }
+
+    private Location(decimal latitude, decimal longitude)
+    {
+        Latitude = latitude;
+        Longitude = longitude;
+    }
+
+    public static Location Create(decimal latitude, decimal longitude)
+    {
+        if (latitude < -90 || latitude > 90)
+            throw new ArgumentOutOfRangeException(nameof(latitude));
+        if (longitude < -180 || longitude > 180)
+            throw new ArgumentOutOfRangeException(nameof(longitude));
+
+        return new Location(latitude, longitude);
+    }
+
+    protected override IEnumerable<object> GetEqualityComponents()
+    {
+        yield return Latitude;
+        yield return Longitude;
+    }
+}
+```
+
+### 3. Repository Interface
+
+```csharp
+// Domain/Repositories/IFishingSpotRepository.cs
+public interface IFishingSpotRepository : IRepository<FishingSpot>
+{
+    Task<FishingSpot?> GetByIdAsync(Guid id, CancellationToken ct = default);
+    Task<IReadOnlyList<FishingSpot>> GetNearbyAsync(Location location, double radiusKm, CancellationToken ct = default);
+}
+```
+
+### 4. Command (CQRS Write)
+
+```csharp
+// Application/Commands/FishingSpots/CreateFishingSpot/CreateFishingSpotCommand.cs
+public record CreateFishingSpotCommand(
+    string Name,
+    decimal Latitude,
+    decimal Longitude
+) : IRequest<Result<Guid>>;
+
+// CreateFishingSpotValidator.cs
+public class CreateFishingSpotValidator : AbstractValidator<CreateFishingSpotCommand>
+{
+    public CreateFishingSpotValidator()
+    {
+        RuleFor(x => x.Name)
+            .NotEmpty()
+            .MaximumLength(200);
+
+        RuleFor(x => x.Latitude)
+            .InclusiveBetween(-90, 90);
+
+        RuleFor(x => x.Longitude)
+            .InclusiveBetween(-180, 180);
+    }
+}
+
+// CreateFishingSpotHandler.cs
+public class CreateFishingSpotHandler : IRequestHandler<CreateFishingSpotCommand, Result<Guid>>
+{
+    private readonly IFishingSpotRepository _repository;
+    private readonly IUnitOfWork _unitOfWork;
+
+    public CreateFishingSpotHandler(IFishingSpotRepository repository, IUnitOfWork unitOfWork)
+    {
+        _repository = repository;
+        _unitOfWork = unitOfWork;
+    }
+
+    public async Task<Result<Guid>> Handle(CreateFishingSpotCommand request, CancellationToken ct)
+    {
+        var location = Location.Create(request.Latitude, request.Longitude);
+        var spot = FishingSpot.Create(request.Name, location);
+
+        _repository.Add(spot);
+        await _unitOfWork.SaveChangesAsync(ct);
+
+        return Result.Success(spot.Id);
+    }
+}
+```
+
+### 5. Query (CQRS Read)
+
+```csharp
+// Application/Queries/FishingSpots/GetFishingSpot/GetFishingSpotQuery.cs
+public record GetFishingSpotQuery(Guid Id) : IRequest<Result<FishingSpotDto>>;
+
+// GetFishingSpotHandler.cs
+public class GetFishingSpotHandler : IRequestHandler<GetFishingSpotQuery, Result<FishingSpotDto>>
+{
+    private readonly IFishingSpotRepository _repository;
+    private readonly IMapper _mapper;
+
+    public GetFishingSpotHandler(IFishingSpotRepository repository, IMapper mapper)
+    {
+        _repository = repository;
+        _mapper = mapper;
+    }
+
+    public async Task<Result<FishingSpotDto>> Handle(GetFishingSpotQuery request, CancellationToken ct)
+    {
+        var spot = await _repository.GetByIdAsync(request.Id, ct);
+
+        if (spot is null)
+            return Result.Failure<FishingSpotDto>(Errors.FishingSpot.NotFound);
+
+        return Result.Success(_mapper.Map<FishingSpotDto>(spot));
+    }
+}
+```
+
+### 6. Repository Implementation
+
+```csharp
+// Infrastructure/Repositories/FishingSpotRepository.cs
+public class FishingSpotRepository : Repository<FishingSpot>, IFishingSpotRepository
+{
+    public FishingSpotRepository(ApplicationDbContext context) : base(context) { }
+
+    public async Task<FishingSpot?> GetByIdAsync(Guid id, CancellationToken ct = default)
+    {
+        return await _context.FishingSpots
+            .FirstOrDefaultAsync(x => x.Id == id, ct);
+    }
+
+    public async Task<IReadOnlyList<FishingSpot>> GetNearbyAsync(
+        Location location, double radiusKm, CancellationToken ct = default)
+    {
+        // Implement spatial query
+        return await _context.FishingSpots
+            .Where(/* spatial filter */)
+            .ToListAsync(ct);
+    }
+}
+```
+
+### 7. API Controller
+
+```csharp
+// Api/Controllers/FishingSpotsController.cs
+[ApiController]
+[Route("api/fishing-spots")]
+[Authorize]
+public class FishingSpotsController : ControllerBase
+{
+    private readonly IMediator _mediator;
+
+    public FishingSpotsController(IMediator mediator) => _mediator = mediator;
+
+    [HttpGet("{id:guid}")]
+    [ProducesResponseType(typeof(FishingSpotDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetById(Guid id, CancellationToken ct)
+    {
+        var result = await _mediator.Send(new GetFishingSpotQuery(id), ct);
+        return result.IsSuccess ? Ok(result.Value) : NotFound();
+    }
+
+    [HttpPost]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Create(CreateFishingSpotCommand command, CancellationToken ct)
+    {
+        var result = await _mediator.Send(command, ct);
+        return result.IsSuccess
+            ? CreatedAtAction(nameof(GetById), new { id = result.Value }, result.Value)
+            : BadRequest(result.Error);
+    }
+}
+```
+
+## Testing
+
+### Unit Test with Story Trait
+
+```csharp
+[Fact]
+[Trait("Story", "ACF-042")]
+public async Task CreateFishingSpot_ValidData_ReturnsSpotId()
+{
+    // Arrange
+    var repository = new Mock<IFishingSpotRepository>();
+    var unitOfWork = new Mock<IUnitOfWork>();
+    var handler = new CreateFishingSpotHandler(repository.Object, unitOfWork.Object);
+    var command = new CreateFishingSpotCommand("Lake Spot", 45.0m, -122.0m);
+
+    // Act
+    var result = await handler.Handle(command, CancellationToken.None);
+
+    // Assert
+    result.IsSuccess.Should().BeTrue();
+    result.Value.Should().NotBeEmpty();
+    repository.Verify(x => x.Add(It.IsAny<FishingSpot>()), Times.Once);
+}
+```
+
+### Integration Test
+
+```csharp
+[Fact]
+[Trait("Story", "ACF-042")]
+public async Task CreateFishingSpot_ValidRequest_Returns201()
+{
+    // Arrange
+    var client = _factory.CreateClient();
+    var request = new { Name = "Lake Spot", Latitude = 45.0, Longitude = -122.0 };
+
+    // Act
+    var response = await client.PostAsJsonAsync("/api/fishing-spots", request);
+
+    // Assert
+    response.StatusCode.Should().Be(HttpStatusCode.Created);
+}
+```
+
+## Directory Structure
+
+```
+src/
+├── ProjectName.Domain/
+│   ├── Entities/
+│   ├── ValueObjects/
+│   ├── Events/
+│   ├── Exceptions/
+│   ├── Repositories/
+│   └── Common/
+├── ProjectName.Application/
+│   ├── Commands/
+│   │   └── {Feature}/
+│   │       ├── {Command}Command.cs
+│   │       ├── {Command}Handler.cs
+│   │       └── {Command}Validator.cs
+│   ├── Queries/
+│   │   └── {Feature}/
+│   ├── DTOs/
+│   ├── Mappings/
+│   └── Behaviors/
+├── ProjectName.Infrastructure/
+│   ├── Persistence/
+│   │   ├── ApplicationDbContext.cs
+│   │   └── Configurations/
+│   ├── Repositories/
+│   └── Services/
+└── ProjectName.Api/
+    ├── Controllers/
+    ├── Middleware/
+    ├── Filters/
+    └── Extensions/
+```
+
+## Common Mistakes
+
+| Mistake | Fix |
+|---------|-----|
+| Domain referencing Infrastructure | Move to Application layer |
+| Business logic in Controller | Move to Command/Query handler |
+| Missing validation | Add FluentValidation |
+| Not using Result pattern | Return `Result<T>` from handlers |
+| EF Core in Domain | Use repository abstraction |
+
+## Quick Commands
+
+```bash
+# Scaffold
+/scaffold {ProjectName} clean-architecture
+
+# Add entity
+/add-entity {EntityName}
+
+# Add endpoint
+/add-endpoint {EntityName} --type crud
+
+# Run tests
+dotnet test
+
+# Run with watch
+dotnet watch run --project src/{ProjectName}.Api
+```

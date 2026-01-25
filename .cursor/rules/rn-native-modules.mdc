@@ -1,9 +1,31 @@
 ---
-description: React Native native modules - JSI, Turbo Modules, Fabric, native bridging for iOS (Swift/ObjC) and Android (Kotlin/Java)
-globs: ["**/*"]
+description: "React Native native modules - JSI, Turbo Modules, Fabric, native bridging for iOS (Swift/ObjC) and Android (Kotlin/Java)"
+globs: ["**/*.tsx", "**/*.jsx", "**/*.ts", "**/*.js"]
 alwaysApply: false
 ---
 
+
+# React Native Native Modules
+
+## Overview
+
+Native module development for React Native applications including JSI, Turbo Modules, Fabric components, and platform-specific bridging for iOS and Android.
+
+## When to Use
+
+- Accessing platform-specific APIs not available in Expo
+- Building custom native modules
+- Integrating third-party native SDKs
+- Performance-critical native operations
+- Creating Turbo Modules with Codegen
+
+## When NOT to Use
+
+- Features available through Expo SDK
+- Pure JavaScript functionality
+- Standard UI components (use `rn-fundamentals`)
+
+---
 
 ## New Architecture (React Native 0.74+)
 

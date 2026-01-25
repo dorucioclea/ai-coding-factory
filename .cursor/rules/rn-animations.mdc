@@ -1,9 +1,25 @@
 ---
-description: React Native animations - Reanimated 3, gesture handling, micro-interactions, layout animations for mobile UX
-globs: ["**/*"]
+description: "React Native animations - Reanimated 3, gesture handling, micro-interactions, layout animations for mobile UX"
+globs: ["**/*.tsx", "**/*.jsx", "**/*.ts", "**/*.js"]
 alwaysApply: false
 ---
 
+
+# React Native Animations
+
+## Overview
+
+Animation patterns for React Native using Reanimated 3 and Gesture Handler for smooth, performant animations and interactions.
+
+## When to Use
+
+- Implementing UI animations and transitions
+- Adding gesture-driven interactions
+- Creating micro-interactions for UX polish
+- Building custom animated components
+- Screen transitions and layout animations
+
+---
 
 ## Reanimated 3 Basics
 

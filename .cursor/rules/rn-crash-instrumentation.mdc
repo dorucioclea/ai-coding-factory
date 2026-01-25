@@ -1,9 +1,24 @@
 ---
-description: React Native crash reporting - error boundaries, native crash capture, context attachment, Sentry advanced configuration
-globs: ["**/*"]
+description: "React Native crash reporting - error boundaries, native crash capture, context attachment, Sentry advanced configuration"
+globs: ["**/*.tsx", "**/*.jsx", "**/*.ts", "**/*.js"]
 alwaysApply: false
 ---
 
+
+# React Native Crash Instrumentation
+
+## Overview
+
+Advanced crash instrumentation patterns for comprehensive error tracking in React Native/Expo applications.
+
+## When to Use
+
+- Setting up comprehensive crash reporting
+- Implementing error boundaries at multiple levels
+- Adding contextual data to crash reports
+- Debugging native crashes
+
+---
 
 ## Error Boundary Hierarchy
 

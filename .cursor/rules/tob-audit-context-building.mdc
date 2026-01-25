@@ -1,9 +1,26 @@
 ---
-description: Enables ultra-granular, line-by-line code analysis to build deep architectural context before vulnerability or bug finding.
+description: "Enables ultra-granular, line-by-line code analysis to build deep architectural context before vulnerability or bug finding."
 globs: ["**/*"]
 alwaysApply: false
 ---
 
+
+# Deep Context Builder Skill (Ultra-Granular Pure Context Mode)
+
+## 1. Purpose
+
+This skill governs **how Claude thinks** during the context-building phase of an audit.
+
+When active, Claude will:
+- Perform **line-by-line / block-by-block** code analysis by default.
+- Apply **First Principles**, **5 Whys**, and **5 Hows** at micro scale.
+- Continuously link insights → functions → modules → entire system.
+- Maintain a stable, explicit mental model that evolves with new evidence.
+- Identify invariants, assumptions, flows, and reasoning hazards.
+
+This skill defines a structured analysis format (see Example: Function Micro-Analysis below) and runs **before** the vulnerability-hunting phase.
+
+---
 
 ## 2. When to Use This Skill
 

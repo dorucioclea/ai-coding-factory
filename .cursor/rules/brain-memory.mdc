@@ -1,9 +1,23 @@
 ---
-description: Long-term project memory system. Persists context across sessions using brain.jsonl for tech stack, decisions, goals, errors, and compact summaries.
+description: "Long-term project memory system. Persists context across sessions using brain.jsonl for tech stack, decisions, goals, errors, and compact summaries."
 globs: ["**/*"]
 alwaysApply: false
 ---
 
+
+# BRAIN MEMORY: LONG-TERM PROJECT CONTEXT
+
+> **Philosophy:** Context is king. Never lose important project decisions, errors, or progress across sessions.
+
+The Brain Memory system provides **cross-session persistence** for project context. It stores and retrieves:
+
+- Tech stack information (frameworks, dependencies, dev tools)
+- Architecture patterns and key directories
+- Project goals and decisions
+- Completed tasks and errors
+- Compact session summaries
+
+---
 
 ## HOW IT WORKS
 

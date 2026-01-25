@@ -1,9 +1,31 @@
 ---
-description: React Native navigation patterns - Expo Router, React Navigation, deep linking, tab/stack/drawer navigation, authentication flows
-globs: ["**/*"]
+description: "React Native navigation patterns - Expo Router, React Navigation, deep linking, tab/stack/drawer navigation, authentication flows"
+globs: ["**/*.tsx", "**/*.jsx", "**/*.ts", "**/*.js"]
 alwaysApply: false
 ---
 
+
+# React Native Navigation
+
+## Overview
+
+Comprehensive navigation patterns for React Native applications using Expo Router (recommended) and React Navigation. Covers stack, tab, drawer navigation, deep linking, and authentication flows.
+
+## When to Use
+
+- Setting up app navigation structure
+- Implementing authentication flows with protected routes
+- Configuring deep linking
+- Building complex navigation hierarchies
+- Migrating from React Navigation to Expo Router
+
+## When NOT to Use
+
+- Basic component development (use `rn-fundamentals`)
+- State management (use `rn-state-management`)
+- Screen transitions/animations (use `rn-animations`)
+
+---
 
 ## Expo Router (Recommended)
 

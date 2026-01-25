@@ -1,9 +1,30 @@
 ---
-description: >
+description: ">"
 globs: ["**/*"]
 alwaysApply: false
 ---
 
+
+# Fix Review
+
+Differential analysis to verify commits address security findings without introducing bugs.
+
+## When to Use
+
+- Reviewing fix branches against security audit reports
+- Validating that remediation commits actually address findings
+- Checking if specific findings (TOB-XXX format) have been fixed
+- Analyzing commit ranges for bug introduction patterns
+- Cross-referencing code changes with audit recommendations
+
+## When NOT to Use
+
+- Initial security audits (use audit-context-building or differential-review)
+- Code review without a specific baseline or finding set
+- Greenfield development with no prior audit
+- Documentation-only changes
+
+---
 
 ## Rationalizations (Do Not Skip)
 

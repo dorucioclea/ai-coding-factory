@@ -1,9 +1,24 @@
 ---
-description: React Native performance - screen load tracking, network tracing, app start measurement, performance budgets
-globs: ["**/*"]
+description: "React Native performance - screen load tracking, network tracing, app start measurement, performance budgets"
+globs: ["**/*.tsx", "**/*.jsx", "**/*.ts", "**/*.js"]
 alwaysApply: false
 ---
 
+
+# React Native Performance Monitoring
+
+## Overview
+
+Performance monitoring patterns for React Native applications including screen load tracking, network tracing, and app start measurement.
+
+## When to Use
+
+- Tracking screen load times
+- Monitoring network request performance
+- Measuring app startup time
+- Setting and enforcing performance budgets
+
+---
 
 ## Screen Load Tracking
 

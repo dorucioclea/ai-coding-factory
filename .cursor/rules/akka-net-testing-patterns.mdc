@@ -1,9 +1,58 @@
 ---
-description: Write unit and integration tests for Akka.NET actors using modern Akka.Hosting.TestKit patterns. Covers dependency injection, TestProbes, persistence testing, and actor interaction verification. Includes guidance on when to use traditional TestKit.
+description: "Write unit and integration tests for Akka.NET actors using modern Akka.Hosting.TestKit patterns. Covers dependency injection, TestProbes, persistence testing, and actor interaction verification. Includes guidance on when to use traditional TestKit."
 globs: ["**/*.cs", "**/*.csproj", "**/*.sln"]
 alwaysApply: false
 ---
 
+
+# Akka.NET Testing Patterns
+
+## When to Use This Skill
+
+Use this skill when:
+- Writing unit tests for Akka.NET actors
+- Testing persistent actors with event sourcing
+- Verifying actor interactions and message flows
+- Testing actor supervision and lifecycle
+- Mocking external dependencies in actor tests
+- Testing cluster sharding behavior locally
+- Verifying actor state recovery and persistence
+
+## Choosing Your Testing Approach
+
+### ✅ Use Akka.Hosting.TestKit (Recommended for 95% of Use Cases)
+
+**When:**
+- Building modern .NET applications with `Microsoft.Extensions.DependencyInjection`
+- Using Akka.Hosting for actor configuration in production
+- Need to inject services into actors (`IOptions`, `DbContext`, `ILogger`, HTTP clients, etc.)
+- Testing applications that use ASP.NET Core, Worker Services, or .NET Aspire
+- Working with modern Akka.NET projects (Akka.NET v1.5+)
+
+**Advantages:**
+- Native dependency injection support - override services with fakes in tests
+- Configuration parity with production (same extension methods work in tests)
+- Clean separation between actor logic and infrastructure
+- Better integration with .NET ecosystem
+- Type-safe actor registry for retrieving actors
+- Supports both local and clustered testing modes
+
+**This guide focuses primarily on Akka.Hosting.TestKit patterns.**
+
+### ⚠️ Use Traditional Akka.TestKit
+
+**When:**
+- Contributing to Akka.NET core library development
+- Working in environments without `Microsoft.Extensions` (console apps, legacy systems)
+- Legacy codebases using manual `Props` creation without DI
+- Need direct control over low-level ActorSystem configuration
+- Working with Akka.NET projects pre-v1.5
+
+**Note:** If starting a new project in 2025+, strongly prefer Akka.Hosting.TestKit unless you have specific constraints.
+
+Traditional TestKit patterns are covered briefly at the end of this document.
+
+---
 
 ## Core Principles (Akka.Hosting.TestKit)
 

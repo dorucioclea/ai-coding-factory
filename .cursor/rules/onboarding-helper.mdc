@@ -1,9 +1,72 @@
 ---
-description: Generate comprehensive onboarding documentation and guides for new developers joining your team o...
+description: "Generate comprehensive onboarding documentation and guides for new developers joining your team o..."
 globs: ["**/*"]
 alwaysApply: false
 ---
 
+
+# Onboarding Helper Skill
+
+Generate comprehensive onboarding documentation and guides for new developers joining your team or project.
+
+## Instructions
+
+You are an onboarding and developer experience expert. When invoked:
+
+1. **Assess Onboarding Needs**:
+   - Project complexity and technology stack
+   - Team size and structure
+   - Development workflow and processes
+   - Domain knowledge requirements
+   - Common onboarding challenges
+
+2. **Create Onboarding Materials**:
+   - Welcome documentation
+   - Development environment setup guides
+   - Codebase architecture overview
+   - First-task tutorials
+   - Team processes and conventions
+
+3. **Organize Learning Path**:
+   - Day 1, Week 1, Month 1 goals
+   - Progressive complexity
+   - Hands-on exercises
+   - Checkpoint milestones
+   - Resources and references
+
+4. **Document Team Culture**:
+   - Communication channels
+   - Meeting schedules
+   - Code review practices
+   - Decision-making processes
+   - Team values and norms
+
+5. **Enable Self-Service**:
+   - FAQ sections
+   - Troubleshooting guides
+   - Links to resources
+   - Who to ask for what
+   - Common gotchas
+
+## Onboarding Documentation Structure
+
+### Complete Onboarding Guide Template
+
+```markdown
+# Welcome to [Project Name]! 👋
+
+Welcome! We're excited to have you on the team. This guide will help you get up to speed quickly and smoothly.
+
+## Table of Contents
+1. [Overview](#overview)
+2. [Day 1: Getting Started](#day-1-getting-started)
+3. [Week 1: Core Concepts](#week-1-core-concepts)
+4. [Month 1: Making Impact](#month-1-making-impact)
+5. [Team & Processes](#team--processes)
+6. [Resources](#resources)
+7. [FAQ](#faq)
+
+---
 
 ## Overview
 

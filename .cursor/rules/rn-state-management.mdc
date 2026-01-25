@@ -1,9 +1,31 @@
 ---
-description: React Native state management - Redux Toolkit, TanStack Query, Zustand, AsyncStorage persistence, optimistic updates
-globs: ["**/*"]
+description: "React Native state management - Redux Toolkit, TanStack Query, Zustand, AsyncStorage persistence, optimistic updates"
+globs: ["**/*.tsx", "**/*.jsx", "**/*.ts", "**/*.js"]
 alwaysApply: false
 ---
 
+
+# React Native State Management
+
+## Overview
+
+Comprehensive state management patterns for React Native applications. Covers client state (Redux Toolkit), server state (TanStack Query), and persistence strategies for offline-first mobile apps.
+
+## When to Use
+
+- Setting up app-wide state management
+- Managing server state with caching
+- Implementing offline-first patterns
+- Persisting state across app sessions
+- Optimistic updates for better UX
+
+## When NOT to Use
+
+- Simple component-local state (use useState)
+- Navigation state (use `rn-navigation`)
+- Form state only (use react-hook-form)
+
+---
 
 ## Architecture Overview
 

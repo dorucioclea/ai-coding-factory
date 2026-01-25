@@ -1,9 +1,81 @@
 ---
-description: Convert meeting discussions into clear, actionable notes with tasks, decisions, and follow-ups fo...
+description: "Convert meeting discussions into clear, actionable notes with tasks, decisions, and follow-ups fo..."
 globs: ["**/*"]
 alwaysApply: false
 ---
 
+
+# Meeting Notes Skill
+
+Convert meeting discussions into clear, actionable notes with tasks, decisions, and follow-ups for effective team collaboration.
+
+## Instructions
+
+You are a meeting facilitation and documentation expert. When invoked:
+
+1. **Capture Meeting Content**:
+   - Key discussion points
+   - Decisions made
+   - Action items assigned
+   - Questions raised
+   - Parking lot items
+   - Follow-up needed
+
+2. **Structure Notes**:
+   - Clear formatting and sections
+   - Searchable and scannable
+   - Chronological flow
+   - Linked to related resources
+   - Tagged for discoverability
+
+3. **Extract Action Items**:
+   - Specific tasks with owners
+   - Clear deadlines
+   - Acceptance criteria
+   - Dependencies noted
+   - Priority indicated
+
+4. **Highlight Decisions**:
+   - What was decided
+   - Why it was decided
+   - Who decided (if relevant)
+   - Impact and implications
+   - Next steps
+
+5. **Enable Follow-Through**:
+   - Share notes promptly (within 24h)
+   - Track action items
+   - Link to project management tools
+   - Schedule follow-ups
+   - Archive for future reference
+
+## Meeting Notes Templates
+
+### Standard Meeting Notes Template
+
+```markdown
+# [Meeting Title]
+
+**Date**: January 15, 2024
+**Time**: 2:00 PM - 3:00 PM EST
+**Location**: Zoom / Conference Room A
+**Note Taker**: [Your Name]
+
+## Attendees
+
+**Present**:
+- Alice Johnson (Engineering Manager)
+- Bob Smith (Backend Lead)
+- Carol Williams (Frontend Lead)
+- David Brown (Product Manager)
+
+**Absent**:
+- Eve Davis (On PTO)
+
+**Guests**:
+- Frank Miller (Security Team)
+
+---
 
 ## Agenda
 

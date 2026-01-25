@@ -1,9 +1,32 @@
 ---
-description: React Native core concepts - components, styling, layout, Expo basics, TypeScript patterns for mobile development
-globs: ["**/*"]
+description: "React Native core concepts - components, styling, layout, Expo basics, TypeScript patterns for mobile development"
+globs: ["**/*.tsx", "**/*.jsx", "**/*.ts", "**/*.js"]
 alwaysApply: false
 ---
 
+
+# React Native Fundamentals
+
+## Overview
+
+Core React Native and Expo development patterns for building production-grade mobile applications. This skill covers component architecture, styling systems, layout patterns, and TypeScript best practices.
+
+## When to Use
+
+- Starting a new React Native/Expo project
+- Building UI components for mobile
+- Understanding React Native layout and styling
+- Implementing responsive mobile designs
+- Learning Expo managed workflow
+
+## When NOT to Use
+
+- Navigation patterns (use `rn-navigation`)
+- State management (use `rn-state-management`)
+- Native module development (use `rn-native-modules`)
+- Animation implementation (use `rn-animations`)
+
+---
 
 ## Core Concepts
 

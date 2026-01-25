@@ -1,9 +1,23 @@
 ---
-description: >
+description: ">"
 globs: ["**/*"]
 alwaysApply: false
 ---
 
+
+# Differential Security Review
+
+Security-focused code review for PRs, commits, and diffs.
+
+## Core Principles
+
+1. **Risk-First**: Focus on auth, crypto, value transfer, external calls
+2. **Evidence-Based**: Every finding backed by git history, line numbers, attack scenarios
+3. **Adaptive**: Scale to codebase size (SMALL/MEDIUM/LARGE)
+4. **Honest**: Explicitly state coverage limits and confidence level
+5. **Output-Driven**: Always generate comprehensive markdown report file
+
+---
 
 ## Rationalizations (Do Not Skip)
 

@@ -1,9 +1,153 @@
 ---
-description: Parse and analyze application logs to identify errors, patterns, and insights.
+description: "Parse and analyze application logs to identify errors, patterns, and insights."
 globs: ["**/*"]
 alwaysApply: false
 ---
 
+
+# Log Analyzer Skill
+
+Parse and analyze application logs to identify errors, patterns, and insights.
+
+## Instructions
+
+You are a log analysis expert. When invoked:
+
+1. **Parse Log Files**:
+   - Identify log format (JSON, syslog, Apache, custom)
+   - Extract structured data from logs
+   - Handle multi-line stack traces
+   - Parse timestamps and normalize formats
+
+2. **Analyze Patterns**:
+   - Identify error frequency and trends
+   - Detect error spikes or anomalies
+   - Find common error messages
+   - Track error patterns over time
+   - Identify correlation between events
+
+3. **Generate Insights**:
+   - Most frequent errors
+   - Error rate trends
+   - Performance metrics from logs
+   - User activity patterns
+   - System health indicators
+
+4. **Provide Recommendations**:
+   - Root cause analysis
+   - Suggested fixes for common errors
+   - Logging improvements
+   - Monitoring suggestions
+
+## Log Format Detection
+
+### JSON Logs
+```json
+{
+  "timestamp": "2024-01-15T10:30:00.000Z",
+  "level": "error",
+  "message": "Database connection failed",
+  "service": "api",
+  "userId": "12345",
+  "error": {
+    "code": "ECONNREFUSED",
+    "stack": "Error: connect ECONNREFUSED..."
+  }
+}
+```
+
+### Standard Format (Combined)
+```
+192.168.1.1 - - [15/Jan/2024:10:30:00 +0000] "GET /api/users HTTP/1.1" 500 1234 "-" "Mozilla/5.0..."
+```
+
+### Application Logs
+```
+2024-01-15 10:30:00 ERROR [UserService] Failed to fetch user: User not found (ID: 12345)
+  at UserService.getUser (user-service.js:45:10)
+  at async API.handler (api.js:23:5)
+```
+
+## Analysis Patterns
+
+### Error Frequency Analysis
+```markdown
+## Top 10 Errors (Last 24h)
+
+1. **Database connection timeout** (1,234 occurrences)
+   - First seen: 2024-01-15 08:00:00
+   - Last seen: 2024-01-15 10:30:00
+   - Peak: 2024-01-15 09:15:00 (234 errors in 1 min)
+   - Affected services: api, worker
+   - Impact: High
+
+2. **User not found** (567 occurrences)
+   - Pattern: Regular distribution
+   - Likely cause: Normal user behavior
+   - Impact: Low
+
+3. **Rate limit exceeded** (345 occurrences)
+   - Source IPs: 192.168.1.100, 10.0.0.50
+   - Pattern: Burst traffic
+   - Impact: Medium
+```
+
+### Timeline Analysis
+```markdown
+## Error Timeline
+
+08:00 - Normal operations (5-10 errors/min)
+09:00 - Database connection errors spike (200+ errors/min)
+09:15 - Peak error rate (234 errors/min)
+09:30 - Database connection restored
+10:00 - Return to normal (8-12 errors/min)
+
+## Correlation
+- Traffic increased 300% at 09:00
+- Database CPU at 95% during incident
+- Connection pool exhausted
+```
+
+### Performance Metrics
+```markdown
+## Response Times (from logs)
+
+**Average**: 234ms
+**P50**: 180ms
+**P95**: 450ms
+**P99**: 890ms
+
+**Slow Requests** (>1s):
+- /api/search: 2.3s avg (45 requests)
+- /api/reports: 1.8s avg (23 requests)
+
+**Fast Requests** (<100ms):
+- /api/health: 5ms avg
+- /api/status: 12ms avg
+```
+
+## Usage Examples
+
+```
+@log-analyzer
+@log-analyzer app.log
+@log-analyzer --errors-only
+@log-analyzer --time-range "last 24h"
+@log-analyzer --pattern "database"
+@log-analyzer --format json
+```
+
+## Report Format
+
+```markdown
+# Log Analysis Report
+**Period**: 2024-01-15 00:00:00 to 2024-01-15 23:59:59
+**Log File**: /var/log/app.log
+**Total Entries**: 145,678
+**Errors**: 2,345 (1.6%)
+**Warnings**: 8,901 (6.1%)
+
+---
 
 ## Executive Summary
 

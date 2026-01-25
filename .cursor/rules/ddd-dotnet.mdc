@@ -1,9 +1,132 @@
 ---
-description: ddd-dotnet skill rules
+description: "ddd-dotnet rules"
 globs: ["**/*.cs", "**/*.csproj", "**/*.sln"]
 alwaysApply: false
 ---
 
+# Domain-Driven Design (DDD) in .NET - Basics & Patterns
+
+## Overview
+
+This skill provides a comprehensive guide to implementing Domain-Driven Design patterns in .NET, based on real-world production code from the LMP project. These patterns promote clean architecture, maintainability, and testability.
+
+### Key Benefits
+- **Clear Separation of Concerns**: Domain logic isolated from infrastructure
+- **CQRS Pattern**: Optimized read and write operations
+- **Hexagonal Architecture**: Ports (domain) and Adapters (infrastructure)
+- **Testability**: Domain logic testable without dependencies
+- **Time Control**: Deterministic time handling for testing
+
+---
+
+## Core Building Blocks
+
+### 1. Domain Object Hierarchy
+
+All domain objects implement a marker interface at the root:
+
+```csharp
+namespace Pikot.LMP.Domain.Common;
+
+public interface IDomainObject;
+```
+
+### 2. Aggregates
+
+Aggregates are consistency boundaries and entry points for domain operations.
+
+```csharp
+namespace Pikot.LMP.Domain.Common;
+
+public interface IAggregate : IDomainObject
+{
+    int Id { get; }
+    DateTimeOffset CreatedAt { get; }
+    DateTimeOffset InsertedAt { get; }
+}
+```
+
+**Versioned Aggregates** track changes over time:
+
+```csharp
+namespace Pikot.LMP.Domain.Common;
+
+public interface IAggregateVersioned : IAggregate
+{
+    int Version { get; }
+}
+```
+
+**Key Principles:**
+- Aggregates are the only objects that can be retrieved from repositories
+- They maintain invariants and enforce business rules
+- They control access to their entities
+- Use `CreatedAt` for business time, `InsertedAt` for audit/database time
+
+### 3. Entities
+
+Entities are objects with identity that belong to aggregates:
+
+```csharp
+namespace Pikot.LMP.Domain.Common;
+
+public interface IEntity : IDomainObject
+{
+    int Id { get; }
+    DateTimeOffset CreatedAt { get; }
+    DateTimeOffset InsertedAt { get; }
+}
+```
+
+**Example Entity:**
+
+```csharp
+using Pikot.LMP.Domain.Common;
+
+namespace Pikot.LMP.Domain.Shipment.ShipperOrders;
+
+public class Package : IEntity
+{
+    protected Package() { } // For EF Core
+
+    public Package(decimal kg, DateTimeOffset createdAt, DateTimeOffset insertedAt, byte numeration)
+    {
+        Guid = Guid.NewGuid();
+        Kg = kg;
+        CreatedAt = createdAt;
+        InsertedAt = insertedAt;
+        Numeration = numeration;
+        Status = PackageStatus.Pending;
+    }
+
+    public int Id { get; protected init; }
+    public Guid Guid { get; protected init; }
+    public DateTimeOffset CreatedAt { get; }
+    public DateTimeOffset InsertedAt { get; }
+    public decimal Kg { get; private set; }
+    public byte Numeration { get; private set; }
+    public PackageStatus Status { get; private set; }
+    public int ShipperOrderId { get; protected init; }
+
+    // Business logic methods
+    public void UpdateWeight(decimal newKg)
+    {
+        Kg = newKg;
+    }
+
+    public void SetNumeration(byte numeration)
+    {
+        Numeration = numeration;
+    }
+
+    public void SetStatus(PackageStatus status)
+    {
+        Status = status;
+    }
+}
+```
+
+---
 
 ## Aggregate Root Pattern
 

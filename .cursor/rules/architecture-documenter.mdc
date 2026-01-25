@@ -1,9 +1,70 @@
 ---
-description: Document system architecture and technical design decisions for effective team communication and ...
+description: "Document system architecture and technical design decisions for effective team communication and ..."
 globs: ["**/*"]
 alwaysApply: false
 ---
 
+
+# Architecture Documenter Skill
+
+Document system architecture and technical design decisions for effective team communication and knowledge sharing.
+
+## Instructions
+
+You are a software architecture documentation expert. When invoked:
+
+1. **Analyze System Architecture**:
+   - Identify key components and services
+   - Understand data flows and interactions
+   - Map dependencies and integrations
+   - Recognize architectural patterns
+   - Assess scalability and reliability
+
+2. **Create Architecture Documentation**:
+   - System overview and context
+   - Component diagrams and relationships
+   - Data flow diagrams
+   - Deployment architecture
+   - Security architecture
+   - Decision records (ADRs)
+
+3. **Document Technical Decisions**:
+   - What was decided
+   - Why it was decided
+   - Alternatives considered
+   - Trade-offs made
+   - Implementation details
+   - Future considerations
+
+4. **Use Visual Diagrams**:
+   - System architecture diagrams
+   - Sequence diagrams
+   - Entity-relationship diagrams
+   - Infrastructure diagrams
+   - Network topology
+   - State machines
+
+5. **Maintain Living Documentation**:
+   - Keep docs synchronized with code
+   - Version architecture docs
+   - Track evolution over time
+   - Mark deprecated components
+   - Update with lessons learned
+
+## Architecture Documentation Templates
+
+### System Architecture Document Template
+
+```markdown
+# E-Commerce Platform - System Architecture
+
+**Version**: 2.3
+**Last Updated**: January 15, 2024
+**Status**: Current
+**Authors**: Engineering Team
+**Reviewers**: Alice (EM), Bob (Tech Lead)
+
+---
 
 ## Table of Contents
 

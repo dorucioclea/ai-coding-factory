@@ -1,9 +1,31 @@
 ---
-description: React Native authentication - JWT auth flows, secure token storage, refresh token patterns, protected routes for Expo apps
-globs: ["**/*"]
+description: "React Native authentication - JWT auth flows, secure token storage, refresh token patterns, protected routes for Expo apps"
+globs: ["**/*.tsx", "**/*.jsx", "**/*.ts", "**/*.js"]
 alwaysApply: false
 ---
 
+
+# React Native Auth Integration
+
+## Overview
+
+Complete authentication integration for React Native/Expo applications. Implements JWT-based auth with secure token storage, automatic refresh, and protected routing patterns that mirror the web frontend approach.
+
+## When to Use
+
+- Implementing login/register flows
+- Setting up secure token storage
+- Adding protected routes
+- Implementing token refresh
+- Integrating with backend JWT auth
+
+## When NOT to Use
+
+- Social auth only (use Expo AuthSession)
+- API key authentication
+- Anonymous/guest-only apps
+
+---
 
 ## Architecture
 

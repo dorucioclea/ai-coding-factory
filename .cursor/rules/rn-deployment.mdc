@@ -1,9 +1,25 @@
 ---
-description: React Native deployment - EAS Build, App Store/Play Store submission, OTA updates, CI/CD pipelines for Expo apps
-globs: ["**/*"]
+description: "React Native deployment - EAS Build, App Store/Play Store submission, OTA updates, CI/CD pipelines for Expo apps"
+globs: ["**/*.tsx", "**/*.jsx", "**/*.ts", "**/*.js"]
 alwaysApply: false
 ---
 
+
+# React Native Deployment
+
+## Overview
+
+Deployment patterns for React Native/Expo applications including EAS Build, app store submission, OTA updates, and CI/CD pipeline configuration.
+
+## When to Use
+
+- Building production apps with EAS
+- Submitting to App Store and Play Store
+- Setting up OTA updates
+- Configuring CI/CD pipelines
+- Managing multiple environments
+
+---
 
 ## EAS Build Configuration
 

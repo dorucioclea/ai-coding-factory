@@ -1,9 +1,25 @@
 ---
-description: React Native design system - design tokens, theming, component library foundation with minimalist modern preset
-globs: ["**/*"]
+description: "React Native design system - design tokens, theming, component library foundation with minimalist modern preset"
+globs: ["**/*.tsx", "**/*.jsx", "**/*.ts", "**/*.js"]
 alwaysApply: false
 ---
 
+
+# React Native Design System Foundation
+
+## Overview
+
+Foundation for building a consistent, scalable design system in React Native/Expo applications. Implements the Minimalist Modern preset by default with support for dark mode and design tokens.
+
+## When to Use
+
+- Setting up design system for new React Native projects
+- Implementing consistent theming across the app
+- Creating reusable UI components
+- Adding dark/light mode support
+- Building component libraries
+
+---
 
 ## Design Token Architecture
 

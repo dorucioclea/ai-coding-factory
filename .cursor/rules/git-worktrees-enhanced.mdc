@@ -1,9 +1,17 @@
 ---
-description: Create isolated git workspaces for feature development. Smart directory selection, safety verification, and cross-platform support (Windows/Unix).
+description: "Create isolated git workspaces for feature development. Smart directory selection, safety verification, and cross-platform support (Windows/Unix)."
 globs: ["**/*"]
 alwaysApply: false
 ---
 
+
+# GIT WORKTREES: ISOLATED WORKSPACES
+
+> **Philosophy:** Isolation prevents contamination. Work on features without affecting the main workspace. Systematic directory selection + safety verification = reliable isolation.
+
+**ISOLATION INTEGRITY MANDATE (CRITICAL):** Never create worktrees in directories that are not explicitly ignored by Git. AI-generated workflows often fail by polluting the primary repository with tracked worktree data. You MUST verify that the destination directory is within `.gitignore` before execution. Furthermore, you MUST ensure a 'Clean Baseline' by running tests before starting any feature work in a new worktree to avoid cross-contamination of artifacts.
+
+---
 
 ## OVERVIEW
 
