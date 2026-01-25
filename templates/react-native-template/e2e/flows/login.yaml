@@ -1,0 +1,31 @@
+# Login Flow E2E Test
+# Run with: maestro test e2e/flows/login.yaml
+
+appId: ${APP_ID}
+---
+- launchApp:
+    clearState: true
+
+# Should start on login screen (redirected from index)
+- assertVisible: "Welcome Back"
+
+# Enter email
+- tapOn:
+    id: "email-input"
+- inputText: "test@example.com"
+
+# Enter password
+- tapOn:
+    id: "password-input"
+- inputText: "TestPassword123"
+
+# Tap login button
+- tapOn:
+    id: "login-button"
+
+# Should navigate to home screen
+- assertVisible:
+    text: "Home"
+    timeout: 10000
+
+- assertVisible: "Welcome back"
