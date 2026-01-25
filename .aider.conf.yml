@@ -21,6 +21,7 @@ attribute-commit-message-committer: true
 
 # Repository conventions file
 read:
+  - .aider/SKILL_INDEX.md
   - CLAUDE.md
   - CORPORATE_RND_POLICY.md
   - .ai/instructions/CORE.md
