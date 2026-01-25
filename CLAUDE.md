@@ -4,9 +4,9 @@ This file provides instructions and context for Claude Code when working in this
 
 ## Repository Overview
 
-AI Coding Factory is an enterprise .NET software delivery platform that uses AI-assisted development to automate the complete development lifecycle. It enforces strict governance, traceability, security, and quality standards while keeping all code and inference local.
+AI Coding Factory is an enterprise software delivery platform that uses AI-assisted development to automate the complete development lifecycle. It supports **full-stack development** with .NET backend, React web frontend, and React Native mobile applications. It enforces strict governance, traceability, security, and quality standards while keeping all code and inference local.
 
-**Key Principle**: This is a "forge" for creating platforms - not a traditional application codebase. The deliverables are project templates, automation scripts, and governance frameworks that generate production-ready .NET applications.
+**Key Principle**: This is a "forge" for creating platforms - not a traditional application codebase. The deliverables are project templates, automation scripts, and governance frameworks that generate production-ready applications across all platforms (backend, web, mobile).
 
 ## Quick Reference
 
@@ -25,8 +25,11 @@ AI Coding Factory is an enterprise .NET software delivery platform that uses AI-
 └── prompts/                # Shared instructions
 
 templates/                  # Project boilerplates
-├── clean-architecture-solution/
-└── microservice-template/
+├── clean-architecture-solution/  # .NET 8 Clean Architecture backend
+├── react-frontend-template/      # Next.js 14 web frontend
+├── react-native-template/        # Expo SDK 52 mobile app
+├── microservice-template/        # Lightweight .NET microservice
+└── infrastructure/               # Docker, PostgreSQL, Redis
 
 scripts/                    # Automation and validation
 ├── validate-project.sh
@@ -124,6 +127,19 @@ Use Claude Code's Task tool to spawn specialized agents for different work:
 | `net-test-generator` | Test case generation |
 | `net-security-auditor` | Security vulnerability scanning |
 
+### React Native Agents
+| Agent | Purpose |
+|-------|---------|
+| `rn-developer` | Screen/component implementation |
+| `rn-navigator` | Navigation architecture, deep linking |
+| `rn-state-architect` | Redux/TanStack Query state design |
+| `rn-performance-guardian` | Performance optimization |
+| `rn-observability-integrator` | Sentry instrumentation |
+| `rn-design-token-guardian` | Design system compliance |
+| `rn-a11y-enforcer` | WCAG accessibility validation |
+| `rn-test-generator` | Jest, Detox, Maestro tests |
+| `rn-grand-architect` | Complex feature orchestration (opus)
+
 ## Skills Reference
 
 ### .NET Development Skills
@@ -141,6 +157,22 @@ Use Claude Code's Task tool to spawn specialized agents for different work:
 ### Agile/Scrum Skills
 - `net-agile` - Agile practices and artifacts
 - `net-scrum` - Scrum ceremonies and roles
+
+### React Native Skills
+- `rn-fundamentals` - Core RN components, styling, Expo
+- `rn-navigation` - Expo Router, deep linking, protected routes
+- `rn-state-management` - Redux Toolkit, TanStack Query, persistence
+- `rn-api-integration` - Axios, TanStack Query hooks, error handling
+- `rn-auth-integration` - JWT auth, secure storage, token refresh
+- `rn-observability-setup` - Sentry SDK, source maps, EAS integration
+- `rn-crash-instrumentation` - Error boundaries, native crash capture
+- `rn-performance-monitoring` - Screen load tracking, network tracing
+- `rn-design-system-foundation` - Design tokens, theming, dark mode
+- `rn-design-preset-system` - Minimalist Modern, Glass, Brutalist presets
+- `rn-animations` - Reanimated 3, gesture handling
+- `rn-testing` - Jest, RTL, Detox, Maestro E2E
+- `rn-deployment` - EAS Build, App Store/Play Store, OTA updates
+- `rn-native-modules` - JSI, Turbo Modules, native bridging
 
 ## Clean Architecture Rules
 
@@ -326,6 +358,61 @@ dotnet --version
 dotnet test tests/ProjectName.UnitTests -v detailed
 ```
 
+## Mobile Development (React Native)
+
+### Template Location
+```
+templates/react-native-template/
+```
+
+### Mobile Commands
+| Command | Purpose |
+|---------|---------|
+| `/add-mobile-screen` | Scaffold new Expo Router screen |
+| `/add-mobile-service` | Create API service with TanStack Query |
+| `/add-mobile-auth` | Add JWT authentication |
+| `/add-mobile-observability` | Configure Sentry instrumentation |
+| `/mobile-e2e` | Generate Maestro/Detox E2E tests |
+| `/mobile-deploy` | Build and deploy with EAS |
+
+### Mobile Architecture
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Full Stack Platform                       │
+├─────────────────────────────────────────────────────────────┤
+│  .NET Backend        │  Web Frontend      │  Mobile         │
+│  (Clean Arch)        │  (Next.js 14)      │  (Expo 52)      │
+│  ─────────────       │  ─────────────     │  ─────────────  │
+│  MediatR CQRS        │  TanStack Query    │  TanStack Query │
+│  JWT Auth            │  Zustand           │  Redux Toolkit  │
+│  Serilog             │  shadcn/ui         │  Sentry SDK     │
+└─────────────────────────────────────────────────────────────┘
+                              │
+              ┌───────────────┴───────────────┐
+              │       Shared Patterns         │
+              │  - JWT Auth Flow              │
+              │  - API Client (Axios)         │
+              │  - TypeScript Types           │
+              │  - Error Handling             │
+              └───────────────────────────────┘
+```
+
+### Mobile Key Decisions
+- **Auth**: Unified JWT with expo-secure-store
+- **Design**: Minimalist Modern preset
+- **Observability**: Full Sentry integration
+- **API**: TanStack Query + Axios (matches web)
+
+### Context7 Integration
+When uncertain about React Native patterns, use Context7 MCP:
+```typescript
+// Resolve library
+mcp__plugin_context7_context7__resolve-library-id({ libraryName: "expo-router" })
+
+// Query documentation
+mcp__plugin_context7_context7__query-docs({ libraryId: "/expo/expo-router", query: "protected routes" })
+```
+
 ## Remember
 
 - **Quality over speed**: Trade-offs require ADRs
@@ -334,3 +421,4 @@ dotnet test tests/ProjectName.UnitTests -v detailed
 - **No hallucinations**: Don't claim without evidence
 - **Smallest viable change**: Avoid unnecessary refactors
 - **Enterprise audit**: If it can't be verified, it doesn't ship
+- **Cross-platform consistency**: Use shared patterns across backend, web, and mobile
