@@ -13,6 +13,7 @@ Where:
   - `clean-architecture` (default) - Full .NET Clean Architecture solution
   - `microservice` - Lightweight .NET microservice
   - `react-frontend` - Next.js 14+ React frontend with auth
+  - `react-native` - Expo SDK 52+ mobile app with auth, observability
 
 ## Instructions
 
@@ -34,6 +35,11 @@ mkdir -p projects/<ProjectName>
 mkdir -p projects/<ProjectName>-frontend
 ```
 
+**For React Native template** (`react-native`):
+```bash
+mkdir -p projects/<ProjectName>-mobile
+```
+
 ### 3. Copy Template Structure
 
 | Template | Source Path |
@@ -41,6 +47,7 @@ mkdir -p projects/<ProjectName>-frontend
 | `clean-architecture` | `templates/clean-architecture-solution/` |
 | `microservice` | `templates/microservice-template/` |
 | `react-frontend` | `templates/react-frontend-template/` |
+| `react-native` | `templates/react-native-template/` |
 
 ### 4. Replace Placeholders
 
@@ -67,6 +74,14 @@ npm install
 npm run lint
 npm run type-check
 npm run build
+```
+
+**For React Native template**:
+```bash
+npm install
+npm run lint
+npm run type-check
+npm test
 ```
 
 ### 6. Create Initial Story
@@ -138,6 +153,13 @@ projects/<ProjectName>-frontend/
 2. Set `NEXT_PUBLIC_API_URL` to backend URL
 3. Match `JWT_SECRET` with backend
 4. Review `src/config/site.ts`
+5. Create first feature story with `/new-story`
+
+### For React Native Projects
+1. Copy `.env.example` to `.env`
+2. Set `API_URL` to backend URL
+3. Configure `SENTRY_DSN` for observability
+4. Run `eas build:configure` for EAS setup
 5. Create first feature story with `/new-story`
 
 ## Examples
@@ -212,4 +234,50 @@ cd projects/FishSpot-frontend
 npm run dev
 
 # Open http://localhost:3000
+```
+
+### Scaffold Mobile App
+```
+User: /scaffold FishSpot react-native
+
+Claude: Creating new React Native mobile app "FishSpot" using react-native template...
+
+1. Creating directory structure... done
+2. Copying template files... done
+3. Replacing placeholders... done
+4. Installing dependencies... done
+5. Type checking... done
+6. Running tests... done
+
+Project created at: projects/FishSpot-mobile/
+
+Next steps:
+1. cd projects/FishSpot-mobile
+2. Copy .env.example to .env
+3. Set API_URL=http://localhost:5000/api
+4. Run: npm start (or npm run dev:ios / npm run dev:android)
+
+To connect with backend:
+- Ensure backend is running
+- Use your machine's IP address (not localhost) for physical devices
+- Configure CORS in backend for Expo development URLs
+```
+
+### Scaffold Complete Platform
+```
+User: /scaffold FishSpot
+     /scaffold FishSpot react-frontend
+     /scaffold FishSpot react-native
+
+Claude: Complete platform created!
+
+Backend:  projects/FishSpot/
+Web:      projects/FishSpot-frontend/
+Mobile:   projects/FishSpot-mobile/
+
+All three use shared patterns:
+- JWT authentication
+- TanStack Query for API calls
+- Unified TypeScript types
+- Consistent error handling
 ```
