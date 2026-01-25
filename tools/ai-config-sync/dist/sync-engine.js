@@ -246,13 +246,17 @@ export class SyncEngine {
                 if ((artifact.type === "skill" || artifact.type === "agent") && capabilities.rules) {
                     // Transform skill or agent to rule
                     const transformedArtifact = targetAdapter.transformArtifact(artifact);
-                    return await this.writeArtifact(transformedArtifact, targetAdapter, mappingRules, options, baseResult);
+                    return await this.writeArtifact(transformedArtifact, targetAdapter, mappingRules, options, baseResult, undefined, // no symlink for transformed artifacts
+                    artifact.id // pass original artifact ID for sync state tracking
+                    );
                 }
                 else if (artifact.type === "command" && capabilities.rules) {
                     // Transform command to rule (as documentation)
                     const transformedArtifact = targetAdapter.transformArtifact(artifact);
                     if (transformedArtifact.type === "rule") {
-                        return await this.writeArtifact(transformedArtifact, targetAdapter, mappingRules, options, baseResult);
+                        return await this.writeArtifact(transformedArtifact, targetAdapter, mappingRules, options, baseResult, undefined, // no symlink for transformed artifacts
+                        artifact.id // pass original artifact ID for sync state tracking
+                        );
                     }
                     // If no transformation available, skip
                     return {
@@ -290,13 +294,15 @@ export class SyncEngine {
             }
             // Transform artifact if needed
             let finalArtifact = artifact;
-            if (rule?.transform_type && rule.transform_type !== "none") {
+            const wasTransformed = rule?.transform_type && rule.transform_type !== "none";
+            if (wasTransformed && rule?.transform_type) {
                 finalArtifact = targetAdapter.transformArtifact(artifact, {
                     sourceFormat: "markdown",
                     targetFormat: rule.transform_type,
                 });
             }
-            return await this.writeArtifact(finalArtifact, targetAdapter, mappingRules, options, baseResult, useSymlink ? artifact.sourcePath : undefined);
+            return await this.writeArtifact(finalArtifact, targetAdapter, mappingRules, options, baseResult, useSymlink ? artifact.sourcePath : undefined, wasTransformed ? artifact.id : undefined // pass original ID if transformed
+            );
         }
         catch (error) {
             return {
@@ -309,8 +315,17 @@ export class SyncEngine {
     }
     /**
      * Write artifact to target system
+     * @param artifact - The artifact to write (may be transformed)
+     * @param targetAdapter - The target system adapter
+     * @param _mappingRules - Mapping rules (unused but kept for API consistency)
+     * @param options - Sync options
+     * @param baseResult - Base result containing original artifact info
+     * @param symlinkSource - Source path for symlink (optional)
+     * @param originalArtifactId - Original artifact ID for sync state tracking (uses artifact.id if not provided)
      */
-    async writeArtifact(artifact, targetAdapter, _mappingRules, options, baseResult, symlinkSource) {
+    async writeArtifact(artifact, targetAdapter, _mappingRules, options, baseResult, symlinkSource, originalArtifactId) {
+        // Use original artifact ID for sync state tracking (important for transformed artifacts)
+        const syncStateArtifactId = originalArtifactId ?? artifact.id;
         const targetPath = targetAdapter.getArtifactPath(artifact);
         if (options.dryRun) {
             return {
@@ -375,9 +390,9 @@ export class SyncEngine {
                     const relativePath = relative(targetDir, sourcePath);
                     symlinkSync(relativePath, fullTargetPath);
                 }
-                // Update sync state
+                // Update sync state using original artifact ID
                 this.db.upsertSyncState({
-                    artifact_id: artifact.id,
+                    artifact_id: syncStateArtifactId,
                     target_system: targetAdapter.systemId,
                     target_path: targetPath,
                     sync_method: "symlink",
@@ -411,9 +426,9 @@ export class SyncEngine {
                         symlinkTarget: symlinkSource,
                     });
                 }
-                // Update sync state
+                // Update sync state using original artifact ID
                 this.db.upsertSyncState({
-                    artifact_id: artifact.id,
+                    artifact_id: syncStateArtifactId,
                     target_system: targetAdapter.systemId,
                     target_path: targetPath,
                     sync_method: "copy",
@@ -422,7 +437,7 @@ export class SyncEngine {
                     status: "synced",
                     error_message: null,
                 });
-                const syncState = this.db.getSyncState(artifact.id, targetAdapter.systemId);
+                const syncState = this.db.getSyncState(syncStateArtifactId, targetAdapter.systemId);
                 const isUpdate = syncState && syncState.synced_hash;
                 return {
                     ...baseResult,
@@ -434,9 +449,9 @@ export class SyncEngine {
             }
         }
         catch (error) {
-            // Update sync state with error
+            // Update sync state with error using original artifact ID
             this.db.upsertSyncState({
-                artifact_id: artifact.id,
+                artifact_id: syncStateArtifactId,
                 target_system: targetAdapter.systemId,
                 target_path: targetPath,
                 sync_method: symlinkSource ? "symlink" : "copy",

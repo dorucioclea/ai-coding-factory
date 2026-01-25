@@ -53,6 +53,13 @@ export declare class SyncEngine {
     private syncArtifact;
     /**
      * Write artifact to target system
+     * @param artifact - The artifact to write (may be transformed)
+     * @param targetAdapter - The target system adapter
+     * @param _mappingRules - Mapping rules (unused but kept for API consistency)
+     * @param options - Sync options
+     * @param baseResult - Base result containing original artifact info
+     * @param symlinkSource - Source path for symlink (optional)
+     * @param originalArtifactId - Original artifact ID for sync state tracking (uses artifact.id if not provided)
      */
     private writeArtifact;
     /**
