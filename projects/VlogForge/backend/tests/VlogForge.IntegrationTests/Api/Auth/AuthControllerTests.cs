@@ -46,8 +46,12 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactoryFixture>
         // Act
         var response = await _client.PostAsJsonAsync("/api/auth/register", request);
 
-        // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        // Debug: Read error content if not OK
+        if (response.StatusCode != HttpStatusCode.OK)
+        {
+            var errorContent = await response.Content.ReadAsStringAsync();
+            response.StatusCode.Should().Be(HttpStatusCode.OK, $"Error response: {errorContent}");
+        }
 
         var result = await response.Content.ReadFromJsonAsync<AuthResponse>(JsonOptions);
         result.Should().NotBeNull();
@@ -172,14 +176,21 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactoryFixture>
         var email = $"refresh-test-{Guid.NewGuid():N}@example.com";
         var registerRequest = new RegisterRequest(email, "Password123!", "Test User");
         var registerResponse = await _client.PostAsJsonAsync("/api/auth/register", registerRequest);
+        registerResponse.StatusCode.Should().Be(HttpStatusCode.OK, "Registration should succeed");
         var authResult = await registerResponse.Content.ReadFromJsonAsync<AuthResponse>(JsonOptions);
+        authResult.Should().NotBeNull();
+        authResult!.RefreshToken.Should().NotBeNullOrEmpty("Registration should return refresh token");
 
         // Act
-        var refreshRequest = new RefreshTokenRequest(authResult!.RefreshToken);
+        var refreshRequest = new RefreshTokenRequest(authResult.RefreshToken);
         var response = await _client.PostAsJsonAsync("/api/auth/refresh", refreshRequest);
 
-        // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        // Debug: show error content if not OK
+        if (response.StatusCode != HttpStatusCode.OK)
+        {
+            var errorContent = await response.Content.ReadAsStringAsync();
+            response.StatusCode.Should().Be(HttpStatusCode.OK, $"Refresh failed: {errorContent}");
+        }
 
         var result = await response.Content.ReadFromJsonAsync<AuthResponse>(JsonOptions);
         result.Should().NotBeNull();

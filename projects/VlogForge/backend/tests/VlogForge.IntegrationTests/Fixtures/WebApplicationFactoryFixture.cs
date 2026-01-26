@@ -1,11 +1,16 @@
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.IdentityModel.Tokens;
 using Testcontainers.PostgreSql;
 using VlogForge.Infrastructure.Data;
+using VlogForge.Infrastructure.Identity;
 using Xunit;
 
 namespace VlogForge.IntegrationTests.Fixtures;
@@ -16,6 +21,8 @@ namespace VlogForge.IntegrationTests.Fixtures;
 /// </summary>
 public class WebApplicationFactoryFixture : WebApplicationFactory<Program>, IAsyncLifetime
 {
+    private const string TestJwtSecret = "TestSecretKeyForIntegrationTests_MustBeAtLeast32Chars!";
+
     private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder()
         .WithImage("postgres:16-alpine")
         .WithDatabase("vlogforge_test")
@@ -27,6 +34,19 @@ public class WebApplicationFactoryFixture : WebApplicationFactory<Program>, IAsy
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        // Add test configuration
+        builder.ConfigureAppConfiguration((context, config) =>
+        {
+            config.AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Jwt:Secret"] = TestJwtSecret,
+                ["Jwt:Issuer"] = "VlogForge.Tests",
+                ["Jwt:Audience"] = "VlogForge.Tests",
+                ["Jwt:AccessTokenExpirationMinutes"] = "60",
+                ["Jwt:RefreshTokenExpirationDays"] = "7"
+            });
+        });
+
         builder.ConfigureTestServices(services =>
         {
             // Remove existing DbContext registration
@@ -39,6 +59,37 @@ public class WebApplicationFactoryFixture : WebApplicationFactory<Program>, IAsy
                 {
                     npgsqlOptions.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName);
                 });
+            });
+
+            // Configure JWT authentication for tests
+            services.Configure<JwtSettings>(options =>
+            {
+                options.Secret = TestJwtSecret;
+                options.Issuer = "VlogForge.Tests";
+                options.Audience = "VlogForge.Tests";
+                options.AccessTokenExpirationMinutes = 60;
+                options.RefreshTokenExpirationDays = 7;
+            });
+
+            // Ensure JWT Bearer authentication is configured (may not be set up if secret was empty)
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(TestJwtSecret)),
+                    ValidateIssuer = true,
+                    ValidIssuer = "VlogForge.Tests",
+                    ValidateAudience = true,
+                    ValidAudience = "VlogForge.Tests",
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero
+                };
             });
         });
 
