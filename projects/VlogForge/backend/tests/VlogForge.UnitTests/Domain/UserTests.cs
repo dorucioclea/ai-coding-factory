@@ -25,7 +25,7 @@ public class UserTests
         var email = CreateValidEmail();
 
         // Act
-        var user = User.Create(email, ValidDisplayName, ValidPasswordHash);
+        var (user, verificationToken) = User.Create(email, ValidDisplayName, ValidPasswordHash);
 
         // Assert
         Assert.NotEqual(Guid.Empty, user.Id);
@@ -33,8 +33,9 @@ public class UserTests
         Assert.Equal(ValidDisplayName, user.DisplayName);
         Assert.Equal(ValidPasswordHash, user.PasswordHash);
         Assert.False(user.EmailVerified);
-        Assert.NotNull(user.EmailVerificationToken);
+        Assert.NotNull(user.EmailVerificationTokenHash);
         Assert.NotNull(user.EmailVerificationTokenExpiry);
+        Assert.NotNull(verificationToken);
         Assert.Equal(0, user.FailedLoginAttempts);
         Assert.Null(user.LockoutEnd);
     }
@@ -46,7 +47,7 @@ public class UserTests
         var email = CreateValidEmail();
 
         // Act
-        var user = User.Create(email, ValidDisplayName, ValidPasswordHash);
+        var (user, _) = User.Create(email, ValidDisplayName, ValidPasswordHash);
 
         // Assert
         var domainEvent = user.DomainEvents.OfType<UserRegisteredEvent>().SingleOrDefault();
@@ -68,6 +69,18 @@ public class UserTests
         var exception = Assert.Throws<ArgumentException>(() =>
             User.Create(email, displayName, ValidPasswordHash));
         Assert.Contains("Display name", exception.Message);
+    }
+
+    [Fact]
+    public void CreateWithSingleCharDisplayNameShouldThrow()
+    {
+        // Arrange
+        var email = CreateValidEmail();
+
+        // Act & Assert
+        var exception = Assert.Throws<ArgumentException>(() =>
+            User.Create(email, "A", ValidPasswordHash));
+        Assert.Contains("at least 2 characters", exception.Message);
     }
 
     [Fact]
@@ -105,16 +118,15 @@ public class UserTests
     public void VerifyEmailWithValidTokenShouldVerifyAndClearToken()
     {
         // Arrange
-        var user = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
-        var token = user.EmailVerificationToken!;
+        var (user, verificationToken) = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
 
         // Act
-        var result = user.VerifyEmail(token);
+        var result = user.VerifyEmail(verificationToken);
 
         // Assert
         Assert.True(result);
         Assert.True(user.EmailVerified);
-        Assert.Null(user.EmailVerificationToken);
+        Assert.Null(user.EmailVerificationTokenHash);
         Assert.Null(user.EmailVerificationTokenExpiry);
     }
 
@@ -122,12 +134,11 @@ public class UserTests
     public void VerifyEmailShouldRaiseUserEmailVerifiedEvent()
     {
         // Arrange
-        var user = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
+        var (user, verificationToken) = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
         user.ClearDomainEvents();
-        var token = user.EmailVerificationToken!;
 
         // Act
-        user.VerifyEmail(token);
+        user.VerifyEmail(verificationToken);
 
         // Assert
         var domainEvent = user.DomainEvents.OfType<UserEmailVerifiedEvent>().SingleOrDefault();
@@ -139,7 +150,7 @@ public class UserTests
     public void VerifyEmailWithInvalidTokenShouldReturnFalse()
     {
         // Arrange
-        var user = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
+        var (user, _) = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
 
         // Act
         var result = user.VerifyEmail("invalid-token");
@@ -153,8 +164,8 @@ public class UserTests
     public void VerifyEmailWhenAlreadyVerifiedShouldReturnTrue()
     {
         // Arrange
-        var user = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
-        user.VerifyEmail(user.EmailVerificationToken!);
+        var (user, verificationToken) = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
+        user.VerifyEmail(verificationToken);
 
         // Act
         var result = user.VerifyEmail("any-token");
@@ -169,7 +180,7 @@ public class UserTests
     public void VerifyEmailWithEmptyTokenShouldReturnFalse(string token)
     {
         // Arrange
-        var user = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
+        var (user, _) = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
 
         // Act
         var result = user.VerifyEmail(token);
@@ -186,7 +197,7 @@ public class UserTests
     public void RecordSuccessfulLoginShouldResetAttemptsAndSetLastLogin()
     {
         // Arrange
-        var user = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
+        var (user, _) = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
         user.RecordFailedLogin();
         user.RecordFailedLogin();
         user.ClearDomainEvents();
@@ -204,7 +215,7 @@ public class UserTests
     public void RecordSuccessfulLoginShouldRaiseUserLoggedInEvent()
     {
         // Arrange
-        var user = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
+        var (user, _) = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
         user.ClearDomainEvents();
 
         // Act
@@ -220,7 +231,7 @@ public class UserTests
     public void RecordFailedLoginShouldIncrementAttempts()
     {
         // Arrange
-        var user = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
+        var (user, _) = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
 
         // Act
         user.RecordFailedLogin();
@@ -234,7 +245,7 @@ public class UserTests
     public void RecordFailedLoginAtMaxAttemptsShouldLockOut()
     {
         // Arrange
-        var user = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
+        var (user, _) = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
         user.ClearDomainEvents();
 
         // Act - 5 failed attempts (default max)
@@ -253,7 +264,7 @@ public class UserTests
     public void RecordFailedLoginAtMaxAttemptsShouldRaiseUserLockedOutEvent()
     {
         // Arrange
-        var user = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
+        var (user, _) = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
         user.ClearDomainEvents();
 
         // Act
@@ -272,7 +283,7 @@ public class UserTests
     public void IsLockedOutWhenNotLockedShouldReturnFalse()
     {
         // Arrange
-        var user = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
+        var (user, _) = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
 
         // Act & Assert
         Assert.False(user.IsLockedOut());
@@ -283,10 +294,10 @@ public class UserTests
     #region Password Reset Tests
 
     [Fact]
-    public void GeneratePasswordResetTokenShouldSetTokenAndExpiry()
+    public void GeneratePasswordResetTokenShouldSetTokenHashAndExpiry()
     {
         // Arrange
-        var user = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
+        var (user, _) = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
         user.ClearDomainEvents();
 
         // Act
@@ -294,7 +305,7 @@ public class UserTests
 
         // Assert
         Assert.NotNull(token);
-        Assert.Equal(token, user.PasswordResetToken);
+        Assert.NotNull(user.PasswordResetTokenHash);
         Assert.NotNull(user.PasswordResetTokenExpiry);
         Assert.True(user.PasswordResetTokenExpiry > DateTime.UtcNow);
     }
@@ -303,7 +314,7 @@ public class UserTests
     public void GeneratePasswordResetTokenShouldRaisePasswordResetRequestedEvent()
     {
         // Arrange
-        var user = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
+        var (user, _) = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
         user.ClearDomainEvents();
 
         // Act
@@ -319,19 +330,19 @@ public class UserTests
     public void ResetPasswordWithValidTokenShouldResetAndClearLockout()
     {
         // Arrange
-        var user = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
+        var (user, _) = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
         for (int i = 0; i < 5; i++) user.RecordFailedLogin();
-        var token = user.GeneratePasswordResetToken();
+        var resetToken = user.GeneratePasswordResetToken();
         var newHash = "newhash123";
         user.ClearDomainEvents();
 
         // Act
-        var result = user.ResetPassword(token, newHash);
+        var result = user.ResetPassword(resetToken, newHash);
 
         // Assert
         Assert.True(result);
         Assert.Equal(newHash, user.PasswordHash);
-        Assert.Null(user.PasswordResetToken);
+        Assert.Null(user.PasswordResetTokenHash);
         Assert.Null(user.PasswordResetTokenExpiry);
         Assert.Equal(0, user.FailedLoginAttempts);
         Assert.Null(user.LockoutEnd);
@@ -341,12 +352,12 @@ public class UserTests
     public void ResetPasswordShouldRaisePasswordResetCompletedEvent()
     {
         // Arrange
-        var user = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
-        var token = user.GeneratePasswordResetToken();
+        var (user, _) = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
+        var resetToken = user.GeneratePasswordResetToken();
         user.ClearDomainEvents();
 
         // Act
-        user.ResetPassword(token, "newhash123");
+        user.ResetPassword(resetToken, "newhash123");
 
         // Assert
         var domainEvent = user.DomainEvents.OfType<PasswordResetCompletedEvent>().SingleOrDefault();
@@ -358,7 +369,7 @@ public class UserTests
     public void ResetPasswordWithInvalidTokenShouldReturnFalse()
     {
         // Arrange
-        var user = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
+        var (user, _) = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
         user.GeneratePasswordResetToken();
 
         // Act
@@ -375,11 +386,11 @@ public class UserTests
     public void ResetPasswordWithEmptyNewHashShouldReturnFalse(string newHash)
     {
         // Arrange
-        var user = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
-        var token = user.GeneratePasswordResetToken();
+        var (user, _) = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
+        var resetToken = user.GeneratePasswordResetToken();
 
         // Act
-        var result = user.ResetPassword(token, newHash);
+        var result = user.ResetPassword(resetToken, newHash);
 
         // Assert
         Assert.False(result);
@@ -393,16 +404,16 @@ public class UserTests
     public void AddRefreshTokenShouldAddToCollection()
     {
         // Arrange
-        var user = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
-        var tokenValue = "refresh-token-123";
+        var (user, _) = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
+        var tokenHash = "hashed-refresh-token-123";
         var expiresAt = DateTime.UtcNow.AddDays(7);
 
         // Act
-        var token = user.AddRefreshToken(tokenValue, expiresAt, "127.0.0.1", "TestAgent");
+        var token = user.AddRefreshToken(tokenHash, expiresAt, "127.0.0.1", "TestAgent");
 
         // Assert
         Assert.Single(user.RefreshTokens);
-        Assert.Equal(tokenValue, token.Token);
+        Assert.Equal(tokenHash, token.TokenHash);
         Assert.Equal(expiresAt, token.ExpiresAt);
         Assert.Equal("127.0.0.1", token.CreatedByIp);
         Assert.Equal("TestAgent", token.UserAgent);
@@ -413,29 +424,29 @@ public class UserTests
     public void RevokeRefreshTokenWithValidTokenShouldRevoke()
     {
         // Arrange
-        var user = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
-        var tokenValue = "refresh-token-123";
-        user.AddRefreshToken(tokenValue, DateTime.UtcNow.AddDays(7));
+        var (user, _) = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
+        var tokenHash = "hashed-refresh-token-123";
+        user.AddRefreshToken(tokenHash, DateTime.UtcNow.AddDays(7));
 
         // Act
-        var result = user.RevokeRefreshToken(tokenValue, "192.168.1.1");
+        var result = user.RevokeRefreshToken(tokenHash, "192.168.1.1");
 
         // Assert
         Assert.True(result);
         var token = user.RefreshTokens.First();
         Assert.True(token.IsRevoked);
-        Assert.Equal("192.168.1.1", token.RevokedByIp);
+        Assert.Equal("192.168.1.1", token.RevokedBy);
     }
 
     [Fact]
     public void RevokeRefreshTokenWithInvalidTokenShouldReturnFalse()
     {
         // Arrange
-        var user = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
-        user.AddRefreshToken("token-1", DateTime.UtcNow.AddDays(7));
+        var (user, _) = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
+        user.AddRefreshToken("token-hash-1", DateTime.UtcNow.AddDays(7));
 
         // Act
-        var result = user.RevokeRefreshToken("non-existent-token");
+        var result = user.RevokeRefreshToken("non-existent-token-hash");
 
         // Assert
         Assert.False(result);
@@ -445,10 +456,10 @@ public class UserTests
     public void RevokeAllRefreshTokensShouldRevokeAll()
     {
         // Arrange
-        var user = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
-        user.AddRefreshToken("token-1", DateTime.UtcNow.AddDays(7));
-        user.AddRefreshToken("token-2", DateTime.UtcNow.AddDays(7));
-        user.AddRefreshToken("token-3", DateTime.UtcNow.AddDays(7));
+        var (user, _) = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
+        user.AddRefreshToken("token-hash-1", DateTime.UtcNow.AddDays(7));
+        user.AddRefreshToken("token-hash-2", DateTime.UtcNow.AddDays(7));
+        user.AddRefreshToken("token-hash-3", DateTime.UtcNow.AddDays(7));
 
         // Act
         user.RevokeAllRefreshTokens("logout-ip");
@@ -461,13 +472,13 @@ public class UserTests
     public void GetActiveRefreshTokenShouldReturnActiveToken()
     {
         // Arrange
-        var user = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
-        user.AddRefreshToken("token-1", DateTime.UtcNow.AddDays(7));
-        var activeToken = user.AddRefreshToken("token-2", DateTime.UtcNow.AddDays(7));
-        user.RevokeRefreshToken("token-1");
+        var (user, _) = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
+        user.AddRefreshToken("token-hash-1", DateTime.UtcNow.AddDays(7));
+        var activeToken = user.AddRefreshToken("token-hash-2", DateTime.UtcNow.AddDays(7));
+        user.RevokeRefreshToken("token-hash-1");
 
         // Act
-        var result = user.GetActiveRefreshToken("token-2");
+        var result = user.GetActiveRefreshToken("token-hash-2");
 
         // Assert
         Assert.NotNull(result);
@@ -478,15 +489,32 @@ public class UserTests
     public void GetActiveRefreshTokenWithRevokedTokenShouldReturnNull()
     {
         // Arrange
-        var user = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
-        user.AddRefreshToken("token-1", DateTime.UtcNow.AddDays(7));
-        user.RevokeRefreshToken("token-1");
+        var (user, _) = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
+        user.AddRefreshToken("token-hash-1", DateTime.UtcNow.AddDays(7));
+        user.RevokeRefreshToken("token-hash-1");
 
         // Act
-        var result = user.GetActiveRefreshToken("token-1");
+        var result = user.GetActiveRefreshToken("token-hash-1");
 
         // Assert
         Assert.Null(result);
+    }
+
+    [Fact]
+    public void AddRefreshTokenShouldLimitActiveTokens()
+    {
+        // Arrange
+        var (user, _) = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
+
+        // Act - Add 12 tokens (limit is 10)
+        for (int i = 0; i < 12; i++)
+        {
+            user.AddRefreshToken($"token-hash-{i}", DateTime.UtcNow.AddDays(7));
+        }
+
+        // Assert - Should have max 10 active tokens
+        var activeCount = user.RefreshTokens.Count(t => t.IsActive);
+        Assert.True(activeCount <= 10);
     }
 
     #endregion
@@ -497,7 +525,7 @@ public class UserTests
     public void UpdateDisplayNameWithValidNameShouldUpdate()
     {
         // Arrange
-        var user = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
+        var (user, _) = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
         var newName = "New Display Name";
 
         // Act
@@ -513,10 +541,21 @@ public class UserTests
     public void UpdateDisplayNameWithEmptyNameShouldThrow(string name)
     {
         // Arrange
-        var user = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
+        var (user, _) = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
 
         // Act & Assert
         Assert.Throws<ArgumentException>(() => user.UpdateDisplayName(name));
+    }
+
+    [Fact]
+    public void UpdateDisplayNameWithSingleCharShouldThrow()
+    {
+        // Arrange
+        var (user, _) = User.Create(CreateValidEmail(), ValidDisplayName, ValidPasswordHash);
+
+        // Act & Assert
+        var exception = Assert.Throws<ArgumentException>(() => user.UpdateDisplayName("X"));
+        Assert.Contains("at least 2 characters", exception.Message);
     }
 
     #endregion

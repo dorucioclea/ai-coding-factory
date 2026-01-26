@@ -74,8 +74,52 @@ public class UnauthorizedAccessException : Exception
     /// <summary>
     /// Initializes a new instance of the UnauthorizedAccessException class.
     /// </summary>
-    public UnauthorizedAccessException() 
+    public UnauthorizedAccessException()
         : base("Authentication is required to access this resource.")
     {
+    }
+}
+
+/// <summary>
+/// Exception thrown when authentication fails.
+/// </summary>
+public class UnauthorizedException : Exception
+{
+    /// <summary>
+    /// Initializes a new instance of the UnauthorizedException class.
+    /// </summary>
+    /// <param name="message">The error message.</param>
+    public UnauthorizedException(string message)
+        : base(message)
+    {
+    }
+}
+
+/// <summary>
+/// Exception thrown when a resource conflict occurs (e.g., duplicate key).
+/// </summary>
+public class ConflictException : Exception
+{
+    /// <summary>
+    /// Gets the entity name that caused the conflict.
+    /// </summary>
+    public string EntityName { get; }
+
+    /// <summary>
+    /// Gets the conflicting key value.
+    /// </summary>
+    public object Key { get; }
+
+    /// <summary>
+    /// Initializes a new instance of the ConflictException class.
+    /// </summary>
+    /// <param name="name">The entity name.</param>
+    /// <param name="key">The conflicting key.</param>
+    /// <param name="message">Optional message.</param>
+    public ConflictException(string name, object key, string? message = null)
+        : base(message ?? $"Entity \"{name}\" ({key}) already exists.")
+    {
+        EntityName = name;
+        Key = key;
     }
 }

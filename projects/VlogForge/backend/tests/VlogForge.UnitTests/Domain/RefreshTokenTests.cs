@@ -11,7 +11,7 @@ namespace VlogForge.UnitTests.Domain;
 public class RefreshTokenTests
 {
     private static readonly Guid ValidUserId = Guid.NewGuid();
-    private const string ValidToken = "refresh-token-abc123";
+    private const string ValidTokenHash = "hashed-refresh-token-abc123";
     private static DateTime ValidExpiresAt => DateTime.UtcNow.AddDays(7);
 
     #region Create Tests
@@ -20,12 +20,12 @@ public class RefreshTokenTests
     public void CreateWithValidDataShouldCreateToken()
     {
         // Arrange & Act
-        var token = RefreshToken.Create(ValidUserId, ValidToken, ValidExpiresAt, "127.0.0.1", "TestAgent");
+        var token = RefreshToken.Create(ValidUserId, ValidTokenHash, ValidExpiresAt, "127.0.0.1", "TestAgent");
 
         // Assert
         Assert.NotEqual(Guid.Empty, token.Id);
         Assert.Equal(ValidUserId, token.UserId);
-        Assert.Equal(ValidToken, token.Token);
+        Assert.Equal(ValidTokenHash, token.TokenHash);
         Assert.Equal("127.0.0.1", token.CreatedByIp);
         Assert.Equal("TestAgent", token.UserAgent);
         Assert.True(token.IsActive);
@@ -38,19 +38,19 @@ public class RefreshTokenTests
     {
         // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() =>
-            RefreshToken.Create(Guid.Empty, ValidToken, ValidExpiresAt));
+            RefreshToken.Create(Guid.Empty, ValidTokenHash, ValidExpiresAt));
         Assert.Contains("User ID", exception.Message);
     }
 
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
-    public void CreateWithEmptyTokenShouldThrow(string token)
+    public void CreateWithEmptyTokenHashShouldThrow(string tokenHash)
     {
         // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() =>
-            RefreshToken.Create(ValidUserId, token, ValidExpiresAt));
-        Assert.Contains("Token", exception.Message);
+            RefreshToken.Create(ValidUserId, tokenHash, ValidExpiresAt));
+        Assert.Contains("Token hash", exception.Message);
     }
 
     [Fact]
@@ -61,8 +61,42 @@ public class RefreshTokenTests
 
         // Act & Assert
         var exception = Assert.Throws<ArgumentException>(() =>
-            RefreshToken.Create(ValidUserId, ValidToken, pastDate));
+            RefreshToken.Create(ValidUserId, ValidTokenHash, pastDate));
         Assert.Contains("future", exception.Message);
+    }
+
+    [Fact]
+    public void CreateWithInvalidIpShouldSetNull()
+    {
+        // Act
+        var token = RefreshToken.Create(ValidUserId, ValidTokenHash, ValidExpiresAt, "not-an-ip", "TestAgent");
+
+        // Assert
+        Assert.Null(token.CreatedByIp);
+    }
+
+    [Fact]
+    public void CreateWithValidIpShouldNormalize()
+    {
+        // Act
+        var token = RefreshToken.Create(ValidUserId, ValidTokenHash, ValidExpiresAt, "  192.168.1.1  ", "TestAgent");
+
+        // Assert
+        Assert.Equal("192.168.1.1", token.CreatedByIp);
+    }
+
+    [Fact]
+    public void CreateWithLongUserAgentShouldTruncate()
+    {
+        // Arrange
+        var longUserAgent = new string('a', 600);
+
+        // Act
+        var token = RefreshToken.Create(ValidUserId, ValidTokenHash, ValidExpiresAt, null, longUserAgent);
+
+        // Assert
+        Assert.NotNull(token.UserAgent);
+        Assert.Equal(500, token.UserAgent.Length);
     }
 
     #endregion
@@ -73,7 +107,7 @@ public class RefreshTokenTests
     public void IsExpiredWhenNotExpiredShouldReturnFalse()
     {
         // Arrange
-        var token = RefreshToken.Create(ValidUserId, ValidToken, DateTime.UtcNow.AddDays(7));
+        var token = RefreshToken.Create(ValidUserId, ValidTokenHash, DateTime.UtcNow.AddDays(7));
 
         // Assert
         Assert.False(token.IsExpired);
@@ -83,7 +117,7 @@ public class RefreshTokenTests
     public void IsActiveWhenNotExpiredAndNotRevokedShouldReturnTrue()
     {
         // Arrange
-        var token = RefreshToken.Create(ValidUserId, ValidToken, DateTime.UtcNow.AddDays(7));
+        var token = RefreshToken.Create(ValidUserId, ValidTokenHash, DateTime.UtcNow.AddDays(7));
 
         // Assert
         Assert.True(token.IsActive);
@@ -94,19 +128,19 @@ public class RefreshTokenTests
     #region Revoke Tests
 
     [Fact]
-    public void RevokeShouldSetRevokedAtAndIp()
+    public void RevokeShouldSetRevokedAtAndRevokedBy()
     {
         // Arrange
-        var token = RefreshToken.Create(ValidUserId, ValidToken, ValidExpiresAt);
+        var token = RefreshToken.Create(ValidUserId, ValidTokenHash, ValidExpiresAt);
 
         // Act
-        token.Revoke("192.168.1.1", "replacement-token");
+        token.Revoke("192.168.1.1", "replacement-token-hash");
 
         // Assert
         Assert.True(token.IsRevoked);
         Assert.NotNull(token.RevokedAt);
-        Assert.Equal("192.168.1.1", token.RevokedByIp);
-        Assert.Equal("replacement-token", token.ReplacedByToken);
+        Assert.Equal("192.168.1.1", token.RevokedBy);
+        Assert.Equal("replacement-token-hash", token.ReplacedByTokenHash);
         Assert.False(token.IsActive);
     }
 
@@ -114,30 +148,30 @@ public class RefreshTokenTests
     public void RevokeWithoutReplacementTokenShouldStillRevoke()
     {
         // Arrange
-        var token = RefreshToken.Create(ValidUserId, ValidToken, ValidExpiresAt);
+        var token = RefreshToken.Create(ValidUserId, ValidTokenHash, ValidExpiresAt);
 
         // Act
         token.Revoke("192.168.1.1");
 
         // Assert
         Assert.True(token.IsRevoked);
-        Assert.Null(token.ReplacedByToken);
+        Assert.Null(token.ReplacedByTokenHash);
     }
 
     [Fact]
     public void RevokeWhenAlreadyRevokedShouldNotUpdate()
     {
         // Arrange
-        var token = RefreshToken.Create(ValidUserId, ValidToken, ValidExpiresAt);
-        token.Revoke("first-ip");
+        var token = RefreshToken.Create(ValidUserId, ValidTokenHash, ValidExpiresAt);
+        token.Revoke("first-revoker");
         var firstRevokedAt = token.RevokedAt;
 
         // Act
-        token.Revoke("second-ip");
+        token.Revoke("second-revoker");
 
         // Assert
         Assert.Equal(firstRevokedAt, token.RevokedAt);
-        Assert.Equal("first-ip", token.RevokedByIp);
+        Assert.Equal("first-revoker", token.RevokedBy);
     }
 
     #endregion
@@ -148,7 +182,7 @@ public class RefreshTokenTests
     public void IsActiveWhenRevokedShouldReturnFalse()
     {
         // Arrange
-        var token = RefreshToken.Create(ValidUserId, ValidToken, ValidExpiresAt);
+        var token = RefreshToken.Create(ValidUserId, ValidTokenHash, ValidExpiresAt);
         token.Revoke();
 
         // Assert

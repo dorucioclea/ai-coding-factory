@@ -4,18 +4,22 @@ namespace VlogForge.Domain.Entities;
 
 /// <summary>
 /// Entity representing a refresh token for JWT authentication.
+/// Stores the token hash, not the plain token, for security.
 /// </summary>
 public sealed class RefreshToken : Entity
 {
+    private const int MaxUserAgentLength = 500;
+
     /// <summary>
     /// Gets the user ID this token belongs to.
     /// </summary>
     public Guid UserId { get; private set; }
 
     /// <summary>
-    /// Gets the token value.
+    /// Gets the hashed token value (SHA-256).
+    /// The plain token should never be stored.
     /// </summary>
-    public string Token { get; private set; }
+    public string TokenHash { get; private set; }
 
     /// <summary>
     /// Gets the token expiration date.
@@ -28,14 +32,14 @@ public sealed class RefreshToken : Entity
     public DateTime? RevokedAt { get; private set; }
 
     /// <summary>
-    /// Gets the IP address that revoked this token.
+    /// Gets the IP address or reason that revoked this token.
     /// </summary>
-    public string? RevokedByIp { get; private set; }
+    public string? RevokedBy { get; private set; }
 
     /// <summary>
-    /// Gets the token that replaced this one.
+    /// Gets the token hash that replaced this one.
     /// </summary>
-    public string? ReplacedByToken { get; private set; }
+    public string? ReplacedByTokenHash { get; private set; }
 
     /// <summary>
     /// Gets the IP address that created this token.
@@ -43,7 +47,7 @@ public sealed class RefreshToken : Entity
     public string? CreatedByIp { get; private set; }
 
     /// <summary>
-    /// Gets the user agent that created this token.
+    /// Gets the user agent that created this token (truncated for safety).
     /// </summary>
     public string? UserAgent { get; private set; }
 
@@ -64,45 +68,74 @@ public sealed class RefreshToken : Entity
 
     private RefreshToken() : base()
     {
-        Token = string.Empty;
+        TokenHash = string.Empty;
     }
 
-    private RefreshToken(Guid userId, string token, DateTime expiresAt, string? createdByIp, string? userAgent) : base()
+    private RefreshToken(Guid userId, string tokenHash, DateTime expiresAt, string? createdByIp, string? userAgent) : base()
     {
         UserId = userId;
-        Token = token;
+        TokenHash = tokenHash;
         ExpiresAt = expiresAt;
-        CreatedByIp = createdByIp;
-        UserAgent = userAgent;
+        CreatedByIp = ValidateIpAddress(createdByIp);
+        UserAgent = TruncateUserAgent(userAgent);
     }
 
     /// <summary>
-    /// Creates a new refresh token.
+    /// Creates a new refresh token with the hashed token value.
+    /// The caller is responsible for hashing the token before calling this method.
     /// </summary>
-    public static RefreshToken Create(Guid userId, string token, DateTime expiresAt, string? createdByIp = null, string? userAgent = null)
+    public static RefreshToken Create(Guid userId, string tokenHash, DateTime expiresAt, string? createdByIp = null, string? userAgent = null)
     {
         if (userId == Guid.Empty)
             throw new ArgumentException("User ID cannot be empty.", nameof(userId));
 
-        if (string.IsNullOrWhiteSpace(token))
-            throw new ArgumentException("Token cannot be empty.", nameof(token));
+        if (string.IsNullOrWhiteSpace(tokenHash))
+            throw new ArgumentException("Token hash cannot be empty.", nameof(tokenHash));
 
         if (expiresAt <= DateTime.UtcNow)
             throw new ArgumentException("Expiration date must be in the future.", nameof(expiresAt));
 
-        return new RefreshToken(userId, token, expiresAt, createdByIp, userAgent);
+        return new RefreshToken(userId, tokenHash, expiresAt, createdByIp, userAgent);
     }
 
     /// <summary>
     /// Revokes this token.
     /// </summary>
-    public void Revoke(string? revokedByIp = null, string? replacedByToken = null)
+    public void Revoke(string? revokedBy = null, string? replacedByTokenHash = null)
     {
         if (IsRevoked)
             return;
 
         RevokedAt = DateTime.UtcNow;
-        RevokedByIp = revokedByIp;
-        ReplacedByToken = replacedByToken;
+        RevokedBy = revokedBy;
+        ReplacedByTokenHash = replacedByTokenHash;
+    }
+
+    /// <summary>
+    /// Validates and normalizes an IP address.
+    /// Returns null if the IP is invalid.
+    /// </summary>
+    private static string? ValidateIpAddress(string? ip)
+    {
+        if (string.IsNullOrWhiteSpace(ip))
+            return null;
+
+        if (System.Net.IPAddress.TryParse(ip.Trim(), out var parsed))
+            return parsed.ToString();
+
+        return null;
+    }
+
+    /// <summary>
+    /// Truncates user agent to prevent storage of excessively long strings.
+    /// </summary>
+    private static string? TruncateUserAgent(string? userAgent)
+    {
+        if (string.IsNullOrWhiteSpace(userAgent))
+            return null;
+
+        return userAgent.Length > MaxUserAgentLength
+            ? userAgent[..MaxUserAgentLength]
+            : userAgent;
     }
 }

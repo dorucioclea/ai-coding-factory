@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using VlogForge.Domain.Common;
 using VlogForge.Domain.Events;
 using VlogForge.Domain.ValueObjects;
@@ -9,6 +10,12 @@ namespace VlogForge.Domain.Entities;
 /// </summary>
 public sealed class User : AggregateRoot
 {
+    private const int MaxRefreshTokens = 10;
+    private const int MinDisplayNameLength = 2;
+    private const int MaxDisplayNameLength = 100;
+    private const int PasswordResetTokenExpiryHours = 1;
+    private const int EmailVerificationTokenExpiryHours = 24;
+
     private readonly List<RefreshToken> _refreshTokens = new();
 
     /// <summary>
@@ -32,9 +39,9 @@ public sealed class User : AggregateRoot
     public bool EmailVerified { get; private set; }
 
     /// <summary>
-    /// Gets the email verification token.
+    /// Gets the email verification token (hashed).
     /// </summary>
-    public string? EmailVerificationToken { get; private set; }
+    public string? EmailVerificationTokenHash { get; private set; }
 
     /// <summary>
     /// Gets the email verification token expiry.
@@ -42,9 +49,9 @@ public sealed class User : AggregateRoot
     public DateTime? EmailVerificationTokenExpiry { get; private set; }
 
     /// <summary>
-    /// Gets the password reset token.
+    /// Gets the password reset token (hashed).
     /// </summary>
-    public string? PasswordResetToken { get; private set; }
+    public string? PasswordResetTokenHash { get; private set; }
 
     /// <summary>
     /// Gets the password reset token expiry.
@@ -89,33 +96,33 @@ public sealed class User : AggregateRoot
 
     /// <summary>
     /// Creates a new user with the specified details.
+    /// Returns the user and the plain text email verification token (to send via email).
     /// </summary>
-    public static User Create(Email email, string displayName, string passwordHash)
+    public static (User User, string VerificationToken) Create(Email email, string displayName, string passwordHash)
     {
-        if (string.IsNullOrWhiteSpace(displayName))
-            throw new ArgumentException("Display name cannot be empty.", nameof(displayName));
-
-        if (displayName.Length > 100)
-            throw new ArgumentException("Display name cannot exceed 100 characters.", nameof(displayName));
+        ValidateDisplayName(displayName);
 
         if (string.IsNullOrWhiteSpace(passwordHash))
             throw new ArgumentException("Password hash cannot be empty.", nameof(passwordHash));
 
         var user = new User(email, displayName.Trim(), passwordHash);
-        user.GenerateEmailVerificationToken();
+        var plainToken = user.GenerateEmailVerificationToken();
         user.RaiseDomainEvent(new UserRegisteredEvent(user.Id, user.Email.Value, user.DisplayName));
 
-        return user;
+        return (user, plainToken);
     }
 
     /// <summary>
     /// Generates a new email verification token.
+    /// Returns the plain text token (to send via email).
     /// </summary>
-    public void GenerateEmailVerificationToken()
+    public string GenerateEmailVerificationToken()
     {
-        EmailVerificationToken = Guid.NewGuid().ToString("N");
-        EmailVerificationTokenExpiry = DateTime.UtcNow.AddHours(24);
+        var plainToken = GenerateSecureToken();
+        EmailVerificationTokenHash = HashToken(plainToken);
+        EmailVerificationTokenExpiry = DateTime.UtcNow.AddHours(EmailVerificationTokenExpiryHours);
         IncrementVersion();
+        return plainToken;
     }
 
     /// <summary>
@@ -129,14 +136,17 @@ public sealed class User : AggregateRoot
         if (string.IsNullOrWhiteSpace(token))
             return false;
 
-        if (EmailVerificationToken != token)
+        if (EmailVerificationTokenHash == null)
+            return false;
+
+        if (!ConstantTimeEquals(HashToken(token), EmailVerificationTokenHash))
             return false;
 
         if (EmailVerificationTokenExpiry < DateTime.UtcNow)
             return false;
 
         EmailVerified = true;
-        EmailVerificationToken = null;
+        EmailVerificationTokenHash = null;
         EmailVerificationTokenExpiry = null;
         IncrementVersion();
 
@@ -183,15 +193,17 @@ public sealed class User : AggregateRoot
 
     /// <summary>
     /// Generates a password reset token.
+    /// Returns the plain text token (to send via email).
     /// </summary>
     public string GeneratePasswordResetToken()
     {
-        PasswordResetToken = Guid.NewGuid().ToString("N");
-        PasswordResetTokenExpiry = DateTime.UtcNow.AddHours(24);
+        var plainToken = GenerateSecureToken();
+        PasswordResetTokenHash = HashToken(plainToken);
+        PasswordResetTokenExpiry = DateTime.UtcNow.AddHours(PasswordResetTokenExpiryHours);
         IncrementVersion();
 
         RaiseDomainEvent(new PasswordResetRequestedEvent(Id, Email.Value));
-        return PasswordResetToken;
+        return plainToken;
     }
 
     /// <summary>
@@ -202,7 +214,10 @@ public sealed class User : AggregateRoot
         if (string.IsNullOrWhiteSpace(token))
             return false;
 
-        if (PasswordResetToken != token)
+        if (PasswordResetTokenHash == null)
+            return false;
+
+        if (!ConstantTimeEquals(HashToken(token), PasswordResetTokenHash))
             return false;
 
         if (PasswordResetTokenExpiry < DateTime.UtcNow)
@@ -212,7 +227,7 @@ public sealed class User : AggregateRoot
             return false;
 
         PasswordHash = newPasswordHash;
-        PasswordResetToken = null;
+        PasswordResetTokenHash = null;
         PasswordResetTokenExpiry = null;
         FailedLoginAttempts = 0;
         LockoutEnd = null;
@@ -224,21 +239,34 @@ public sealed class User : AggregateRoot
 
     /// <summary>
     /// Adds a refresh token for this user.
+    /// Returns the created RefreshToken entity.
     /// </summary>
-    public RefreshToken AddRefreshToken(string token, DateTime expiresAt, string? ipAddress = null, string? userAgent = null)
+    public RefreshToken AddRefreshToken(string tokenHash, DateTime expiresAt, string? ipAddress = null, string? userAgent = null)
     {
-        var refreshToken = RefreshToken.Create(Id, token, expiresAt, ipAddress, userAgent);
+        // Clean up expired tokens
+        _refreshTokens.RemoveAll(t => t.IsExpired);
+
+        // Revoke oldest active tokens if at limit
+        var activeTokens = _refreshTokens.Where(t => t.IsActive).OrderBy(t => t.CreatedAt).ToList();
+        while (activeTokens.Count >= MaxRefreshTokens)
+        {
+            var oldest = activeTokens.First();
+            oldest.Revoke("System: Token limit reached");
+            activeTokens.Remove(oldest);
+        }
+
+        var refreshToken = RefreshToken.Create(Id, tokenHash, expiresAt, ipAddress, userAgent);
         _refreshTokens.Add(refreshToken);
         IncrementVersion();
         return refreshToken;
     }
 
     /// <summary>
-    /// Revokes a specific refresh token.
+    /// Revokes a specific refresh token by its hash.
     /// </summary>
-    public bool RevokeRefreshToken(string token, string? revokedByIp = null)
+    public bool RevokeRefreshToken(string tokenHash, string? revokedByIp = null)
     {
-        var refreshToken = _refreshTokens.FirstOrDefault(t => t.Token == token && t.IsActive);
+        var refreshToken = _refreshTokens.FirstOrDefault(t => ConstantTimeEquals(t.TokenHash, tokenHash) && t.IsActive);
         if (refreshToken == null)
             return false;
 
@@ -260,11 +288,11 @@ public sealed class User : AggregateRoot
     }
 
     /// <summary>
-    /// Gets an active refresh token by its value.
+    /// Gets an active refresh token by its hash.
     /// </summary>
-    public RefreshToken? GetActiveRefreshToken(string token)
+    public RefreshToken? GetActiveRefreshToken(string tokenHash)
     {
-        return _refreshTokens.FirstOrDefault(t => t.Token == token && t.IsActive);
+        return _refreshTokens.FirstOrDefault(t => ConstantTimeEquals(t.TokenHash, tokenHash) && t.IsActive);
     }
 
     /// <summary>
@@ -272,13 +300,57 @@ public sealed class User : AggregateRoot
     /// </summary>
     public void UpdateDisplayName(string displayName)
     {
+        ValidateDisplayName(displayName);
+        DisplayName = displayName.Trim();
+        IncrementVersion();
+    }
+
+    /// <summary>
+    /// Generates a cryptographically secure random token.
+    /// </summary>
+    private static string GenerateSecureToken(int byteLength = 32)
+    {
+        var bytes = RandomNumberGenerator.GetBytes(byteLength);
+        return Convert.ToBase64String(bytes);
+    }
+
+    /// <summary>
+    /// Hashes a token using SHA-256.
+    /// </summary>
+    private static string HashToken(string token)
+    {
+        var bytes = SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(token));
+        return Convert.ToBase64String(bytes);
+    }
+
+    /// <summary>
+    /// Performs constant-time string comparison to prevent timing attacks.
+    /// </summary>
+    private static bool ConstantTimeEquals(string a, string b)
+    {
+        if (a == null || b == null)
+            return a == b;
+
+        var aBytes = System.Text.Encoding.UTF8.GetBytes(a);
+        var bBytes = System.Text.Encoding.UTF8.GetBytes(b);
+
+        return CryptographicOperations.FixedTimeEquals(aBytes, bBytes);
+    }
+
+    /// <summary>
+    /// Validates display name according to business rules.
+    /// </summary>
+    private static void ValidateDisplayName(string displayName)
+    {
         if (string.IsNullOrWhiteSpace(displayName))
             throw new ArgumentException("Display name cannot be empty.", nameof(displayName));
 
-        if (displayName.Length > 100)
-            throw new ArgumentException("Display name cannot exceed 100 characters.", nameof(displayName));
+        var trimmed = displayName.Trim();
 
-        DisplayName = displayName.Trim();
-        IncrementVersion();
+        if (trimmed.Length < MinDisplayNameLength)
+            throw new ArgumentException($"Display name must be at least {MinDisplayNameLength} characters.", nameof(displayName));
+
+        if (trimmed.Length > MaxDisplayNameLength)
+            throw new ArgumentException($"Display name cannot exceed {MaxDisplayNameLength} characters.", nameof(displayName));
     }
 }
