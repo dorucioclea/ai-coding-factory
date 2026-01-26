@@ -131,6 +131,7 @@ export declare class SyncEngine {
     }>;
     /**
      * Extract description from skill content (first paragraph after frontmatter)
+     * Returns the FULL description - no truncation since agents need complete info
      */
     private extractDescription;
     /**
@@ -138,7 +139,8 @@ export declare class SyncEngine {
      */
     private categorizeSkill;
     /**
-     * Sync skill index to limited systems (Gemini, Aider, Continue, Cody)
+     * Sync skills and skill index to limited systems (Gemini, Aider, Continue, Cody)
+     * This copies skill files AND generates an index with LOCAL paths
      */
     syncSkillIndex(options?: {
         targets?: SystemId[];
@@ -155,13 +157,9 @@ export declare class SyncEngine {
         }>;
     }>;
     /**
-     * Write skill index to a specific system
+     * Generate skill index content with LOCAL paths for a specific system
      */
-    private writeSkillIndex;
-    /**
-     * Update system configuration to reference the skill index
-     */
-    private updateSystemConfigForSkillIndex;
+    private generateSkillIndexContent;
     /**
      * Close database connection
      */
