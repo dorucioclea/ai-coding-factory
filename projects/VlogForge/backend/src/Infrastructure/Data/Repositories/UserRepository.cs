@@ -58,7 +58,36 @@ public sealed class UserRepository : IUserRepository
     /// <inheritdoc />
     public Task UpdateAsync(User user, CancellationToken cancellationToken = default)
     {
-        _context.Users.Update(user);
+        // Don't call Update() if the entity is already tracked.
+        // EF Core will detect changes automatically.
+        var entry = _context.Entry(user);
+        if (entry.State == EntityState.Detached)
+        {
+            _context.Users.Update(user);
+        }
+
+        // Fix for EF Core backing field issue: when new RefreshTokens are added to
+        // the _refreshTokens backing field after the parent entity was loaded, EF Core
+        // incorrectly marks them as Modified instead of Added. We detect new tokens
+        // by checking if RevokedAt is null (tokens are created without being revoked).
+        _context.ChangeTracker.DetectChanges();
+        foreach (var refreshToken in user.RefreshTokens)
+        {
+            var tokenEntry = _context.Entry(refreshToken);
+            if (tokenEntry.State == EntityState.Modified)
+            {
+                // A newly created token will have both original and current RevokedAt as null.
+                // A revoked token will have original as null but current as non-null.
+                var originalRevokedAt = tokenEntry.OriginalValues.GetValue<DateTime?>("RevokedAt");
+                var currentRevokedAt = refreshToken.RevokedAt;
+
+                if (originalRevokedAt == null && currentRevokedAt == null)
+                {
+                    tokenEntry.State = EntityState.Added;
+                }
+            }
+        }
+
         return Task.CompletedTask;
     }
 

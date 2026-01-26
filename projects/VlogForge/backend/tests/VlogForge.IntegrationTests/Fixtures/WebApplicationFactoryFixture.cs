@@ -52,13 +52,17 @@ public class WebApplicationFactoryFixture : WebApplicationFactory<Program>, IAsy
             // Remove existing DbContext registration
             services.RemoveAll<DbContextOptions<ApplicationDbContext>>();
 
-            // Add DbContext with TestContainer connection string
+            // Add DbContext with TestContainer connection string and SQL logging
             services.AddDbContext<ApplicationDbContext>(options =>
             {
                 options.UseNpgsql(_dbContainer.GetConnectionString(), npgsqlOptions =>
                 {
                     npgsqlOptions.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName);
                 });
+                // Enable sensitive data logging and SQL logging for debugging
+                options.EnableSensitiveDataLogging();
+                options.EnableDetailedErrors();
+                options.LogTo(Console.WriteLine, Microsoft.Extensions.Logging.LogLevel.Information);
             });
 
             // Configure JWT authentication for tests

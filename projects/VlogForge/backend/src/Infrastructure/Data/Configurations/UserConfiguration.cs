@@ -70,16 +70,23 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(u => u.UpdatedBy)
             .HasMaxLength(256);
 
-        // Navigation to RefreshTokens
+        // Navigation to RefreshTokens - explicitly configure backing field
         builder.HasMany(u => u.RefreshTokens)
             .WithOne()
             .HasForeignKey(r => r.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        // Explicitly specify the backing field name and access mode
+        builder.Metadata.FindNavigation(nameof(User.RefreshTokens))!
+            .SetField("_refreshTokens");
+
+        builder.Metadata.FindNavigation(nameof(User.RefreshTokens))!
+            .SetPropertyAccessMode(PropertyAccessMode.Field);
+
         // Ignore domain events collection
         builder.Ignore(u => u.DomainEvents);
 
-        // Use optimistic concurrency
+        // Version tracking for optimistic concurrency
         builder.Property(u => u.Version)
             .IsConcurrencyToken();
     }

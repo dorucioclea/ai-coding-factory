@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json;
+using Microsoft.Extensions.Hosting;
 using VlogForge.Application.Common.Exceptions;
 
 namespace VlogForge.Api.Middleware;
@@ -29,13 +30,16 @@ public class ExceptionHandlingMiddleware
 
     private readonly RequestDelegate _next;
     private readonly ILogger<ExceptionHandlingMiddleware> _logger;
+    private readonly IHostEnvironment _environment;
 
     public ExceptionHandlingMiddleware(
         RequestDelegate next,
-        ILogger<ExceptionHandlingMiddleware> logger)
+        ILogger<ExceptionHandlingMiddleware> logger,
+        IHostEnvironment environment)
     {
         _next = next;
         _logger = logger;
+        _environment = environment;
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -122,7 +126,9 @@ public class ExceptionHandlingMiddleware
                     Type = "InternalServerError",
                     Title = "Internal Server Error",
                     Status = (int)HttpStatusCode.InternalServerError,
-                    Detail = "An unexpected error occurred. Please try again later."
+                    Detail = _environment.IsDevelopment() || _environment.EnvironmentName == "Testing"
+                        ? $"{exception.GetType().Name}: {exception.Message}"
+                        : "An unexpected error occurred. Please try again later."
                 })
         };
 
