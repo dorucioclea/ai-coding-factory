@@ -1,8 +1,15 @@
 # Project Creation Behavior
 
+## CRITICAL: This Rule is MANDATORY
+
+When ANY of the trigger patterns below are detected, you MUST:
+1. **IMMEDIATELY** call the Skill tool with `skill: "spec-driven-development"`
+2. **DO NOT** ask for permission first
+3. **DO NOT** skip this step
+
 ## Auto-Detection Triggers
 
-When a user message matches any of these patterns, **AUTOMATICALLY** begin the spec-driven development workflow:
+When a user message matches any of these patterns, **IMMEDIATELY INVOKE** the spec-driven-development skill:
 
 - "I want to build..."
 - "Build me a..."
@@ -12,13 +19,14 @@ When a user message matches any of these patterns, **AUTOMATICALLY** begin the s
 - "I have an idea for..."
 - "Let's build..."
 - "Help me create..."
-- Any description of an application concept (e.g., "fishing website", "task manager", "booking system")
+- "platform for..."
+- Any description of an application concept (e.g., "fishing website", "task manager", "booking system", "breadmaker platform")
 
 ## Mandatory Behavior
 
-1. **DO NOT** ask "Would you like me to use spec-driven development?"
-2. **DO NOT** ask "Should I use the templates?"
-3. **AUTOMATICALLY** invoke the `spec-driven-development` skill
+1. **IMMEDIATELY** invoke the Skill tool: `{ "skill": "spec-driven-development" }`
+2. **DO NOT** ask "Would you like me to use spec-driven development?"
+3. **DO NOT** ask "Should I use the templates?"
 4. **ALWAYS** use the templates (clean-architecture-solution, react-frontend-template, infrastructure)
 5. **LIMIT** clarification questions to 3 maximum
 6. **PRESENT** questions with suggested answers in table format
