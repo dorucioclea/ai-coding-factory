@@ -267,14 +267,15 @@ rules:
 # =============================================================================
 delegation:
   # Which agent handles which concern
+  # Agent names match files in .claude/agents/*.md
   requirements:
-    primary: product-owner
-    backup: scrum-master
+    primary: product-owner-agent
+    backup: scrum-master-agent
   architecture:
     primary: architect
     backup: planner
   implementation:
-    primary: developer
+    primary: developer-agent
     collaborators: [tdd-guide, code-reviewer]
   testing:
     primary: tdd-guide
@@ -300,17 +301,17 @@ cross_cutting:
     reason: Security and architectural compliance reviews
 
   - skill: api-implementation
-    owner: developer
+    owner: developer-agent
     collaborators: [security-reviewer, doc-updater]
     reason: API security and documentation sync
 
   - skill: database-changes
-    owner: developer
+    owner: developer-agent
     collaborators: [architect, security-reviewer]
     reason: Schema changes affect architecture and may have security implications
 
   - skill: authentication
-    owner: developer
+    owner: developer-agent
     collaborators: [security-reviewer]
     reason: All auth code requires security review
 

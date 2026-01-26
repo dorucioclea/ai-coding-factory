@@ -79,7 +79,22 @@ if [ ! -f ".aiexclude" ] && [ -f ".gitignore" ]; then
 fi
 
 # ============================================================================
-# 4. Sync skills from .claude/skills to .opencode/skill
+# 4. Sync agents from .claude/agents to all targets
+# ============================================================================
+log "Syncing agents from .claude/agents/..."
+
+if [ -f "$PROJECT_ROOT/scripts/sync-agents.sh" ]; then
+    if $DRY_RUN; then
+        run_cmd "$PROJECT_ROOT/scripts/sync-agents.sh" --all --dry-run
+    else
+        "$PROJECT_ROOT/scripts/sync-agents.sh" --all
+    fi
+else
+    log "Warning: sync-agents.sh not found, skipping agent sync"
+fi
+
+# ============================================================================
+# 5. Sync skills from .claude/skills to .opencode/skill
 # ============================================================================
 log "Syncing skills to .opencode/skill/..."
 
