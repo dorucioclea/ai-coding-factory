@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Api\VlogForge.Api.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure\VlogForge.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

@@ -5,8 +5,9 @@ using Xunit;
 
 namespace VlogForge.IntegrationTests.Api;
 
-[Trait("Story", "ACF-0001")]
-public class HealthCheckTests : IClassFixture<WebApplicationFactoryFixture>
+[Trait("Story", "ACF-001")]
+[Collection("Database")]
+public class HealthCheckTests
 {
     private readonly HttpClient _client;
 
