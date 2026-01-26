@@ -5,12 +5,15 @@
  * Synchronize AI coding assistant configurations across multiple systems.
  *
  * Usage:
- *   acs sync [options]         Sync configurations between systems
+ *   acs sync [options]         Sync configurations from source to targets
+ *   acs merge [options]        Merge from multiple sources to canonical, then sync
  *   acs status                 Show status of all systems
  *   acs diff [options]         Show differences between systems
  *   acs init [options]         Initialize AI config sync
  *   acs history [options]      Show sync history
  *   acs systems [options]      List supported systems
+ *   acs mcp [options]          Sync MCP server configurations
+ *   acs skill-index [options]  Generate skill index for limited systems
  */
 
 import { Command } from "commander";
@@ -26,6 +29,7 @@ import {
   systemsCommand,
   mcpSyncCommand,
   skillIndexCommand,
+  mergeCommand,
 } from "./commands/index.js";
 
 const program = new Command();
@@ -154,6 +158,35 @@ program
   .action(async (options) => {
     const projectRoot = resolveProjectRoot(program.opts().project);
     await skillIndexCommand(projectRoot, options);
+  });
+
+// Merge command - multi-source to multi-target
+program
+  .command("merge")
+  .description("Merge artifacts from multiple sources to a canonical source, then sync to all targets")
+  .option(
+    "-s, --sources <systems...>",
+    "Source systems to scan (default: claude, opencode, codex)"
+  )
+  .option(
+    "-c, --canonical <system>",
+    "Canonical source to consolidate into (default: claude)"
+  )
+  .option(
+    "-t, --targets <systems...>",
+    "Target systems to sync to (default: all sources + opencode, cursor, codex)"
+  )
+  .option(
+    "--types <types...>",
+    "Artifact types to merge (skill, agent, command, hook, rule)"
+  )
+  .option("-n, --dry-run", "Show what would be merged without making changes")
+  .option("-f, --force", "Force merge even if conflicts exist")
+  .option("--no-symlinks", "Copy files instead of creating symlinks")
+  .option("-v, --verbose", "Show detailed output")
+  .action(async (options) => {
+    const projectRoot = resolveProjectRoot(program.opts().project);
+    await mergeCommand(projectRoot, options);
   });
 
 // Parse and execute
