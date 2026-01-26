@@ -14,13 +14,23 @@ AI Coding Factory is an enterprise software delivery platform that uses AI-assis
 ```
 .claude/                    # Claude Code configuration
 ├── settings.json           # Claude Code settings
+├── agents/                 # Agent definitions (orchestrator.yaml, etc.)
 ├── commands/               # Custom slash commands
+├── skills/                 # 131+ reusable skills
 └── hooks/                  # Pre/post execution hooks
 
+config/                     # Declarative configuration
+├── enforcement/            # Enforcement rules (YAML)
+│   └── rules.yaml          # Declarative governance rules
+└── gates/                  # Phase transition checklists
+    ├── ideation-gate.md
+    ├── development-gate.md
+    ├── validation-gate.md
+    └── release-gate.md
+
 .opencode/                  # OpenCode configuration (legacy, being migrated)
-├── agent/                  # Agent definitions (14 agents)
-├── skill/                  # Reusable skills (12 skills)
-├── plugin/                 # TypeScript plugins (3 plugins)
+├── agent/                  # Agent definitions (symlinks to .claude/)
+├── skill/                  # Reusable skills (symlinks to .claude/)
 ├── templates/              # Agile/Scrum templates
 └── prompts/                # Shared instructions
 
@@ -35,6 +45,7 @@ scripts/                    # Automation and validation
 ├── validate-project.sh
 ├── validate-documentation.sh
 ├── validate-rnd-policy.sh
+├── validate-enforcement-rules.py  # Declarative rules validator
 ├── scaffold-and-verify.sh
 ├── traceability/           # Story-test-commit linkage
 └── coverage/               # Code coverage validation
@@ -50,6 +61,12 @@ projects/                   # User workspace (gitignored)
 ./scripts/validate-project.sh
 ./scripts/validate-documentation.sh
 ./scripts/validate-rnd-policy.sh
+
+# Validate enforcement rules
+python3 scripts/validate-enforcement-rules.py --phase development
+
+# Show agent delegation map
+python3 scripts/validate-enforcement-rules.py --show-delegation
 
 # Validate traceability
 python3 scripts/traceability/traceability.py validate
@@ -74,10 +91,30 @@ dotnet restore && dotnet build && dotnet test
 
 **IMPORTANT**: Always follow `CORPORATE_RND_POLICY.md` as the authoritative governance document.
 
+### Enforcement Rules
+
+Declarative enforcement rules are defined in `config/enforcement/rules.yaml`. These rules:
+- Enforce governance principles automatically
+- Define agent delegation and collaboration patterns
+- Block or warn on policy violations
+
+```bash
+# Validate current work against enforcement rules
+python3 scripts/validate-enforcement-rules.py --phase development --verbose
+```
+
+### Gate Validation
+
+Phase transitions are governed by checklists in `config/gates/`:
+- `ideation-gate.md` - Before starting development
+- `development-gate.md` - Before validation testing
+- `validation-gate.md` - Before release
+- `release-gate.md` - Before production deployment
+
 ### Required Before Any Work
 - Read this file and `CORPORATE_RND_POLICY.md`
 - Understand the stage you're working in (Ideation/Development/Validation/Release/Maintenance)
-- Know your exit criteria before starting
+- Know your exit criteria before starting (see `config/gates/`)
 
 ### Story ID Convention
 - Format: `ACF-###` (e.g., `ACF-001`, `ACF-042`)
@@ -99,7 +136,20 @@ A story is complete when:
 
 ## Agent System (Task-based)
 
-Use Claude Code's Task tool to spawn specialized agents for different work:
+Use Claude Code's Task tool to spawn specialized agents for different work.
+
+### Orchestrator Agent
+
+The orchestrator coordinates workflow across all agents. See `.claude/agents/orchestrator.yaml` for:
+- **Delegation Map**: Which agent handles which domain
+- **Phase Workflow**: Ideation → Development → Validation → Release → Maintenance
+- **Gate Validation**: Checklists for phase transitions
+- **Cross-Cutting Collaborations**: When multiple agents must work together
+
+```bash
+# View agent delegation
+python3 scripts/validate-enforcement-rules.py --show-delegation
+```
 
 ### Stage Agents
 | Agent | Use For | Spawn Command |
@@ -331,6 +381,9 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 | Security checklists | `.opencode/templates/artifacts/` |
 | Agile templates | `.opencode/templates/agile/` |
 | Role playbooks | `.opencode/templates/roles/` |
+| Enforcement rules | `config/enforcement/rules.yaml` |
+| Gate checklists | `config/gates/*.md` |
+| Agent definitions | `.claude/agents/*.yaml` |
 
 ## Troubleshooting
 

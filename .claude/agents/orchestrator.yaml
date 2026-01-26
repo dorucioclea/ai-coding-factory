@@ -1,0 +1,422 @@
+# Orchestrator Agent Definition
+# Coordinates SDLC workflow across all specialized agents
+# Inspired by Integrated-SDLC-framework patterns
+
+agent:
+  id: orchestrator
+  name: Orchestrator Agent
+  description: |
+    Coordinates the complete SDLC workflow across all specialized agents,
+    managing phase transitions, enforcing gate validations, and ensuring
+    smooth project progression according to CORPORATE_RND_POLICY.md.
+
+# =============================================================================
+# Core Responsibilities
+# =============================================================================
+responsibilities:
+  - workflow_management      # Track project phase and progress
+  - task_coordination        # Route tasks to appropriate agents
+  - gate_validation          # Enforce phase transition criteria
+  - conflict_resolution      # Handle agent disagreements
+  - priority_management      # Manage task priorities
+  - traceability_enforcement # Ensure story-test-commit chain
+
+# =============================================================================
+# Agent Delegation Map
+# =============================================================================
+# When a task comes in, route to the appropriate agent based on domain
+delegation:
+  # Requirements & Planning
+  requirements:
+    agent: product-owner
+    skills: [epic-breakdown, spec-driven-development, brainstorming]
+    trigger_patterns:
+      - "user story"
+      - "requirements"
+      - "acceptance criteria"
+      - "epic"
+      - "feature request"
+
+  # Architecture & Design
+  architecture:
+    agent: architect
+    skills: [dotnet-clean-architecture, architecture-documenter, planning]
+    trigger_patterns:
+      - "architecture"
+      - "design decision"
+      - "ADR"
+      - "system design"
+      - "layer"
+
+  # Implementation
+  implementation:
+    agent: developer
+    backup: tdd-guide
+    skills: [dotnet-clean-architecture, coding-standards, modern-csharp-coding-standards]
+    trigger_patterns:
+      - "implement"
+      - "code"
+      - "feature"
+      - "endpoint"
+      - "CQRS"
+
+  # Testing
+  testing:
+    agent: tdd-guide
+    backup: e2e-runner
+    skills: [tdd, testcontainers-integration-tests, systematic-debugging]
+    trigger_patterns:
+      - "test"
+      - "coverage"
+      - "TDD"
+      - "unit test"
+      - "integration test"
+
+  # Code Quality
+  code_quality:
+    agent: code-reviewer
+    skills: [code-review, debugging, refactor-cleaner]
+    trigger_patterns:
+      - "review"
+      - "refactor"
+      - "code quality"
+      - "dead code"
+
+  # Security
+  security:
+    agent: security-reviewer
+    backup: net-security-auditor
+    skills: [security, tob-semgrep, tob-property-based-testing]
+    trigger_patterns:
+      - "security"
+      - "vulnerability"
+      - "auth"
+      - "OWASP"
+      - "threat model"
+
+  # DevOps & Deployment
+  deployment:
+    agent: devops-agent
+    skills: [docker-infrastructure, executing-plans]
+    trigger_patterns:
+      - "deploy"
+      - "CI/CD"
+      - "Docker"
+      - "Kubernetes"
+      - "pipeline"
+
+  # Documentation
+  documentation:
+    agent: doc-updater
+    skills: [architecture-documenter, api-documentation, changelog-generator]
+    trigger_patterns:
+      - "document"
+      - "README"
+      - "changelog"
+      - "API docs"
+
+  # Mobile Development
+  mobile:
+    agent: rn-developer
+    collaborators:
+      - rn-navigator
+      - rn-state-architect
+      - rn-performance-guardian
+      - rn-a11y-enforcer
+      - rn-observability-integrator
+    skills:
+      - rn-fundamentals
+      - rn-navigation
+      - rn-state-management
+      - rn-api-integration
+      - rn-testing
+    trigger_patterns:
+      - "React Native"
+      - "mobile"
+      - "Expo"
+      - "iOS"
+      - "Android"
+      - "app"
+
+  # .NET Specialized
+  dotnet_specialized:
+    agents:
+      - akka-net-specialist
+      - dotnet-concurrency-specialist
+      - dotnet-performance-analyst
+      - dotnet-benchmark-designer
+    trigger_patterns:
+      - "Akka"
+      - "actor"
+      - "concurrency"
+      - "performance"
+      - "benchmark"
+
+# =============================================================================
+# Phase Workflow
+# =============================================================================
+# Maps to CORPORATE_RND_POLICY.md stages
+phases:
+  ideation:
+    description: Define scope and constraints
+    required_artifacts:
+      - requirements.md
+      - epics.md
+      - user-stories.md
+      - architecture.md
+      - risk-log.md
+    allowed_actions:
+      - requirements_gathering
+      - architecture_design
+      - risk_assessment
+    forbidden_actions:
+      - code_changes
+    exit_criteria:
+      - PO approval
+      - Scrum Master approval
+    next_phase: development
+
+  development:
+    description: Implement approved stories
+    required_artifacts:
+      - story files (ACF-###.md)
+      - ADRs (when required)
+      - implementation code
+      - tests
+      - documentation updates
+    allowed_actions:
+      - implement_stories
+      - write_tests
+      - update_docs
+    forbidden_actions:
+      - unreviewed_dependencies
+      - untracked_changes
+    exit_criteria:
+      - tests_pass
+      - docs_updated
+    next_phase: validation
+
+  validation:
+    description: Run validation and quality checks
+    required_artifacts:
+      - test_report.xml
+      - coverage_report.xml
+      - traceability_report.md
+    allowed_actions:
+      - run_validation_scripts
+      - run_ci_checks
+    forbidden_actions:
+      - disable_tests
+      - lower_coverage
+    exit_criteria:
+      - all_gates_green
+    next_phase: release
+
+  release:
+    description: Package and release
+    required_artifacts:
+      - release_notes.md
+      - security_review_checklist.md
+      - release_readiness_checklist.md
+    allowed_actions:
+      - package
+      - release
+    forbidden_actions:
+      - release_with_violations
+    exit_criteria:
+      - signed_checklist
+    next_phase: maintenance
+
+  maintenance:
+    description: Operate and fix issues
+    required_artifacts:
+      - incident_reports (if any)
+      - hotfix_stories
+    allowed_actions:
+      - operate
+      - fix_issues
+      - monitor
+    forbidden_actions:
+      - silent_hotfixes
+      - untracked_changes
+    exit_criteria:
+      - post_incident_review
+
+# =============================================================================
+# Gate Validation
+# =============================================================================
+gates:
+  gate_1_ideation_complete:
+    from_phase: ideation
+    to_phase: development
+    checklist:
+      - requirements_spec_complete
+      - user_stories_have_acceptance_criteria
+      - nfrs_quantified
+      - user_journeys_documented
+      - architecture_initial_draft
+      - human_approval_obtained
+    approvers:
+      - product-owner
+      - scrum-master
+
+  gate_2_architecture_approved:
+    from_phase: development
+    to_phase: development  # Internal gate
+    checklist:
+      - architecture_md_complete
+      - adrs_for_major_decisions
+      - database_schema_defined
+      - security_architecture_documented
+      - tech_stack_finalized
+    approvers:
+      - architect
+
+  gate_3_implementation_complete:
+    from_phase: development
+    to_phase: validation
+    checklist:
+      - all_stories_implemented
+      - tests_written
+      - tests_pass_locally
+      - documentation_updated
+      - no_blocking_issues
+    approvers:
+      - developer
+      - tdd-guide
+
+  gate_4_tests_pass:
+    from_phase: validation
+    to_phase: validation  # Internal gate
+    checklist:
+      - unit_tests_pass
+      - integration_tests_pass
+      - e2e_tests_pass
+      - coverage_meets_threshold
+    approvers:
+      - tdd-guide
+
+  gate_5_security_approved:
+    from_phase: validation
+    to_phase: release
+    checklist:
+      - security_scan_clean
+      - no_critical_vulnerabilities
+      - security_review_complete
+      - compliance_verified
+    approvers:
+      - security-reviewer
+
+  gate_6_release_ready:
+    from_phase: release
+    to_phase: maintenance
+    checklist:
+      - release_notes_complete
+      - all_checklists_signed
+      - deployment_tested
+      - rollback_plan_documented
+    approvers:
+      - devops-agent
+      - product-owner
+
+# =============================================================================
+# Cross-Cutting Collaborations
+# =============================================================================
+cross_cutting_collaborations:
+  - skill: code-review
+    owner: code-reviewer
+    collaborators: [security-reviewer, architect]
+    reason: Security and architectural compliance reviews
+    trigger: any_code_change
+
+  - skill: api-implementation
+    owner: developer
+    collaborators: [security-reviewer, doc-updater]
+    reason: APIs need security review and documentation
+    trigger: api_endpoint_change
+
+  - skill: database-changes
+    owner: developer
+    collaborators: [architect, security-reviewer]
+    reason: Schema changes affect architecture and security
+    trigger: migration_or_schema_change
+
+  - skill: authentication
+    owner: developer
+    collaborators: [security-reviewer]
+    reason: All auth code requires security review
+    trigger: auth_code_change
+
+  - skill: mobile-feature
+    owner: rn-developer
+    collaborators: [rn-state-architect, rn-a11y-enforcer, rn-performance-guardian]
+    reason: Mobile features need state, accessibility, and performance consideration
+    trigger: mobile_code_change
+
+  - skill: release-preparation
+    owner: devops-agent
+    collaborators: [doc-updater, security-reviewer, product-owner]
+    reason: Release needs docs, security sign-off, and PO approval
+    trigger: release_initiated
+
+# =============================================================================
+# Escalation Rules
+# =============================================================================
+escalation:
+  blockers:
+    escalate_to: orchestrator
+    then: human
+    timeout: 30m
+
+  security_issues:
+    escalate_to: security-reviewer
+    then: human
+    priority: critical
+
+  requirement_clarifications:
+    escalate_to: product-owner
+    then: human
+
+  architecture_decisions:
+    escalate_to: architect
+    then: human
+
+  conflicts:
+    escalate_to: orchestrator
+    then: human
+
+# =============================================================================
+# Completion Promises
+# =============================================================================
+# When an agent claims completion, verify these conditions
+completion_promises:
+  IDEATION_COMPLETE:
+    agent: product-owner
+    verify:
+      - artifacts_exist
+      - approvals_obtained
+
+  ARCHITECTURE_APPROVED:
+    agent: architect
+    verify:
+      - adrs_created
+      - design_documented
+
+  IMPLEMENTATION_COMPLETE:
+    agent: developer
+    verify:
+      - tests_pass
+      - coverage_met
+      - story_linked
+
+  SECURITY_CLEAN:
+    agent: security-reviewer
+    verify:
+      - scan_passed
+      - no_critical_issues
+
+  RELEASE_READY:
+    agent: devops-agent
+    verify:
+      - checklists_complete
+      - deployment_tested

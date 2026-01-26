@@ -1,0 +1,320 @@
+# Declarative Enforcement Rules for AI Coding Factory
+# Inspired by Agentic SDLC 12 Factors
+# These rules are read by validation scripts and hooks to enforce governance
+#
+# Rule Structure:
+#   name: Unique identifier for the rule
+#   factor: Which governance principle this enforces (maps to CORPORATE_RND_POLICY.md)
+#   trigger: When the rule is evaluated (pre_edit, post_edit, pre_commit, phase_transition, pull_request)
+#   condition: Expression that determines if action is triggered (! prefix for negation)
+#   action: What happens when condition is met (block, warn, require_approval, require_review)
+#   message: Human-readable explanation shown to user/agent
+#   agent: (optional) Which agent handles the action
+#   paths: (optional) File patterns this rule applies to
+
+version: "1.0"
+project: ai-coding-factory
+
+# =============================================================================
+# Factor 1: Quality Over Speed - No shortcuts without ADRs
+# =============================================================================
+rules:
+  - name: no_implementation_without_story
+    factor: quality_over_speed
+    description: All implementation work must be linked to a story
+    trigger: pre_commit
+    condition: "!commit_message_has_story_id"
+    action: warn
+    message: |
+      Commit message should reference a story ID (ACF-###).
+      Format: ACF-### Brief description of change
+
+  - name: adr_required_for_architecture_changes
+    factor: quality_over_speed
+    description: Architectural changes require documented decisions
+    trigger: post_edit
+    paths:
+      - "templates/**/Domain/**"
+      - "templates/**/Infrastructure/**"
+      - "**/architecture/**"
+    condition: "changes_architecture && !has_adr_reference"
+    action: require_approval
+    message: |
+      Architectural changes detected. Consider creating an ADR in docs/architecture/adr/
+      if this is a significant decision.
+    agent: architect
+
+# =============================================================================
+# Factor 2: Test-First / Test-Always
+# =============================================================================
+  - name: tests_required_for_code_changes
+    factor: test_first
+    description: Code changes must have corresponding tests
+    trigger: pre_commit
+    paths:
+      - "**/*.cs"
+      - "**/*.ts"
+      - "**/*.tsx"
+    condition: "changes_code && !has_test_changes"
+    action: warn
+    message: |
+      Code changes detected without test updates.
+      Ensure tests exist for new/changed behavior.
+
+  - name: coverage_threshold_check
+    factor: test_first
+    description: Maintain minimum coverage thresholds
+    trigger: phase_transition
+    phase: validation
+    condition: "coverage < 80"
+    action: block
+    message: |
+      Coverage is below 80% threshold.
+      Domain/Application layers require >= 80% coverage.
+
+# =============================================================================
+# Factor 3: Security and Privacy by Default
+# =============================================================================
+  - name: security_review_for_auth_code
+    factor: security_by_default
+    description: Auth-related changes require security review
+    trigger: post_edit
+    paths:
+      - "**/auth/**"
+      - "**/authentication/**"
+      - "**/authorization/**"
+      - "**/*Auth*"
+      - "**/*Token*"
+      - "**/*Credential*"
+    condition: "changes_security_sensitive_code"
+    action: require_review
+    agent: security-reviewer
+    message: |
+      Security-sensitive code changed. Security review required.
+      Affected areas: authentication, authorization, credentials
+
+  - name: no_secrets_in_code
+    factor: security_by_default
+    description: Prevent hardcoded secrets
+    trigger: pre_commit
+    condition: "contains_potential_secrets"
+    action: block
+    message: |
+      Potential secrets detected in code.
+      Use environment variables or secret management instead.
+      Check: API keys, passwords, tokens, connection strings
+
+  - name: no_env_files_committed
+    factor: security_by_default
+    description: Prevent .env files from being committed
+    trigger: pre_commit
+    paths:
+      - "**/.env"
+      - "**/.env.local"
+      - "**/.env.production"
+    condition: "file_staged"
+    action: block
+    message: |
+      .env files should not be committed.
+      Use .env.example instead and add .env to .gitignore.
+
+# =============================================================================
+# Factor 4: Traceability
+# =============================================================================
+  - name: story_id_in_tests
+    factor: traceability
+    description: Tests should reference their story ID
+    trigger: post_edit
+    paths:
+      - "**/*.Tests/**"
+      - "**/tests/**"
+      - "**/*.test.ts"
+      - "**/*.spec.ts"
+    condition: "new_test_without_story_trait"
+    action: warn
+    message: |
+      New tests should include story ID for traceability.
+      C#: [Trait("Story", "ACF-###")]
+      JS/TS: describe('ACF-### Feature name', ...)
+
+  - name: traceability_validation
+    factor: traceability
+    description: Validate story-test-commit chain
+    trigger: phase_transition
+    phase: validation
+    condition: "!traceability_valid"
+    action: block
+    message: |
+      Traceability validation failed.
+      Run: python3 scripts/traceability/traceability.py validate
+
+# =============================================================================
+# Factor 5: Clean Architecture Compliance
+# =============================================================================
+  - name: domain_no_external_dependencies
+    factor: clean_architecture
+    description: Domain layer must have zero external dependencies
+    trigger: post_edit
+    paths:
+      - "**/Domain/**/*.cs"
+    condition: "domain_has_infrastructure_reference"
+    action: block
+    message: |
+      Domain layer violation: External dependencies detected.
+      Domain must have ZERO dependencies on Infrastructure or Application.
+
+  - name: application_depends_only_on_domain
+    factor: clean_architecture
+    description: Application layer depends only on Domain
+    trigger: post_edit
+    paths:
+      - "**/Application/**/*.cs"
+    condition: "application_has_infrastructure_reference"
+    action: block
+    message: |
+      Application layer violation: Infrastructure reference detected.
+      Application layer should only depend on Domain.
+
+# =============================================================================
+# Factor 6: Gate Validation (Phase Transitions)
+# =============================================================================
+  - name: ideation_gate
+    factor: gate_validation
+    description: Ideation phase exit criteria
+    trigger: phase_transition
+    phase: development
+    condition: "!ideation_artifacts_complete"
+    action: block
+    message: |
+      Ideation gate not passed. Required artifacts:
+      - requirements.md
+      - epics.md or user-stories.md
+      - architecture.md (initial)
+      - risk-log.md
+
+  - name: development_gate
+    factor: gate_validation
+    description: Development phase exit criteria
+    trigger: phase_transition
+    phase: validation
+    condition: "!development_artifacts_complete"
+    action: block
+    message: |
+      Development gate not passed. Required:
+      - All stories have tests
+      - Tests pass locally
+      - Documentation updated
+      - No blocking security issues
+
+  - name: validation_gate
+    factor: gate_validation
+    description: Validation phase exit criteria
+    trigger: phase_transition
+    phase: release
+    condition: "!validation_complete"
+    action: block
+    message: |
+      Validation gate not passed. Required:
+      - All CI checks green
+      - Coverage >= 80%
+      - Traceability report generated
+      - Security scan clean
+
+  - name: release_gate
+    factor: gate_validation
+    description: Release phase exit criteria
+    trigger: phase_transition
+    phase: maintenance
+    condition: "!release_checklist_complete"
+    action: block
+    message: |
+      Release gate not passed. Required:
+      - Release notes complete
+      - Security review checklist signed
+      - Release readiness checklist complete
+
+# =============================================================================
+# Factor 7: Documentation Sync
+# =============================================================================
+  - name: api_docs_sync
+    factor: documentation
+    description: API changes require documentation updates
+    trigger: post_edit
+    paths:
+      - "**/Controllers/**"
+      - "**/Endpoints/**"
+      - "**/api/**"
+    condition: "api_changed && !docs_changed"
+    action: warn
+    message: |
+      API changes detected. Consider updating:
+      - OpenAPI/Swagger specs
+      - API documentation
+      - README if public API
+
+  - name: readme_for_new_features
+    factor: documentation
+    description: New features should update README
+    trigger: pre_commit
+    condition: "new_feature && !readme_updated"
+    action: warn
+    message: |
+      New feature added. Consider updating README.md
+      with usage instructions and examples.
+
+# =============================================================================
+# Agent Delegation Rules
+# =============================================================================
+delegation:
+  # Which agent handles which concern
+  requirements:
+    primary: product-owner
+    backup: scrum-master
+  architecture:
+    primary: architect
+    backup: planner
+  implementation:
+    primary: developer
+    collaborators: [tdd-guide, code-reviewer]
+  testing:
+    primary: tdd-guide
+    collaborators: [e2e-runner]
+  security:
+    primary: security-reviewer
+    backup: net-security-auditor
+  deployment:
+    primary: devops-agent
+  documentation:
+    primary: doc-updater
+  mobile:
+    primary: rn-developer
+    collaborators: [rn-navigator, rn-state-architect, rn-performance-guardian]
+
+# =============================================================================
+# Cross-Cutting Collaboration Patterns
+# =============================================================================
+cross_cutting:
+  - skill: code-review
+    owner: code-reviewer
+    collaborators: [security-reviewer, architect]
+    reason: Security and architectural compliance reviews
+
+  - skill: api-implementation
+    owner: developer
+    collaborators: [security-reviewer, doc-updater]
+    reason: API security and documentation sync
+
+  - skill: database-changes
+    owner: developer
+    collaborators: [architect, security-reviewer]
+    reason: Schema changes affect architecture and may have security implications
+
+  - skill: authentication
+    owner: developer
+    collaborators: [security-reviewer]
+    reason: All auth code requires security review
+
+  - skill: mobile-feature
+    owner: rn-developer
+    collaborators: [rn-state-architect, rn-a11y-enforcer, rn-performance-guardian]
+    reason: Mobile features need state, accessibility, and performance consideration
