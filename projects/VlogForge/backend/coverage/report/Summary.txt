@@ -1,0 +1,82 @@
+Summary
+  Generated on: 1/26/2026 - 8:40:24 PM
+  Coverage date: 1/26/2026 - 8:39:45 PM
+  Parser: Cobertura
+  Assemblies: 2
+  Classes: 58
+  Files: 43
+  Line coverage: 87.4%
+  Covered lines: 965
+  Uncovered lines: 138
+  Coverable lines: 1103
+  Total lines: 2673
+  Branch coverage: 88.5% (177 of 200)
+  Covered branches: 177
+  Total branches: 200
+  Method coverage: 89.4% (230 of 257)
+  Full method coverage: 85.2% (219 of 257)
+  Covered methods: 230
+  Fully covered methods: 219
+  Total methods: 257
+
+VlogForge.Application                                                                       82.7%
+  VlogForge.Application.Auth.Commands.ForgotPassword.ForgotPasswordCommand                   100%
+  VlogForge.Application.Auth.Commands.ForgotPassword.ForgotPasswordCommandHandler            100%
+  VlogForge.Application.Auth.Commands.ForgotPassword.ForgotPasswordCommandValidator            0%
+  VlogForge.Application.Auth.Commands.Login.LoginCommand                                     100%
+  VlogForge.Application.Auth.Commands.Login.LoginCommandHandler                             95.4%
+  VlogForge.Application.Auth.Commands.Login.LoginCommandValidator                              0%
+  VlogForge.Application.Auth.Commands.Logout.LogoutCommand                                   100%
+  VlogForge.Application.Auth.Commands.Logout.LogoutCommandHandler                            100%
+  VlogForge.Application.Auth.Commands.Logout.LogoutCommandValidator                            0%
+  VlogForge.Application.Auth.Commands.RefreshToken.RefreshTokenCommand                       100%
+  VlogForge.Application.Auth.Commands.RefreshToken.RefreshTokenCommandHandler                100%
+  VlogForge.Application.Auth.Commands.RefreshToken.RefreshTokenCommandValidator                0%
+  VlogForge.Application.Auth.Commands.RegisterUser.RegisterUserCommand                       100%
+  VlogForge.Application.Auth.Commands.RegisterUser.RegisterUserCommandHandler               75.3%
+  VlogForge.Application.Auth.Commands.RegisterUser.RegisterUserCommandValidator                0%
+  VlogForge.Application.Auth.Commands.ResendVerification.ResendVerificationCommand           100%
+  VlogForge.Application.Auth.Commands.ResendVerification.ResendVerificationCommandHandler    100%
+  VlogForge.Application.Auth.Commands.ResetPassword.ResetPasswordCommand                     100%
+  VlogForge.Application.Auth.Commands.ResetPassword.ResetPasswordCommandHandler             94.1%
+  VlogForge.Application.Auth.Commands.ResetPassword.ResetPasswordCommandValidator              0%
+  VlogForge.Application.Auth.Commands.VerifyEmail.VerifyEmailCommand                         100%
+  VlogForge.Application.Auth.Commands.VerifyEmail.VerifyEmailCommandHandler                  100%
+  VlogForge.Application.Auth.Commands.VerifyEmail.VerifyEmailCommandValidator                  0%
+  VlogForge.Application.Auth.DTOs.AuthResponse                                               100%
+  VlogForge.Application.Auth.DTOs.AuthResult                                                 100%
+  VlogForge.Application.Auth.DTOs.UserProfile                                                  0%
+  VlogForge.Application.Common.Behaviours.LoggingBehaviour<T1, T2>                           100%
+  VlogForge.Application.Common.Behaviours.PerformanceBehaviour<T1, T2>                       100%
+  VlogForge.Application.Common.Behaviours.ValidationBehaviour<T1, T2>                        100%
+  VlogForge.Application.Common.Exceptions.ConflictException                                 71.4%
+  VlogForge.Application.Common.Exceptions.ForbiddenAccessException                           100%
+  VlogForge.Application.Common.Exceptions.NotFoundException                                  100%
+  VlogForge.Application.Common.Exceptions.UnauthorizedAccessException                        100%
+  VlogForge.Application.Common.Exceptions.UnauthorizedException                              100%
+  VlogForge.Application.Common.Exceptions.ValidationException                                100%
+  VlogForge.Application.Common.Interfaces.PasswordValidationResult                           100%
+  VlogForge.Application.Common.Interfaces.RefreshTokenResult                                 100%
+  VlogForge.Application.Common.Interfaces.TokenResult                                        100%
+  VlogForge.Application.DependencyInjection                                                  100%
+
+VlogForge.Domain                                                                              92%
+  VlogForge.Domain.Common.AggregateRoot                                                     66.6%
+  VlogForge.Domain.Common.DomainEvent                                                        100%
+  VlogForge.Domain.Common.Entity                                                            94.7%
+  VlogForge.Domain.Common.ValueObject                                                       94.5%
+  VlogForge.Domain.Entities.RefreshToken                                                    92.4%
+  VlogForge.Domain.Entities.User                                                            92.8%
+  VlogForge.Domain.Events.PasswordResetCompletedEvent                                       85.7%
+  VlogForge.Domain.Events.PasswordResetRequestedEvent                                       85.7%
+  VlogForge.Domain.Events.UserEmailVerifiedEvent                                            85.7%
+  VlogForge.Domain.Events.UserLockedOutEvent                                                77.7%
+  VlogForge.Domain.Events.UserLoggedInEvent                                                 85.7%
+  VlogForge.Domain.Events.UserRegisteredEvent                                                100%
+  VlogForge.Domain.Exceptions.BusinessRuleException                                          100%
+  VlogForge.Domain.Exceptions.ConcurrencyException                                           100%
+  VlogForge.Domain.Exceptions.DomainException                                                100%
+  VlogForge.Domain.Exceptions.EntityNotFoundException                                        100%
+  VlogForge.Domain.ValueObjects.Address                                                     81.4%
+  VlogForge.Domain.ValueObjects.Email                                                        100%
+  VlogForge.Domain.ValueObjects.Money                                                         98%
