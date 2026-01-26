@@ -1,0 +1,189 @@
+# React Native Native Modules
+
+## Overview
+
+Native module development for React Native applications including JSI, Turbo Modules, Fabric components, and platform-specific bridging for iOS and Android.
+
+## When to Use
+
+- Accessing platform-specific APIs not available in Expo
+- Building custom native modules
+- Integrating third-party native SDKs
+- Performance-critical native operations
+- Creating Turbo Modules with Codegen
+
+## When NOT to Use
+
+- Features available through Expo SDK
+- Pure JavaScript functionality
+- Standard UI components (use `rn-fundamentals`)
+
+---
+
+## New Architecture (React Native 0.74+)
+
+### Turbo Module with Codegen
+
+#### TypeScript Spec
+
+```typescript
+// specs/NativeDeviceInfo.ts
+import type { TurboModule } from 'react-native';
+import { TurboModuleRegistry } from 'react-native';
+
+export interface Spec extends TurboModule {
+  getDeviceId(): string;
+  getSystemVersion(): string;
+  getBatteryLevel(): Promise<number>;
+  addListener(eventName: string): void;
+  removeListeners(count: number): void;
+}
+
+export default TurboModuleRegistry.getEnforcing<Spec>('DeviceInfo');
+```
+
+#### iOS Implementation (Swift)
+
+```swift
+// ios/DeviceInfo/DeviceInfo.swift
+import Foundation
+import UIKit
+
+@objc(DeviceInfo)
+class DeviceInfo: NSObject {
+
+  @objc static func requiresMainQueueSetup() -> Bool { false }
+
+  @objc func getDeviceId() -> String {
+    UIDevice.current.identifierForVendor?.uuidString ?? "unknown"
+  }
+
+  @objc func getSystemVersion() -> String {
+    UIDevice.current.systemVersion
+  }
+
+  @objc func getBatteryLevel(
+    _ resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    DispatchQueue.main.async {
+      UIDevice.current.isBatteryMonitoringEnabled = true
+      resolve(UIDevice.current.batteryLevel * 100)
+    }
+  }
+}
+
+// ios/DeviceInfo/DeviceInfo.mm
+#import <React/RCTBridgeModule.h>
+
+@interface RCT_EXTERN_MODULE(DeviceInfo, NSObject)
+RCT_EXTERN__BLOCKING_SYNCHRONOUS_METHOD(getDeviceId)
+RCT_EXTERN__BLOCKING_SYNCHRONOUS_METHOD(getSystemVersion)
+RCT_EXTERN_METHOD(getBatteryLevel:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+@end
+```
+
+#### Android Implementation (Kotlin)
+
+```kotlin
+// android/src/main/java/com/deviceinfo/DeviceInfoModule.kt
+package com.deviceinfo
+
+import android.os.BatteryManager
+import android.content.Context
+import com.facebook.react.bridge.*
+import com.facebook.react.module.annotations.ReactModule
+
+@ReactModule(name = DeviceInfoModule.NAME)
+class DeviceInfoModule(reactContext: ReactApplicationContext) :
+    ReactContextBaseJavaModule(reactContext) {
+
+    companion object { const val NAME = "DeviceInfo" }
+
+    override fun getName(): String = NAME
+
+    @ReactMethod(isBlockingSynchronousMethod = true)
+    fun getDeviceId(): String {
+        return android.provider.Settings.Secure.getString(
+            reactApplicationContext.contentResolver,
+            android.provider.Settings.Secure.ANDROID_ID
+        ) ?: "unknown"
+    }
+
+    @ReactMethod(isBlockingSynchronousMethod = true)
+    fun getSystemVersion(): String = android.os.Build.VERSION.RELEASE
+
+    @ReactMethod
+    fun getBatteryLevel(promise: Promise) {
+        try {
+            val batteryManager = reactApplicationContext
+                .getSystemService(Context.BATTERY_SERVICE) as BatteryManager
+            promise.resolve(batteryManager.getIntProperty(
+                BatteryManager.BATTERY_PROPERTY_CAPACITY
+            ).toDouble())
+        } catch (e: Exception) {
+            promise.reject("ERROR", e.message, e)
+        }
+    }
+}
+```
+
+---
+
+## Build Configuration
+
+### iOS Podspec
+
+```ruby
+Pod::Spec.new do |s|
+  s.name         = "react-native-device-info"
+  s.version      = package["version"]
+  s.platforms    = { :ios => "13.0" }
+  s.source_files = "ios/**/*.{h,m,mm,swift}"
+  s.swift_version = "5.0"
+  install_modules_dependencies(s)
+  s.dependency "React-Core"
+end
+```
+
+### Android build.gradle
+
+```groovy
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+
+android {
+    compileSdkVersion 34
+    defaultConfig {
+        minSdkVersion 21
+        targetSdkVersion 34
+    }
+}
+
+dependencies {
+    implementation "com.facebook.react:react-native:+"
+}
+```
+
+---
+
+## Context7 Integration
+
+When uncertain about native module APIs, query Context7:
+
+```
+1. Use resolve-library-id to find: "react-native"
+2. Query specific topics:
+   - "React Native Turbo Modules setup"
+   - "React Native JSI native modules"
+   - "React Native Fabric components"
+   - "React Native new architecture migration"
+```
+
+---
+
+## Related Skills
+
+- `rn-fundamentals` - Core React Native
+- `rn-deployment` - Building with native modules

@@ -1,0 +1,653 @@
+# React Native State Management
+
+## Overview
+
+Comprehensive state management patterns for React Native applications. Covers client state (Redux Toolkit), server state (TanStack Query), and persistence strategies for offline-first mobile apps.
+
+## When to Use
+
+- Setting up app-wide state management
+- Managing server state with caching
+- Implementing offline-first patterns
+- Persisting state across app sessions
+- Optimistic updates for better UX
+
+## When NOT to Use
+
+- Simple component-local state (use useState)
+- Navigation state (use `rn-navigation`)
+- Form state only (use react-hook-form)
+
+---
+
+## Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     State Management                         │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  ┌──────────────────┐    ┌──────────────────┐              │
+│  │   Client State   │    │   Server State   │              │
+│  │  (Redux Toolkit) │    │ (TanStack Query) │              │
+│  │                  │    │                  │              │
+│  │  - UI State      │    │  - API Data      │              │
+│  │  - User Prefs    │    │  - Caching       │              │
+│  │  - Auth State    │    │  - Mutations     │              │
+│  │  - App Settings  │    │  - Invalidation  │              │
+│  └────────┬─────────┘    └────────┬─────────┘              │
+│           │                       │                         │
+│           └───────────┬───────────┘                         │
+│                       │                                     │
+│           ┌───────────┴───────────┐                         │
+│           │     Persistence       │                         │
+│           │  (AsyncStorage/MMKV)  │                         │
+│           └───────────────────────┘                         │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Redux Toolkit Setup
+
+### Store Configuration
+
+```typescript
+// store/index.ts
+import { configureStore, combineReducers } from '@reduxjs/toolkit';
+import {
+  persistStore,
+  persistReducer,
+  FLUSH,
+  REHYDRATE,
+  PAUSE,
+  PERSIST,
+  PURGE,
+  REGISTER,
+} from 'redux-persist';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import { appSlice } from '@/slices/app.slice';
+import { authSlice } from '@/slices/auth.slice';
+import { settingsSlice } from '@/slices/settings.slice';
+
+const rootReducer = combineReducers({
+  app: appSlice.reducer,
+  auth: authSlice.reducer,
+  settings: settingsSlice.reducer,
+});
+
+const persistConfig = {
+  key: 'root',
+  storage: AsyncStorage,
+  whitelist: ['auth', 'settings'], // Only persist these
+  blacklist: ['app'], // Don't persist UI state
+};
+
+const persistedReducer = persistReducer(persistConfig, rootReducer);
+
+export const store = configureStore({
+  reducer: persistedReducer,
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: {
+        ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
+      },
+    }),
+  devTools: __DEV__,
+});
+
+export const persistor = persistStore(store);
+
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;
+```
+
+### Typed Hooks
+
+```typescript
+// store/hooks.ts
+import { useDispatch, useSelector, TypedUseSelectorHook } from 'react-redux';
+import type { RootState, AppDispatch } from './index';
+
+export const useAppDispatch = () => useDispatch<AppDispatch>();
+export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
+```
+
+### Auth Slice Example
+
+```typescript
+// slices/auth.slice.ts
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { authService } from '@/services/auth/authService';
+import { User, LoginCredentials, AuthTokens } from '@/types/auth.types';
+
+interface AuthState {
+  user: User | null;
+  tokens: AuthTokens | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  error: string | null;
+}
+
+const initialState: AuthState = {
+  user: null,
+  tokens: null,
+  isAuthenticated: false,
+  isLoading: false,
+  error: null,
+};
+
+// Async thunks
+export const login = createAsyncThunk(
+  'auth/login',
+  async (credentials: LoginCredentials, { rejectWithValue }) => {
+    try {
+      const response = await authService.login(credentials);
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const logout = createAsyncThunk(
+  'auth/logout',
+  async (_, { rejectWithValue }) => {
+    try {
+      await authService.logout();
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const refreshToken = createAsyncThunk(
+  'auth/refreshToken',
+  async (_, { getState, rejectWithValue }) => {
+    try {
+      const state = getState() as { auth: AuthState };
+      const refreshToken = state.auth.tokens?.refreshToken;
+      if (!refreshToken) throw new Error('No refresh token');
+
+      const tokens = await authService.refreshToken(refreshToken);
+      return tokens;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const authSlice = createSlice({
+  name: 'auth',
+  initialState,
+  reducers: {
+    setUser: (state, action: PayloadAction<User>) => {
+      state.user = action.payload;
+    },
+    clearError: (state) => {
+      state.error = null;
+    },
+    resetAuth: () => initialState,
+  },
+  extraReducers: (builder) => {
+    builder
+      // Login
+      .addCase(login.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(login.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isAuthenticated = true;
+        state.user = action.payload.user;
+        state.tokens = action.payload.tokens;
+      })
+      .addCase(login.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      })
+      // Logout
+      .addCase(logout.fulfilled, () => initialState)
+      .addCase(logout.rejected, () => initialState)
+      // Refresh token
+      .addCase(refreshToken.fulfilled, (state, action) => {
+        state.tokens = action.payload;
+      })
+      .addCase(refreshToken.rejected, () => initialState);
+  },
+});
+
+export const { setUser, clearError, resetAuth } = authSlice.actions;
+```
+
+---
+
+## TanStack Query Setup
+
+### Query Client Configuration
+
+```typescript
+// services/api/queryClient.ts
+import { QueryClient } from '@tanstack/react-query';
+
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000,      // 5 minutes
+      gcTime: 30 * 60 * 1000,        // 30 minutes (formerly cacheTime)
+      retry: 2,
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+      refetchOnWindowFocus: false,   // Mobile doesn't have window focus
+      refetchOnReconnect: true,      // Important for mobile
+    },
+    mutations: {
+      retry: 1,
+    },
+  },
+});
+```
+
+### Query Provider
+
+```typescript
+// services/api/queryProvider.tsx
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from './queryClient';
+
+export function QueryProvider({ children }: { children: React.ReactNode }) {
+  return (
+    <QueryClientProvider client={queryClient}>
+      {children}
+    </QueryClientProvider>
+  );
+}
+```
+
+### Query Keys Pattern
+
+```typescript
+// services/api/queryKeys.ts
+export const queryKeys = {
+  // Users
+  users: {
+    all: ['users'] as const,
+    lists: () => [...queryKeys.users.all, 'list'] as const,
+    list: (filters: UserFilters) => [...queryKeys.users.lists(), filters] as const,
+    details: () => [...queryKeys.users.all, 'detail'] as const,
+    detail: (id: string) => [...queryKeys.users.details(), id] as const,
+  },
+
+  // Products
+  products: {
+    all: ['products'] as const,
+    lists: () => [...queryKeys.products.all, 'list'] as const,
+    list: (filters: ProductFilters) => [...queryKeys.products.lists(), filters] as const,
+    details: () => [...queryKeys.products.all, 'detail'] as const,
+    detail: (id: string) => [...queryKeys.products.details(), id] as const,
+    search: (query: string) => [...queryKeys.products.all, 'search', query] as const,
+  },
+} as const;
+```
+
+### Custom Query Hook Example
+
+```typescript
+// hooks/api/useProducts.ts
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/services/api/queryKeys';
+import { productService } from '@/services/api/productService';
+import { Product, CreateProductDto, UpdateProductDto } from '@/types/product.types';
+
+export function useProducts(filters?: ProductFilters) {
+  return useQuery({
+    queryKey: queryKeys.products.list(filters ?? {}),
+    queryFn: () => productService.getAll(filters),
+  });
+}
+
+export function useProduct(id: string) {
+  return useQuery({
+    queryKey: queryKeys.products.detail(id),
+    queryFn: () => productService.getById(id),
+    enabled: !!id, // Only fetch when id is available
+  });
+}
+
+export function useCreateProduct() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: CreateProductDto) => productService.create(data),
+    onSuccess: () => {
+      // Invalidate list queries
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.products.lists(),
+      });
+    },
+  });
+}
+
+export function useUpdateProduct() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: UpdateProductDto }) =>
+      productService.update(id, data),
+    onSuccess: (updatedProduct) => {
+      // Update cache directly
+      queryClient.setQueryData(
+        queryKeys.products.detail(updatedProduct.id),
+        updatedProduct
+      );
+      // Invalidate lists
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.products.lists(),
+      });
+    },
+  });
+}
+
+export function useDeleteProduct() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => productService.delete(id),
+    onSuccess: (_, deletedId) => {
+      // Remove from cache
+      queryClient.removeQueries({
+        queryKey: queryKeys.products.detail(deletedId),
+      });
+      // Invalidate lists
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.products.lists(),
+      });
+    },
+  });
+}
+```
+
+### Optimistic Updates
+
+```typescript
+// hooks/api/useToggleFavorite.ts
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/services/api/queryKeys';
+
+export function useToggleFavorite() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ productId, isFavorite }: { productId: string; isFavorite: boolean }) =>
+      productService.toggleFavorite(productId, isFavorite),
+
+    // Optimistic update
+    onMutate: async ({ productId, isFavorite }) => {
+      // Cancel outgoing queries
+      await queryClient.cancelQueries({
+        queryKey: queryKeys.products.detail(productId),
+      });
+
+      // Snapshot previous value
+      const previousProduct = queryClient.getQueryData<Product>(
+        queryKeys.products.detail(productId)
+      );
+
+      // Optimistically update
+      queryClient.setQueryData(
+        queryKeys.products.detail(productId),
+        (old: Product | undefined) =>
+          old ? { ...old, isFavorite } : old
+      );
+
+      return { previousProduct };
+    },
+
+    // Rollback on error
+    onError: (err, { productId }, context) => {
+      if (context?.previousProduct) {
+        queryClient.setQueryData(
+          queryKeys.products.detail(productId),
+          context.previousProduct
+        );
+      }
+    },
+
+    // Refetch on settle
+    onSettled: (_, __, { productId }) => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.products.detail(productId),
+      });
+    },
+  });
+}
+```
+
+---
+
+## Offline Support
+
+### Persisted Queries
+
+```typescript
+// services/api/persistedQueryClient.ts
+import { QueryClient } from '@tanstack/react-query';
+import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      gcTime: 1000 * 60 * 60 * 24, // 24 hours
+      staleTime: 1000 * 60 * 5,    // 5 minutes
+    },
+  },
+});
+
+const asyncStoragePersister = createAsyncStoragePersister({
+  storage: AsyncStorage,
+  key: 'REACT_QUERY_OFFLINE_CACHE',
+});
+
+export function PersistedQueryProvider({ children }: { children: React.ReactNode }) {
+  return (
+    <PersistQueryClientProvider
+      client={queryClient}
+      persistOptions={{
+        persister: asyncStoragePersister,
+        maxAge: 1000 * 60 * 60 * 24, // 24 hours
+      }}
+    >
+      {children}
+    </PersistQueryClientProvider>
+  );
+}
+```
+
+### Network Status Hook
+
+```typescript
+// hooks/useNetworkStatus.ts
+import { useEffect, useState } from 'react';
+import NetInfo, { NetInfoState } from '@react-native-community/netinfo';
+import { onlineManager } from '@tanstack/react-query';
+
+export function useNetworkStatus() {
+  const [isOnline, setIsOnline] = useState(true);
+  const [networkType, setNetworkType] = useState<string | null>(null);
+
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener((state: NetInfoState) => {
+      const online = state.isConnected ?? true;
+      setIsOnline(online);
+      setNetworkType(state.type);
+
+      // Sync with TanStack Query
+      onlineManager.setOnline(online);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  return { isOnline, networkType };
+}
+```
+
+---
+
+## Component Usage Patterns
+
+### Screen with Data Fetching
+
+```typescript
+// screens/ProductListScreen.tsx
+import { View, FlatList, RefreshControl } from 'react-native';
+import { useProducts } from '@/hooks/api/useProducts';
+import { ProductCard } from '@/components/features/products/ProductCard';
+import { LoadingScreen } from '@/components/shared/LoadingScreen';
+import { ErrorView } from '@/components/shared/ErrorView';
+import { EmptyState } from '@/components/shared/EmptyState';
+
+export function ProductListScreen() {
+  const {
+    data: products,
+    isLoading,
+    isError,
+    error,
+    refetch,
+    isRefetching,
+  } = useProducts();
+
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
+
+  if (isError) {
+    return <ErrorView message={error.message} onRetry={refetch} />;
+  }
+
+  return (
+    <FlatList
+      data={products}
+      keyExtractor={(item) => item.id}
+      renderItem={({ item }) => <ProductCard product={item} />}
+      ListEmptyComponent={<EmptyState message="No products found" />}
+      refreshControl={
+        <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
+      }
+      contentContainerStyle={{ padding: 16 }}
+      ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+    />
+  );
+}
+```
+
+### Form with Mutation
+
+```typescript
+// screens/CreateProductScreen.tsx
+import { View, Alert } from 'react-native';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { router } from 'expo-router';
+import { useCreateProduct } from '@/hooks/api/useProducts';
+import { Button, Input } from '@/components/ui';
+
+const schema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  price: z.number().positive('Price must be positive'),
+  description: z.string().optional(),
+});
+
+type FormData = z.infer<typeof schema>;
+
+export function CreateProductScreen() {
+  const createProduct = useCreateProduct();
+
+  const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
+    resolver: zodResolver(schema),
+    defaultValues: { name: '', price: 0, description: '' },
+  });
+
+  const onSubmit = async (data: FormData) => {
+    try {
+      await createProduct.mutateAsync(data);
+      Alert.alert('Success', 'Product created!');
+      router.back();
+    } catch (error) {
+      Alert.alert('Error', error.message);
+    }
+  };
+
+  return (
+    <View style={{ flex: 1, padding: 16 }}>
+      <Controller
+        control={control}
+        name="name"
+        render={({ field: { onChange, value } }) => (
+          <Input
+            label="Name"
+            value={value}
+            onChangeText={onChange}
+            error={errors.name?.message}
+          />
+        )}
+      />
+      {/* More fields... */}
+      <Button
+        onPress={handleSubmit(onSubmit)}
+        loading={createProduct.isPending}
+      >
+        Create Product
+      </Button>
+    </View>
+  );
+}
+```
+
+---
+
+## Best Practices
+
+### State Location Decision
+
+| State Type | Solution |
+|------------|----------|
+| UI-only (modal open, selected tab) | useState/useReducer |
+| Form state | react-hook-form |
+| Shared UI state (theme, user prefs) | Redux Toolkit |
+| Auth state | Redux Toolkit (persisted) |
+| Server data | TanStack Query |
+| Real-time data | TanStack Query + WebSocket |
+
+### Performance Tips
+
+1. **Normalize Redux state** for collections
+2. **Use selectors** with createSelector for derived data
+3. **Invalidate queries strategically** - not all at once
+4. **Prefetch** data before navigation
+5. **Use suspense** for loading states
+
+---
+
+## Context7 Integration
+
+Query Context7 for state management patterns:
+
+```
+1. resolve-library-id: "tanstack-query" or "redux-toolkit"
+2. Query: "TanStack Query optimistic updates"
+3. Query: "Redux Toolkit async thunks"
+```
+
+---
+
+## Related Skills
+
+- `rn-api-integration` - API client setup
+- `rn-auth-integration` - Auth state patterns
+- `rn-fundamentals` - Component patterns
+- `rn-observability-setup` - State debugging
