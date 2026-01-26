@@ -1,7 +1,6 @@
 using FluentAssertions;
 using Moq;
 using VlogForge.Application.Auth.Commands.VerifyEmail;
-using VlogForge.Application.Common.Exceptions;
 using VlogForge.Application.Common.Interfaces;
 using VlogForge.Domain.Entities;
 using VlogForge.Domain.ValueObjects;
@@ -73,7 +72,7 @@ public class VerifyEmailCommandHandlerTests
     }
 
     [Fact]
-    public async Task HandleWithNonExistentUserShouldThrowNotFoundException()
+    public async Task HandleWithNonExistentUserShouldReturnFailureToPreventEnumeration()
     {
         // Arrange
         var userId = Guid.NewGuid();
@@ -84,10 +83,11 @@ public class VerifyEmailCommandHandlerTests
             .ReturnsAsync((User?)null);
 
         // Act
-        var act = async () => await _handler.Handle(command, CancellationToken.None);
+        var result = await _handler.Handle(command, CancellationToken.None);
 
-        // Assert
-        await act.Should().ThrowAsync<NotFoundException>();
+        // Assert - should return generic error to prevent user enumeration
+        result.Success.Should().BeFalse();
+        result.Errors.Should().Contain("Invalid or expired verification token.");
     }
 
     [Fact]

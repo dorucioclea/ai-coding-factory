@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using VlogForge.Domain.Common;
+using VlogForge.Domain.Entities;
 using VlogForge.Domain.Interfaces;
 
 namespace VlogForge.Infrastructure.Data;
@@ -17,8 +18,15 @@ public class ApplicationDbContext : DbContext, IUnitOfWork
     {
     }
 
-    // Add DbSets for your entities here
-    // public DbSet<YourEntity> YourEntities => Set<YourEntity>();
+    /// <summary>
+    /// Gets or sets the Users DbSet.
+    /// </summary>
+    public DbSet<User> Users => Set<User>();
+
+    /// <summary>
+    /// Gets or sets the RefreshTokens DbSet.
+    /// </summary>
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

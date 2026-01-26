@@ -95,6 +95,26 @@ public class ExceptionHandlingMiddleware
                     Detail = "Authentication is required to access this resource."
                 }),
 
+            UnauthorizedException unauthorizedException => (
+                HttpStatusCode.Unauthorized,
+                new ErrorResponse
+                {
+                    Type = "Unauthorized",
+                    Title = "Authentication Failed",
+                    Status = (int)HttpStatusCode.Unauthorized,
+                    Detail = unauthorizedException.Message
+                }),
+
+            ConflictException conflictException => (
+                HttpStatusCode.Conflict,
+                new ErrorResponse
+                {
+                    Type = "Conflict",
+                    Title = "Resource Conflict",
+                    Status = (int)HttpStatusCode.Conflict,
+                    Detail = conflictException.Message
+                }),
+
             _ => (
                 HttpStatusCode.InternalServerError,
                 new ErrorResponse

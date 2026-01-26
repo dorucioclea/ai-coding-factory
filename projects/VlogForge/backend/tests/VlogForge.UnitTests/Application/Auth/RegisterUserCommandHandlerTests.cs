@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using VlogForge.Application.Auth.Commands.RegisterUser;
 using VlogForge.Application.Common.Exceptions;
@@ -16,10 +17,13 @@ namespace VlogForge.UnitTests.Application.Auth;
 [Trait("Story", "ACF-001")]
 public class RegisterUserCommandHandlerTests
 {
+    private static readonly string[] WeakPasswordErrors = ["Password is too weak"];
+
     private readonly Mock<IUserRepository> _userRepositoryMock;
     private readonly Mock<IIdentityService> _identityServiceMock;
     private readonly Mock<ITokenService> _tokenServiceMock;
     private readonly Mock<IEmailService> _emailServiceMock;
+    private readonly Mock<ILogger<RegisterUserCommandHandler>> _loggerMock;
     private readonly RegisterUserCommandHandler _handler;
 
     public RegisterUserCommandHandlerTests()
@@ -28,12 +32,14 @@ public class RegisterUserCommandHandlerTests
         _identityServiceMock = new Mock<IIdentityService>();
         _tokenServiceMock = new Mock<ITokenService>();
         _emailServiceMock = new Mock<IEmailService>();
+        _loggerMock = new Mock<ILogger<RegisterUserCommandHandler>>();
 
         _handler = new RegisterUserCommandHandler(
             _userRepositoryMock.Object,
             _identityServiceMock.Object,
             _tokenServiceMock.Object,
-            _emailServiceMock.Object);
+            _emailServiceMock.Object,
+            _loggerMock.Object);
     }
 
     [Fact]
@@ -117,7 +123,7 @@ public class RegisterUserCommandHandlerTests
 
         _identityServiceMock
             .Setup(x => x.ValidatePassword(It.IsAny<string>()))
-            .Returns(PasswordValidationResult.Failure(new[] { "Password is too weak" }));
+            .Returns(PasswordValidationResult.Failure(WeakPasswordErrors));
 
         // Act
         var act = async () => await _handler.Handle(command, CancellationToken.None);

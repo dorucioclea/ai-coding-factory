@@ -1,6 +1,5 @@
 using MediatR;
 using VlogForge.Application.Auth.DTOs;
-using VlogForge.Application.Common.Exceptions;
 using VlogForge.Application.Common.Interfaces;
 
 namespace VlogForge.Application.Auth.Commands.VerifyEmail;
@@ -23,7 +22,8 @@ public sealed class VerifyEmailCommandHandler : IRequestHandler<VerifyEmailComma
         var user = await _userRepository.GetByIdAsync(request.UserId, cancellationToken);
         if (user == null)
         {
-            throw new NotFoundException("User", request.UserId);
+            // Return generic error to prevent user enumeration
+            return AuthResult.Failed("Invalid or expired verification token.");
         }
 
         if (user.EmailVerified)

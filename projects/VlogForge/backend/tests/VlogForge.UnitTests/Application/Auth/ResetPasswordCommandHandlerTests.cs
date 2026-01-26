@@ -15,6 +15,8 @@ namespace VlogForge.UnitTests.Application.Auth;
 [Trait("Story", "ACF-001")]
 public class ResetPasswordCommandHandlerTests
 {
+    private static readonly string[] WeakPasswordErrors = ["Password is too weak"];
+
     private readonly Mock<IUserRepository> _userRepositoryMock;
     private readonly Mock<IIdentityService> _identityServiceMock;
     private readonly Mock<IEmailService> _emailServiceMock;
@@ -116,7 +118,7 @@ public class ResetPasswordCommandHandlerTests
 
         _identityServiceMock
             .Setup(x => x.ValidatePassword("weak"))
-            .Returns(PasswordValidationResult.Failure(new[] { "Password is too weak" }));
+            .Returns(PasswordValidationResult.Failure(WeakPasswordErrors));
 
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
