@@ -1,6 +1,6 @@
 'use client';
 
-import { AlertCircle, Loader2 } from 'lucide-react';
+import { AlertCircle, FileText, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 
 import {
@@ -65,7 +65,7 @@ export default function ContentPage() {
       });
       setEditingIdea(null);
     } catch (error) {
-      console.error('Failed to update content idea:', error);
+      // Re-throw to let the form handle the error display
       throw error;
     }
   };
@@ -80,8 +80,8 @@ export default function ContentPage() {
     try {
       await deleteMutation.mutateAsync(deletingId);
       setDeletingId(null);
-    } catch (error) {
-      console.error('Failed to delete content idea:', error);
+    } catch {
+      // Error is handled by React Query - deleteMutation.error will be set
     }
   };
 
@@ -232,6 +232,3 @@ export default function ContentPage() {
     </div>
   );
 }
-
-// Import FileText for empty state
-import { FileText } from 'lucide-react';

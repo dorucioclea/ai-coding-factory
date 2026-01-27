@@ -17,7 +17,9 @@ export default function AcceptInvitationPage() {
   const params = useParams();
   const router = useRouter();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
-  const token = params?.['token'] as string | undefined;
+  // Type-safe extraction with runtime validation
+  const tokenParam = params?.['token'];
+  const token = typeof tokenParam === 'string' ? tokenParam : undefined;
 
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [errorMessage, setErrorMessage] = useState<string>('');

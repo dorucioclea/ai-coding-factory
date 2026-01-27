@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 
 import { integrationService } from '@/lib/integrations';
 import { queryKeys } from '@/lib/query-client';
@@ -25,6 +25,11 @@ export function useConnectionStatus() {
 }
 
 /**
+ * OAuth state storage key
+ */
+const OAUTH_STATE_KEY = 'oauth_state';
+
+/**
  * Hook for initiating OAuth flow
  */
 export function useInitiateOAuth() {
@@ -32,6 +37,10 @@ export function useInitiateOAuth() {
     mutationFn: (platform: PlatformType) =>
       integrationService.initiateOAuth(platform),
     onSuccess: (response) => {
+      // Store state parameter for CSRF validation
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem(OAUTH_STATE_KEY, response.state);
+      }
       // Redirect to OAuth authorization URL
       window.location.href = response.authorizationUrl;
     },
@@ -102,24 +111,43 @@ export function useSyncPlatform() {
 export function useOAuthCallback() {
   const searchParams = useSearchParams();
   const completeOAuth = useCompleteOAuth();
+  const processedRef = useRef(false);
+  const router = useRouter();
 
-  const handleCallback = useCallback(() => {
+  useEffect(() => {
+    // Prevent double-processing on re-renders
+    if (processedRef.current) return;
+
     const code = searchParams.get('code');
     const state = searchParams.get('state');
     const platform = searchParams.get('platform') as PlatformType | null;
 
-    if (code && state && platform) {
-      completeOAuth.mutate({
-        code,
-        state,
-        platform,
-      });
-    }
-  }, [searchParams, completeOAuth]);
+    if (!code || !state || !platform) return;
 
-  useEffect(() => {
-    handleCallback();
-  }, [handleCallback]);
+    // Validate state parameter against stored value (CSRF protection)
+    if (typeof window !== 'undefined') {
+      const savedState = sessionStorage.getItem(OAUTH_STATE_KEY);
+
+      if (state !== savedState) {
+        // State mismatch - potential CSRF attack
+        sessionStorage.removeItem(OAUTH_STATE_KEY);
+        router.push('/dashboard/integrations?error=invalid_state');
+        return;
+      }
+
+      // Clear stored state
+      sessionStorage.removeItem(OAUTH_STATE_KEY);
+    }
+
+    // Mark as processed to prevent double-fire
+    processedRef.current = true;
+
+    completeOAuth.mutate({
+      code,
+      state,
+      platform,
+    });
+  }, [searchParams, completeOAuth, router]);
 
   return {
     isCompleting: completeOAuth.isPending,

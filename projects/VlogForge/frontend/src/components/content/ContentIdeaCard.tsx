@@ -47,8 +47,8 @@ export function ContentIdeaCard({
         id: idea.id,
         status: { status: newStatus },
       });
-    } catch (error) {
-      console.error('Failed to update status:', error);
+    } catch {
+      // Error is handled by React Query - mutation.error will be set
     } finally {
       setIsStatusChanging(false);
     }

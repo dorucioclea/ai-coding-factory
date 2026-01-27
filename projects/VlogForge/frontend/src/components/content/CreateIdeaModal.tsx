@@ -36,7 +36,7 @@ export function CreateIdeaModal({ onSuccess }: CreateIdeaModalProps) {
       setIsOpen(false);
       onSuccess?.();
     } catch (error) {
-      console.error('Failed to create content idea:', error);
+      // Re-throw to let the form handle the error display
       throw error;
     }
   };

@@ -1,5 +1,6 @@
 'use client';
 
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Header, Sidebar } from '@/components/layout';
 import { useUIStore } from '@/stores';
 import { cn } from '@/lib/utils';
@@ -25,7 +26,9 @@ export default function DashboardLayout({
             : 'md:pl-0'
         )}
       >
-        <div className="container mx-auto p-6">{children}</div>
+        <div className="container mx-auto p-6">
+          <ErrorBoundary>{children}</ErrorBoundary>
+        </div>
       </main>
     </div>
   );
