@@ -63,6 +63,9 @@ public static class DependencyInjection
         // Register content ideas repository (ACF-005)
         services.AddScoped<IContentItemRepository, ContentItemRepository>();
 
+        // Register team repository (ACF-007)
+        services.AddScoped<ITeamRepository, TeamRepository>();
+
         // Register encryption service (ACF-003)
         services.AddSingleton<IEncryptionService, EncryptionService>();
 

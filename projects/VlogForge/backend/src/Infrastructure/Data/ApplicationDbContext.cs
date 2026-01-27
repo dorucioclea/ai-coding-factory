@@ -70,6 +70,24 @@ public class ApplicationDbContext : DbContext, IUnitOfWork
     /// </summary>
     public DbSet<ContentItem> ContentItems => Set<ContentItem>();
 
+    /// <summary>
+    /// Gets or sets the Teams DbSet.
+    /// Story: ACF-007
+    /// </summary>
+    public DbSet<Team> Teams => Set<Team>();
+
+    /// <summary>
+    /// Gets or sets the TeamMembers DbSet.
+    /// Story: ACF-007
+    /// </summary>
+    public DbSet<TeamMember> TeamMembers => Set<TeamMember>();
+
+    /// <summary>
+    /// Gets or sets the TeamInvitations DbSet.
+    /// Story: ACF-007
+    /// </summary>
+    public DbSet<TeamInvitation> TeamInvitations => Set<TeamInvitation>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

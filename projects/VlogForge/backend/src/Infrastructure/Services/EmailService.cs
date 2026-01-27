@@ -53,6 +53,19 @@ public sealed partial class EmailService : IEmailService
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc />
+    /// Story: ACF-007
+    public Task SendTeamInvitationAsync(string email, string teamName, string invitationToken, CancellationToken cancellationToken = default)
+    {
+        // In development, just log the email
+        LogTeamInvitationEmail(_logger, email, teamName, invitationToken);
+
+        // TODO: In production, send actual email
+        // Example invite URL: https://yourdomain.com/teams/invite?token={invitationToken}
+
+        return Task.CompletedTask;
+    }
+
     [LoggerMessage(Level = LogLevel.Information, Message = "[DEV] Email verification for {Email} ({DisplayName}): Token = {Token}")]
     private static partial void LogVerificationEmail(ILogger logger, string email, string displayName, string token);
 
@@ -61,4 +74,7 @@ public sealed partial class EmailService : IEmailService
 
     [LoggerMessage(Level = LogLevel.Information, Message = "[DEV] Password changed notification for {Email} ({DisplayName})")]
     private static partial void LogPasswordChangedEmail(ILogger logger, string email, string displayName);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "[DEV] Team invitation for {Email} to join team '{TeamName}': Token = {Token}")]
+    private static partial void LogTeamInvitationEmail(ILogger logger, string email, string teamName, string token);
 }

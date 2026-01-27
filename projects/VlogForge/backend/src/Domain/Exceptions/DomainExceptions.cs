@@ -105,10 +105,90 @@ public class ConcurrencyException : DomainException
     /// <param name="entityType">The entity type.</param>
     /// <param name="entityId">The entity identifier.</param>
     public ConcurrencyException(string entityType, object entityId)
-        : base("CONCURRENCY_CONFLICT", 
+        : base("CONCURRENCY_CONFLICT",
             $"The {entityType} with id '{entityId}' was modified by another process. Please refresh and try again.")
     {
         EntityType = entityType;
         EntityId = entityId;
+    }
+}
+
+/// <summary>
+/// Exception thrown when a team is not found.
+/// Story: ACF-007
+/// </summary>
+public class TeamNotFoundException : DomainException
+{
+    public Guid TeamId { get; }
+
+    public TeamNotFoundException(Guid teamId)
+        : base("TEAM_NOT_FOUND", "Team not found.")
+    {
+        TeamId = teamId;
+    }
+}
+
+/// <summary>
+/// Exception thrown when a team member is not found.
+/// Story: ACF-007
+/// </summary>
+public class TeamMemberNotFoundException : DomainException
+{
+    public Guid TeamId { get; }
+    public Guid UserId { get; }
+
+    public TeamMemberNotFoundException(Guid teamId, Guid userId)
+        : base("TEAM_MEMBER_NOT_FOUND", "Team member not found.")
+    {
+        TeamId = teamId;
+        UserId = userId;
+    }
+}
+
+/// <summary>
+/// Exception thrown when a team invitation is not found or expired.
+/// Story: ACF-007
+/// </summary>
+public class TeamInvitationNotFoundException : DomainException
+{
+    public TeamInvitationNotFoundException()
+        : base("INVITATION_NOT_FOUND", "Invitation not found or has expired.")
+    {
+    }
+}
+
+/// <summary>
+/// Exception thrown when a team name already exists.
+/// Story: ACF-007
+/// </summary>
+public class TeamNameAlreadyExistsException : DomainException
+{
+    public TeamNameAlreadyExistsException()
+        : base("TEAM_NAME_EXISTS", "A team with this name already exists.")
+    {
+    }
+}
+
+/// <summary>
+/// Exception thrown when access to a team resource is denied.
+/// Story: ACF-007
+/// </summary>
+public class TeamAccessDeniedException : DomainException
+{
+    public Guid TeamId { get; }
+    public Guid UserId { get; }
+
+    public TeamAccessDeniedException(Guid teamId, Guid userId)
+        : base("TEAM_ACCESS_DENIED", "You do not have permission to perform this action.")
+    {
+        TeamId = teamId;
+        UserId = userId;
+    }
+
+    public TeamAccessDeniedException(string message)
+        : base("TEAM_ACCESS_DENIED", message)
+    {
+        TeamId = Guid.Empty;
+        UserId = Guid.Empty;
     }
 }

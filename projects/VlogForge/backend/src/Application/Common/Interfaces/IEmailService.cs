@@ -31,4 +31,14 @@ public interface IEmailService
     /// <param name="displayName">The user's display name.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     Task SendPasswordChangedNotificationAsync(string email, string displayName, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Sends a team invitation email.
+    /// Story: ACF-007
+    /// </summary>
+    /// <param name="email">The recipient's email address.</param>
+    /// <param name="teamName">The name of the team.</param>
+    /// <param name="invitationToken">The invitation token.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    Task SendTeamInvitationAsync(string email, string teamName, string invitationToken, CancellationToken cancellationToken = default);
 }
