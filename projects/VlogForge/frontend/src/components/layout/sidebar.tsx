@@ -10,13 +10,17 @@ import {
   BarChart3,
   HelpCircle,
   ChevronLeft,
+  Link2,
+  Calendar,
+  Lightbulb,
+  UserCircle,
+  ClipboardList,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import { useUIStore } from '@/stores';
 import { useAuth } from '@/hooks/use-auth';
-import { Roles } from '@/types';
 
 interface NavItem {
   title: string;
@@ -32,15 +36,39 @@ const navItems: NavItem[] = [
     icon: LayoutDashboard,
   },
   {
+    title: 'Content Ideas',
+    href: '/dashboard/content',
+    icon: Lightbulb,
+  },
+  {
+    title: 'Calendar',
+    href: '/dashboard/calendar',
+    icon: Calendar,
+  },
+  {
+    title: 'Team',
+    href: '/dashboard/team',
+    icon: Users,
+  },
+  {
+    title: 'Tasks',
+    href: '/dashboard/tasks',
+    icon: ClipboardList,
+  },
+  {
     title: 'Analytics',
     href: '/dashboard/analytics',
     icon: BarChart3,
   },
   {
-    title: 'Users',
-    href: '/dashboard/users',
-    icon: Users,
-    roles: [Roles.Admin, Roles.Manager],
+    title: 'Integrations',
+    href: '/dashboard/integrations',
+    icon: Link2,
+  },
+  {
+    title: 'Profile',
+    href: '/dashboard/profile',
+    icon: UserCircle,
   },
   {
     title: 'Documents',

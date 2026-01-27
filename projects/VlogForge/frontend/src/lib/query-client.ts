@@ -106,6 +106,64 @@ export const queryKeys = {
       ['analytics', 'top-content', sortBy, limit] as const,
   },
 
+  // Content ideas queries (ACF-015)
+  content: {
+    all: ['content'] as const,
+    lists: () => [...queryKeys.content.all, 'list'] as const,
+    list: (filters: Record<string, unknown>) =>
+      [...queryKeys.content.lists(), filters] as const,
+    details: () => [...queryKeys.content.all, 'detail'] as const,
+    detail: (id: string) => [...queryKeys.content.details(), id] as const,
+  },
+
+  // Profile queries (ACF-015)
+  profiles: {
+    all: ['profiles'] as const,
+    my: () => [...queryKeys.profiles.all, 'my'] as const,
+    public: (username: string) =>
+      [...queryKeys.profiles.all, 'public', username] as const,
+  },
+
+  // Integration queries (ACF-015 Phase 2)
+  integrations: {
+    all: ['integrations'] as const,
+    status: () => [...queryKeys.integrations.all, 'status'] as const,
+    connection: (platform: string) =>
+      [...queryKeys.integrations.all, 'connection', platform] as const,
+  },
+
+  // Task queries (ACF-015 Phase 6)
+  tasks: {
+    all: ['tasks'] as const,
+    lists: () => [...queryKeys.tasks.all, 'list'] as const,
+    list: (filters?: Record<string, unknown>) =>
+      [...queryKeys.tasks.lists(), filters] as const,
+    details: () => [...queryKeys.tasks.all, 'detail'] as const,
+    detail: (id: string) => [...queryKeys.tasks.details(), id] as const,
+    myTasks: (filters?: Record<string, unknown>) =>
+      [...queryKeys.tasks.all, 'my-tasks', filters] as const,
+    comments: (taskId: string) =>
+      [...queryKeys.tasks.detail(taskId), 'comments'] as const,
+  },
+
+  // Calendar queries (ACF-015 Phase 4)
+  calendar: {
+    all: ['calendar'] as const,
+    months: () => [...queryKeys.calendar.all, 'month'] as const,
+    month: (year: number, month: number) =>
+      [...queryKeys.calendar.months(), year, month] as const,
+  },
+
+  // Team queries (ACF-015 Phase 5)
+  teams: {
+    all: ['teams'] as const,
+    lists: () => [...queryKeys.teams.all, 'list'] as const,
+    details: () => [...queryKeys.teams.all, 'detail'] as const,
+    detail: (id: string) => [...queryKeys.teams.details(), id] as const,
+    members: (id: string) => [...queryKeys.teams.detail(id), 'members'] as const,
+    invitations: (id: string) => [...queryKeys.teams.detail(id), 'invitations'] as const,
+  },
+
   // Generic entity factory
   entity: (name: string) => ({
     all: [name] as const,
