@@ -40,6 +40,12 @@ public class ApplicationDbContext : DbContext, IUnitOfWork
     /// </summary>
     public DbSet<ConnectedPlatform> ConnectedPlatforms => Set<ConnectedPlatform>();
 
+    /// <summary>
+    /// Gets or sets the PlatformConnections DbSet (OAuth integration).
+    /// Story: ACF-003
+    /// </summary>
+    public DbSet<PlatformConnection> PlatformConnections => Set<PlatformConnection>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

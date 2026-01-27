@@ -19,6 +19,18 @@ public enum PlatformType
 }
 
 /// <summary>
+/// Enum representing the connection status of an OAuth-linked platform.
+/// Story: ACF-003
+/// </summary>
+public enum ConnectionStatus
+{
+    Connected,
+    Disconnected,
+    Error,
+    TokenExpired
+}
+
+/// <summary>
 /// Entity representing a connected social media platform on a creator profile.
 /// Story: ACF-002
 /// </summary>

@@ -10,6 +10,7 @@ using VlogForge.Infrastructure.Data;
 using VlogForge.Infrastructure.Data.Repositories;
 using VlogForge.Infrastructure.Identity;
 using VlogForge.Infrastructure.Services;
+using VlogForge.Infrastructure.Services.OAuth;
 
 namespace VlogForge.Infrastructure;
 
@@ -51,6 +52,19 @@ public static class DependencyInjection
         // Register repositories
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ICreatorProfileRepository, CreatorProfileRepository>();
+        services.AddScoped<IPlatformConnectionRepository, PlatformConnectionRepository>();
+
+        // Register encryption service (ACF-003)
+        services.AddSingleton<IEncryptionService, EncryptionService>();
+
+        // Register OAuth state and redirect validation services (ACF-003)
+        services.AddSingleton<IOAuthStateService, OAuthStateService>();
+        services.AddSingleton<IOAuthRedirectValidator, OAuthRedirectValidator>();
+
+        // Register OAuth services (ACF-003) - using mock implementations for development
+        services.AddScoped<IPlatformOAuthService, MockYouTubeOAuthService>();
+        services.AddScoped<IPlatformOAuthService, MockInstagramOAuthService>();
+        services.AddScoped<IPlatformOAuthService, MockTikTokOAuthService>();
 
         // Register identity services
         services.AddSingleton<IIdentityService, IdentityService>();
