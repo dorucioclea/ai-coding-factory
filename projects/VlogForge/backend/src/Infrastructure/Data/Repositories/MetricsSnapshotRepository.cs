@@ -65,6 +65,18 @@ public class MetricsSnapshotRepository : IMetricsSnapshotRepository
                 cancellationToken);
     }
 
+    public async Task<IReadOnlySet<(Guid UserId, PlatformType Platform)>> GetExistingForDateAsync(
+        DateTime snapshotDate,
+        CancellationToken cancellationToken = default)
+    {
+        var existing = await _context.MetricsSnapshots
+            .Where(ms => ms.SnapshotDate == snapshotDate.Date)
+            .Select(ms => new { ms.UserId, ms.PlatformType })
+            .ToListAsync(cancellationToken);
+
+        return existing.Select(x => (x.UserId, x.PlatformType)).ToHashSet();
+    }
+
     public async Task AddAsync(
         MetricsSnapshot snapshot,
         CancellationToken cancellationToken = default)

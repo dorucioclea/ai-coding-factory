@@ -33,18 +33,33 @@ public class PlatformMetricsRepository : IPlatformMetricsRepository
             .FirstOrDefaultAsync(pm => pm.PlatformConnectionId == connectionId, cancellationToken);
     }
 
+    public async Task<IReadOnlyDictionary<Guid, PlatformMetrics>> GetByConnectionIdsAsync(
+        IEnumerable<Guid> connectionIds,
+        CancellationToken cancellationToken = default)
+    {
+        var connectionIdList = connectionIds.ToList();
+        if (connectionIdList.Count == 0)
+            return new Dictionary<Guid, PlatformMetrics>();
+
+        var metrics = await _context.PlatformMetrics
+            .Where(pm => connectionIdList.Contains(pm.PlatformConnectionId))
+            .ToListAsync(cancellationToken);
+
+        return metrics.ToDictionary(m => m.PlatformConnectionId);
+    }
+
     public async Task<IReadOnlyList<PlatformMetrics>> GetByUserIdAsync(
         Guid userId,
         CancellationToken cancellationToken = default)
     {
-        // Join with PlatformConnections to find metrics for a user
-        var connectionIds = await _context.PlatformConnections
-            .Where(pc => pc.UserId == userId && pc.Status == ConnectionStatus.Connected)
-            .Select(pc => pc.Id)
-            .ToListAsync(cancellationToken);
-
+        // Single query with join to avoid N+1 problem
         return await _context.PlatformMetrics
-            .Where(pm => connectionIds.Contains(pm.PlatformConnectionId))
+            .Join(
+                _context.PlatformConnections.Where(pc =>
+                    pc.UserId == userId && pc.Status == ConnectionStatus.Connected),
+                pm => pm.PlatformConnectionId,
+                pc => pc.Id,
+                (pm, pc) => pm)
             .OrderBy(pm => pm.PlatformType)
             .ToListAsync(cancellationToken);
     }
@@ -54,16 +69,15 @@ public class PlatformMetricsRepository : IPlatformMetricsRepository
         PlatformType platformType,
         CancellationToken cancellationToken = default)
     {
-        // Find the connection first, then get metrics
-        var connection = await _context.PlatformConnections
-            .FirstOrDefaultAsync(
-                pc => pc.UserId == userId && pc.PlatformType == platformType,
-                cancellationToken);
-
-        if (connection == null)
-            return null;
-
-        return await GetByConnectionIdAsync(connection.Id, cancellationToken);
+        // Single query with join to avoid N+1 problem
+        return await _context.PlatformMetrics
+            .Join(
+                _context.PlatformConnections.Where(pc =>
+                    pc.UserId == userId && pc.PlatformType == platformType),
+                pm => pm.PlatformConnectionId,
+                pc => pc.Id,
+                (pm, pc) => pm)
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
     public async Task AddAsync(

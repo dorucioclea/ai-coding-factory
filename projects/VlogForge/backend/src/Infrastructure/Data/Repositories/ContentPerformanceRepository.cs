@@ -42,14 +42,14 @@ public class ContentPerformanceRepository : IContentPerformanceRepository
         string sortBy = "views",
         CancellationToken cancellationToken = default)
     {
-        // Get connection IDs for this user
-        var connectionIds = await _context.PlatformConnections
-            .Where(pc => pc.UserId == userId && pc.Status == ConnectionStatus.Connected)
-            .Select(pc => pc.Id)
-            .ToListAsync(cancellationToken);
-
+        // Single query with join to avoid N+1 problem
         var query = _context.ContentPerformances
-            .Where(cp => connectionIds.Contains(cp.PlatformConnectionId));
+            .Join(
+                _context.PlatformConnections.Where(pc =>
+                    pc.UserId == userId && pc.Status == ConnectionStatus.Connected),
+                cp => cp.PlatformConnectionId,
+                pc => pc.Id,
+                (cp, pc) => cp);
 
         query = sortBy.ToLowerInvariant() switch
         {
@@ -71,17 +71,14 @@ public class ContentPerformanceRepository : IContentPerformanceRepository
         string sortBy = "views",
         CancellationToken cancellationToken = default)
     {
-        // Get connection ID for this user and platform
-        var connection = await _context.PlatformConnections
-            .FirstOrDefaultAsync(
-                pc => pc.UserId == userId && pc.PlatformType == platformType,
-                cancellationToken);
-
-        if (connection == null)
-            return Array.Empty<ContentPerformance>();
-
+        // Single query with join to avoid N+1 problem
         var query = _context.ContentPerformances
-            .Where(cp => cp.PlatformConnectionId == connection.Id);
+            .Join(
+                _context.PlatformConnections.Where(pc =>
+                    pc.UserId == userId && pc.PlatformType == platformType),
+                cp => cp.PlatformConnectionId,
+                pc => pc.Id,
+                (cp, pc) => cp);
 
         query = sortBy.ToLowerInvariant() switch
         {

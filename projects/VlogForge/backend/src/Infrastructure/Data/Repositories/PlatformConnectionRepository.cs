@@ -84,6 +84,16 @@ public class PlatformConnectionRepository : IPlatformConnectionRepository
         return Task.CompletedTask;
     }
 
+    public async Task<IReadOnlyList<PlatformConnection>> GetAllActiveConnectionsAsync(
+        CancellationToken cancellationToken = default)
+    {
+        return await _context.PlatformConnections
+            .Where(pc => pc.Status == ConnectionStatus.Connected)
+            .OrderBy(pc => pc.UserId)
+            .ThenBy(pc => pc.PlatformType)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         try

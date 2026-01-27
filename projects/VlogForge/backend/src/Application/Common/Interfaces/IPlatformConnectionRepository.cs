@@ -36,6 +36,12 @@ public interface IPlatformConnectionRepository
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Gets all active (connected) platform connections.
+    /// </summary>
+    Task<IReadOnlyList<PlatformConnection>> GetAllActiveConnectionsAsync(
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Adds a new platform connection.
     /// </summary>
     Task AddAsync(PlatformConnection connection, CancellationToken cancellationToken = default);

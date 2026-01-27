@@ -137,6 +137,12 @@ public sealed class ContentPerformance : Entity
         if (string.IsNullOrWhiteSpace(contentUrl))
             throw new ArgumentException("Content URL cannot be empty.", nameof(contentUrl));
 
+        if (!IsValidUrl(contentUrl))
+            throw new ArgumentException("Content URL must be a valid absolute URL.", nameof(contentUrl));
+
+        if (thumbnailUrl != null && !IsValidUrl(thumbnailUrl))
+            throw new ArgumentException("Thumbnail URL must be a valid absolute URL.", nameof(thumbnailUrl));
+
         if (viewCount < 0)
             throw new ArgumentException("View count cannot be negative.", nameof(viewCount));
 
@@ -210,6 +216,14 @@ public sealed class ContentPerformance : Entity
         if (views == 0)
             return 0;
 
-        return (double)(likes + comments + shares) / views * 100;
+        // Explicitly convert each value to double to prevent integer overflow
+        var totalEngagements = (double)likes + (double)comments + (double)shares;
+        return totalEngagements / views * 100;
+    }
+
+    private static bool IsValidUrl(string url)
+    {
+        return Uri.TryCreate(url, UriKind.Absolute, out var uri)
+            && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
     }
 }

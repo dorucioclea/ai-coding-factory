@@ -11,7 +11,8 @@ namespace VlogForge.Application.Analytics.Queries.GetOverview;
 public sealed class GetAnalyticsOverviewQueryHandler
     : IRequestHandler<GetAnalyticsOverviewQuery, AnalyticsOverviewResponse>
 {
-    private const string CacheKeyPrefix = "analytics:overview:";
+    private const string CacheVersion = "v1";
+    private const string CacheKeyPrefix = $"analytics:overview:{CacheVersion}:";
     private static readonly TimeSpan CacheTtl = TimeSpan.FromMinutes(15);
     private const int ComparisonDays = 7;
 

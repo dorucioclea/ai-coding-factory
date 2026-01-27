@@ -19,6 +19,13 @@ public interface IPlatformMetricsRepository
     Task<PlatformMetrics?> GetByConnectionIdAsync(Guid connectionId, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Gets all platform metrics for multiple connection IDs (batch operation).
+    /// </summary>
+    Task<IReadOnlyDictionary<Guid, PlatformMetrics>> GetByConnectionIdsAsync(
+        IEnumerable<Guid> connectionIds,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Gets all platform metrics for a user (via their platform connections).
     /// </summary>
     Task<IReadOnlyList<PlatformMetrics>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default);

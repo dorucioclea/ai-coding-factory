@@ -36,6 +36,14 @@ public interface IMetricsSnapshotRepository
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Gets all existing snapshots for a specific date (batch operation for checking duplicates).
+    /// Returns a set of (UserId, PlatformType) combinations that have snapshots.
+    /// </summary>
+    Task<IReadOnlySet<(Guid UserId, PlatformType Platform)>> GetExistingForDateAsync(
+        DateTime snapshotDate,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Adds a new metrics snapshot.
     /// </summary>
     Task AddAsync(MetricsSnapshot snapshot, CancellationToken cancellationToken = default);

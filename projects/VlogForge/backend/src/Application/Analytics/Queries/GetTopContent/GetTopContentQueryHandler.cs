@@ -12,7 +12,8 @@ namespace VlogForge.Application.Analytics.Queries.GetTopContent;
 public sealed class GetTopContentQueryHandler
     : IRequestHandler<GetTopContentQuery, TopContentResponse>
 {
-    private const string CacheKeyPrefix = "analytics:content:";
+    private const string CacheVersion = "v1";
+    private const string CacheKeyPrefix = $"analytics:content:{CacheVersion}:";
     private static readonly TimeSpan CacheTtl = TimeSpan.FromMinutes(30);
 
     private readonly IContentPerformanceRepository _contentRepository;

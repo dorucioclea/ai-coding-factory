@@ -12,7 +12,8 @@ namespace VlogForge.Application.Analytics.Queries.GetTrends;
 public sealed class GetAnalyticsTrendsQueryHandler
     : IRequestHandler<GetAnalyticsTrendsQuery, AnalyticsTrendsResponse>
 {
-    private const string CacheKeyPrefix = "analytics:trends:";
+    private const string CacheVersion = "v1";
+    private const string CacheKeyPrefix = $"analytics:trends:{CacheVersion}:";
     private static readonly TimeSpan CacheTtl = TimeSpan.FromHours(1);
 
     private readonly IMetricsSnapshotRepository _snapshotRepository;

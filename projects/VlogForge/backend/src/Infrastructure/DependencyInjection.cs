@@ -11,6 +11,7 @@ using VlogForge.Infrastructure.Data.Repositories;
 using VlogForge.Infrastructure.Identity;
 using VlogForge.Infrastructure.Services;
 using VlogForge.Infrastructure.Services.OAuth;
+using VlogForge.Infrastructure.Services.PlatformData;
 
 namespace VlogForge.Infrastructure;
 
@@ -132,6 +133,15 @@ public static class DependencyInjection
         // Register file storage service
         services.Configure<FileStorageSettings>(configuration.GetSection(FileStorageSettings.SectionName));
         services.AddScoped<IFileStorageService, FileStorageService>();
+
+        // Register platform data services (ACF-004) - using mock implementations for development
+        services.AddScoped<IPlatformDataService, MockYouTubeDataService>();
+        services.AddScoped<IPlatformDataService, MockInstagramDataService>();
+        services.AddScoped<IPlatformDataService, MockTikTokDataService>();
+
+        // Register background services for analytics (ACF-004)
+        services.AddHostedService<AnalyticsSyncService>();
+        services.AddHostedService<DailySnapshotService>();
 
         return services;
     }

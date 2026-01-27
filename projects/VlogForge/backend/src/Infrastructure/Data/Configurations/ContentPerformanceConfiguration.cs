@@ -82,11 +82,18 @@ public class ContentPerformanceConfiguration : IEntityTypeConfiguration<ContentP
         builder.HasIndex(cp => new { cp.PlatformConnectionId, cp.ContentId })
             .IsUnique();
 
-        // Index for sorting by views
-        builder.HasIndex(cp => cp.ViewCount);
+        // Composite indexes for top content queries (connection + sort columns)
+        builder.HasIndex(cp => new { cp.PlatformConnectionId, cp.ViewCount })
+            .IsDescending(false, true);
 
-        // Index for sorting by engagement
-        builder.HasIndex(cp => cp.EngagementRate);
+        builder.HasIndex(cp => new { cp.PlatformConnectionId, cp.EngagementRate })
+            .IsDescending(false, true);
+
+        builder.HasIndex(cp => new { cp.PlatformConnectionId, cp.LikeCount })
+            .IsDescending(false, true);
+
+        builder.HasIndex(cp => new { cp.PlatformConnectionId, cp.CommentCount })
+            .IsDescending(false, true);
 
         // Index for filtering by platform
         builder.HasIndex(cp => cp.PlatformType);

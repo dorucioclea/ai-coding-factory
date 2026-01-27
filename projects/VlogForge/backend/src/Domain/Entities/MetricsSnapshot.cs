@@ -10,6 +10,11 @@ namespace VlogForge.Domain.Entities;
 public sealed class MetricsSnapshot : Entity
 {
     /// <summary>
+    /// Number of days used for estimating daily values from totals.
+    /// </summary>
+    private const int EstimationPeriodDays = 30;
+
+    /// <summary>
     /// Gets the user ID this snapshot belongs to.
     /// </summary>
     public Guid UserId { get; private set; }
@@ -116,7 +121,7 @@ public sealed class MetricsSnapshot : Entity
     }
 
     /// <summary>
-    /// Creates a snapshot from current platform metrics.
+    /// Creates a snapshot from current platform metrics with explicit daily values.
     /// </summary>
     public static MetricsSnapshot CreateFromMetrics(
         Guid userId,
@@ -136,6 +141,35 @@ public sealed class MetricsSnapshot : Entity
             dailyViews,
             dailyLikes,
             dailyComments,
+            metrics.EngagementRate);
+    }
+
+    /// <summary>
+    /// Creates a snapshot from current platform metrics.
+    /// Uses the metrics' current totals as daily values (for initial snapshot).
+    /// </summary>
+    public static MetricsSnapshot Create(
+        Guid userId,
+        PlatformType platformType,
+        DateTime snapshotDate,
+        PlatformMetrics metrics)
+    {
+        ArgumentNullException.ThrowIfNull(metrics);
+
+        // For simplicity, use estimated daily values based on totals
+        // In production, this would track deltas from previous snapshot
+        var estimatedDailyViews = metrics.TotalViews / EstimationPeriodDays;
+        var estimatedDailyLikes = metrics.TotalLikes / EstimationPeriodDays;
+        var estimatedDailyComments = metrics.TotalComments / EstimationPeriodDays;
+
+        return Create(
+            userId,
+            platformType,
+            snapshotDate,
+            metrics.FollowerCount,
+            estimatedDailyViews,
+            estimatedDailyLikes,
+            estimatedDailyComments,
             metrics.EngagementRate);
     }
 }

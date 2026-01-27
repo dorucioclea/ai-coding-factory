@@ -160,6 +160,8 @@ public sealed class PlatformMetrics : Entity
         if (views == 0)
             return 0;
 
-        return (double)(likes + comments + shares) / views * 100;
+        // Explicitly convert each value to double to prevent integer overflow
+        var totalEngagements = (double)likes + (double)comments + (double)shares;
+        return totalEngagements / views * 100;
     }
 }
