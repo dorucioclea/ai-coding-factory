@@ -31,8 +31,22 @@ public class ValidationException : Exception
         Errors = failures
             .GroupBy(e => e.PropertyName, e => e.ErrorMessage)
             .ToDictionary(
-                failureGroup => failureGroup.Key, 
+                failureGroup => failureGroup.Key,
                 failureGroup => failureGroup.ToArray());
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the ValidationException class with a single property error.
+    /// </summary>
+    /// <param name="propertyName">The property name.</param>
+    /// <param name="errorMessage">The error message.</param>
+    public ValidationException(string propertyName, string errorMessage)
+        : base(errorMessage)
+    {
+        Errors = new Dictionary<string, string[]>
+        {
+            { propertyName, new[] { errorMessage } }
+        };
     }
 }
 

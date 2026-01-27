@@ -50,6 +50,7 @@ public static class DependencyInjection
 
         // Register repositories
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<ICreatorProfileRepository, CreatorProfileRepository>();
 
         // Register identity services
         services.AddSingleton<IIdentityService, IdentityService>();
@@ -105,6 +106,13 @@ public static class DependencyInjection
             // Fallback to in-memory cache for development
             services.AddDistributedMemoryCache();
         }
+
+        // Register cache service
+        services.AddScoped<ICacheService, CacheService>();
+
+        // Register file storage service
+        services.Configure<FileStorageSettings>(configuration.GetSection(FileStorageSettings.SectionName));
+        services.AddScoped<IFileStorageService, FileStorageService>();
 
         return services;
     }

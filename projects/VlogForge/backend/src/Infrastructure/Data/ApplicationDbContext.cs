@@ -28,6 +28,18 @@ public class ApplicationDbContext : DbContext, IUnitOfWork
     /// </summary>
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
+    /// <summary>
+    /// Gets or sets the CreatorProfiles DbSet.
+    /// Story: ACF-002
+    /// </summary>
+    public DbSet<CreatorProfile> CreatorProfiles => Set<CreatorProfile>();
+
+    /// <summary>
+    /// Gets or sets the ConnectedPlatforms DbSet.
+    /// Story: ACF-002
+    /// </summary>
+    public DbSet<ConnectedPlatform> ConnectedPlatforms => Set<ConnectedPlatform>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
