@@ -24,6 +24,9 @@ const STATUS_COLORS = {
     'bg-orange-100 border-orange-300 dark:bg-orange-900 dark:border-orange-600',
   blue: 'bg-blue-100 border-blue-300 dark:bg-blue-900 dark:border-blue-600',
   green: 'bg-green-100 border-green-300 dark:bg-green-900 dark:border-green-600',
+  purple:
+    'bg-purple-100 border-purple-300 dark:bg-purple-900 dark:border-purple-600',
+  red: 'bg-red-100 border-red-300 dark:bg-red-900 dark:border-red-600',
 } as const;
 
 export function DraggableContentItem({

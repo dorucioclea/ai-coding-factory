@@ -171,6 +171,15 @@ export const queryKeys = {
     history: (contentId: string) => [...queryKeys.approvals.all, 'history', contentId] as const,
   },
 
+  // Discovery queries (ACF-010)
+  discovery: {
+    all: ['discovery'] as const,
+    creators: (filters?: Record<string, unknown>) =>
+      [...queryKeys.discovery.all, 'creators', filters] as const,
+    niches: () => [...queryKeys.discovery.all, 'niches'] as const,
+    platforms: () => [...queryKeys.discovery.all, 'platforms'] as const,
+  },
+
   // Generic entity factory
   entity: (name: string) => ({
     all: [name] as const,

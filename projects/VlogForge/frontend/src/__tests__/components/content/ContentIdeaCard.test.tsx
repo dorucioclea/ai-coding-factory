@@ -16,6 +16,11 @@ vi.mock('@/hooks', () => ({
     mutateAsync: vi.fn().mockResolvedValue({}),
     isPending: false,
   }),
+  useAuth: () => ({
+    user: { id: 'user-1', email: 'test@example.com' },
+    isLoading: false,
+    isAuthenticated: true,
+  }),
 }));
 
 const mockContentIdea = {

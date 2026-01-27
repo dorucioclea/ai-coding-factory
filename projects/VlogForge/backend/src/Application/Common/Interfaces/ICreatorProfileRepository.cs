@@ -47,4 +47,31 @@ public interface ICreatorProfileRepository
     /// Saves all changes to the repository.
     /// </summary>
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Discovers creators with filtering and cursor-based pagination.
+    /// Story: ACF-010
+    /// </summary>
+    /// <param name="excludeUserId">Optional user ID to exclude from results (typically the requesting user).</param>
+    /// <param name="niches">Filter by niche tags.</param>
+    /// <param name="platforms">Filter by connected platform types.</param>
+    /// <param name="minFollowers">Minimum total follower count.</param>
+    /// <param name="maxFollowers">Maximum total follower count.</param>
+    /// <param name="searchTerm">Search term for name/username/bio.</param>
+    /// <param name="openToCollaboration">Filter by collaboration availability.</param>
+    /// <param name="cursor">Cursor for pagination (profile ID).</param>
+    /// <param name="pageSize">Number of results to return.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Tuple of profiles and whether more results exist.</returns>
+    Task<(IReadOnlyList<CreatorProfile> Profiles, bool HasMore, int TotalCount)> DiscoverCreatorsAsync(
+        Guid? excludeUserId = null,
+        IReadOnlyList<string>? niches = null,
+        IReadOnlyList<PlatformType>? platforms = null,
+        int? minFollowers = null,
+        int? maxFollowers = null,
+        string? searchTerm = null,
+        bool? openToCollaboration = null,
+        Guid? cursor = null,
+        int pageSize = 20,
+        CancellationToken cancellationToken = default);
 }

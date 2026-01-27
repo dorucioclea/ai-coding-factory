@@ -205,7 +205,7 @@ describe('ApprovalActions', () => {
     });
 
     it('should call approveContent when dialog is submitted', async () => {
-      const user = userEvent.setup();
+      const _user = userEvent.setup();
       mockApproveContent.mockResolvedValue({});
       const content = { ...baseContent, status: IdeaStatus.InReview };
 

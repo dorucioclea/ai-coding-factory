@@ -11,13 +11,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { useConfigureWorkflow } from '@/hooks';
 import { useToast } from '@/hooks/use-toast';
 import type { TeamMemberResponse, WorkflowSettingsResponse } from '@/types';
