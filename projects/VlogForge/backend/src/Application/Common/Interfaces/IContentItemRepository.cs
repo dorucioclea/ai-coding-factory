@@ -53,6 +53,20 @@ public interface IContentItemRepository
     Task<IReadOnlyList<ContentItem>> GetDeletedOlderThanAsync(int olderThanDays, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Gets content items scheduled within a date range.
+    /// Story: ACF-006
+    /// </summary>
+    /// <param name="userId">The user ID.</param>
+    /// <param name="startDate">Start of the date range (inclusive).</param>
+    /// <param name="endDate">End of the date range (inclusive).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    Task<IReadOnlyList<ContentItem>> GetScheduledForDateRangeAsync(
+        Guid userId,
+        DateTime startDate,
+        DateTime endDate,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Adds a new content item to the repository.
     /// </summary>
     Task AddAsync(ContentItem item, CancellationToken cancellationToken = default);

@@ -14,6 +14,7 @@ public sealed class ContentIdeaResponse
     public string? Notes { get; init; }
     public IdeaStatus Status { get; init; }
     public IReadOnlyList<string> PlatformTags { get; init; } = Array.Empty<string>();
+    public DateTime? ScheduledDate { get; init; }
     public DateTime CreatedAt { get; init; }
     public DateTime? UpdatedAt { get; init; }
 
@@ -28,6 +29,7 @@ public sealed class ContentIdeaResponse
         Notes = item.Notes,
         Status = item.Status,
         PlatformTags = item.PlatformTags.ToList(),
+        ScheduledDate = item.ScheduledDate,
         CreatedAt = item.CreatedAt,
         UpdatedAt = item.UpdatedAt
     };

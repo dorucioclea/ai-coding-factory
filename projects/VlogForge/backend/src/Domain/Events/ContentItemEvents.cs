@@ -88,3 +88,27 @@ public sealed class ContentItemRestoredEvent : DomainEvent
         UserId = userId;
     }
 }
+
+/// <summary>
+/// Event raised when a content item's scheduled date changes.
+/// Story: ACF-006
+/// </summary>
+public sealed class ContentItemScheduledDateChangedEvent : DomainEvent
+{
+    public Guid ContentItemId { get; }
+    public Guid UserId { get; }
+    public DateTime? OldScheduledDate { get; }
+    public DateTime? NewScheduledDate { get; }
+
+    public ContentItemScheduledDateChangedEvent(
+        Guid contentItemId,
+        Guid userId,
+        DateTime? oldScheduledDate,
+        DateTime? newScheduledDate)
+    {
+        ContentItemId = contentItemId;
+        UserId = userId;
+        OldScheduledDate = oldScheduledDate;
+        NewScheduledDate = newScheduledDate;
+    }
+}

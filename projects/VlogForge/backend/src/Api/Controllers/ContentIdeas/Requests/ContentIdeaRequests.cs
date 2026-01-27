@@ -62,3 +62,15 @@ public sealed class UpdateStatusRequest
     /// </summary>
     public IdeaStatus Status { get; init; }
 }
+
+/// <summary>
+/// Request to update a content idea's scheduled date.
+/// Story: ACF-006
+/// </summary>
+public sealed class UpdateScheduleRequest
+{
+    /// <summary>
+    /// The scheduled date (null to clear).
+    /// </summary>
+    public DateTime? ScheduledDate { get; init; }
+}

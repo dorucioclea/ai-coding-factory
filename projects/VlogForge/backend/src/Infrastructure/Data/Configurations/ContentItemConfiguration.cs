@@ -67,6 +67,12 @@ public class ContentItemConfiguration : IEntityTypeConfiguration<ContentItem>
         builder.Property(c => c.DeletedAt)
             .HasColumnName("deleted_at");
 
+        // Scheduled date (ACF-006)
+        builder.Property(c => c.ScheduledDate)
+            .HasColumnName("scheduled_date");
+
+        builder.HasIndex(c => c.ScheduledDate);
+
         // Audit fields
         builder.Property(c => c.CreatedAt)
             .HasColumnName("created_at")

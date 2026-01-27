@@ -73,6 +73,12 @@ public sealed class ContentItem : AggregateRoot
     /// </summary>
     public DateTime? DeletedAt { get; private set; }
 
+    /// <summary>
+    /// Gets the scheduled publication date for the content.
+    /// Story: ACF-006
+    /// </summary>
+    public DateTime? ScheduledDate { get; private set; }
+
     private ContentItem() : base()
     {
         Title = string.Empty;
@@ -242,6 +248,52 @@ public sealed class ContentItem : AggregateRoot
         IncrementVersion();
 
         RaiseDomainEvent(new ContentItemRestoredEvent(Id, UserId));
+    }
+
+    /// <summary>
+    /// Updates the scheduled publication date.
+    /// Story: ACF-006
+    /// </summary>
+    /// <param name="scheduledDate">The new scheduled date.</param>
+    public void UpdateScheduledDate(DateTime scheduledDate)
+    {
+        EnsureNotDeleted();
+
+        // Normalize to UTC if not already
+        var normalizedDate = scheduledDate.Kind == DateTimeKind.Utc
+            ? scheduledDate
+            : DateTime.SpecifyKind(scheduledDate, DateTimeKind.Utc);
+
+        // Check if date is actually changing (with tolerance for precision)
+        if (ScheduledDate.HasValue &&
+            Math.Abs((ScheduledDate.Value - normalizedDate).TotalSeconds) < 1)
+        {
+            return;
+        }
+
+        var oldDate = ScheduledDate;
+        ScheduledDate = normalizedDate;
+        IncrementVersion();
+
+        RaiseDomainEvent(new ContentItemScheduledDateChangedEvent(Id, UserId, oldDate, ScheduledDate));
+    }
+
+    /// <summary>
+    /// Clears the scheduled publication date.
+    /// Story: ACF-006
+    /// </summary>
+    public void ClearScheduledDate()
+    {
+        EnsureNotDeleted();
+
+        if (!ScheduledDate.HasValue)
+            return;
+
+        var oldDate = ScheduledDate;
+        ScheduledDate = null;
+        IncrementVersion();
+
+        RaiseDomainEvent(new ContentItemScheduledDateChangedEvent(Id, UserId, oldDate, null));
     }
 
     private void EnsureNotDeleted()

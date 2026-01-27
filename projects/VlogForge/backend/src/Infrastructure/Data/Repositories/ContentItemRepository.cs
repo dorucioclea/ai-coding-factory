@@ -109,6 +109,25 @@ public sealed class ContentItemRepository : IContentItemRepository
             .ToListAsync(cancellationToken);
     }
 
+    /// <summary>
+    /// Gets content items scheduled within a date range.
+    /// Story: ACF-006
+    /// </summary>
+    public async Task<IReadOnlyList<ContentItem>> GetScheduledForDateRangeAsync(
+        Guid userId,
+        DateTime startDate,
+        DateTime endDate,
+        CancellationToken cancellationToken = default)
+    {
+        return await _context.ContentItems
+            .Where(c => c.UserId == userId)
+            .Where(c => c.ScheduledDate.HasValue &&
+                        c.ScheduledDate.Value >= startDate &&
+                        c.ScheduledDate.Value <= endDate)
+            .OrderBy(c => c.ScheduledDate)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task AddAsync(ContentItem item, CancellationToken cancellationToken = default)
     {
         await _context.ContentItems.AddAsync(item, cancellationToken);

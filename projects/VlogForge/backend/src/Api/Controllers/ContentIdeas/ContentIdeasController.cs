@@ -8,6 +8,7 @@ using VlogForge.Application.ContentIdeas.Commands.DeleteContentIdea;
 using VlogForge.Application.ContentIdeas.Commands.UpdateContentIdea;
 using VlogForge.Application.ContentIdeas.Commands.UpdateContentIdeaStatus;
 using VlogForge.Application.ContentIdeas.DTOs;
+using VlogForge.Application.Calendar.Commands.UpdateScheduledDate;
 using VlogForge.Application.ContentIdeas.Queries.GetContentIdeaById;
 using VlogForge.Application.ContentIdeas.Queries.GetContentIdeas;
 using VlogForge.Domain.Entities;
@@ -163,6 +164,27 @@ public class ContentIdeasController : ControllerBase
         var command = new DeleteContentIdeaCommand(id, userId);
         await _mediator.Send(command);
         return NoContent();
+    }
+
+    /// <summary>
+    /// Updates a content idea's scheduled date.
+    /// Story: ACF-006
+    /// </summary>
+    /// <param name="id">The content idea ID.</param>
+    /// <param name="request">The schedule update request.</param>
+    /// <returns>The updated content idea.</returns>
+    [HttpPatch("{id:guid}/schedule")]
+    [ProducesResponseType(typeof(ContentIdeaResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ContentIdeaResponse>> UpdateSchedule(Guid id, [FromBody] UpdateScheduleRequest request)
+    {
+        var userId = GetCurrentUserId();
+        var command = new UpdateScheduledDateCommand(id, userId, request.ScheduledDate);
+        var result = await _mediator.Send(command);
+        return Ok(result);
     }
 
     private Guid GetCurrentUserId()

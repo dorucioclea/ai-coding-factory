@@ -543,6 +543,143 @@ public class ContentItemTests
 
     #endregion
 
+    #region Scheduled Date Tests (ACF-006)
+
+    [Fact]
+    public void ScheduledDateShouldDefaultToNull()
+    {
+        // Act
+        var item = ContentItem.Create(_validUserId, "Title", "Notes");
+
+        // Assert
+        item.ScheduledDate.Should().BeNull();
+    }
+
+    [Fact]
+    public void UpdateScheduledDateShouldSetDate()
+    {
+        // Arrange
+        var item = ContentItem.Create(_validUserId, "Title", "Notes");
+        var scheduledDate = DateTime.UtcNow.AddDays(7);
+
+        // Act
+        item.UpdateScheduledDate(scheduledDate);
+
+        // Assert
+        item.ScheduledDate.Should().NotBeNull();
+        item.ScheduledDate!.Value.Should().BeCloseTo(scheduledDate, TimeSpan.FromSeconds(1));
+    }
+
+    [Fact]
+    public void UpdateScheduledDateShouldRaiseEvent()
+    {
+        // Arrange
+        var item = ContentItem.Create(_validUserId, "Title", "Notes");
+        item.ClearDomainEvents();
+        var scheduledDate = DateTime.UtcNow.AddDays(7);
+
+        // Act
+        item.UpdateScheduledDate(scheduledDate);
+
+        // Assert
+        item.DomainEvents.Should().ContainSingle()
+            .Which.Should().BeOfType<ContentItemScheduledDateChangedEvent>();
+    }
+
+    [Fact]
+    public void UpdateScheduledDateWithSameDateShouldNotRaiseEvent()
+    {
+        // Arrange
+        var item = ContentItem.Create(_validUserId, "Title", "Notes");
+        var scheduledDate = DateTime.UtcNow.AddDays(7);
+        item.UpdateScheduledDate(scheduledDate);
+        item.ClearDomainEvents();
+
+        // Act
+        item.UpdateScheduledDate(scheduledDate);
+
+        // Assert
+        item.DomainEvents.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ClearScheduledDateShouldSetToNull()
+    {
+        // Arrange
+        var item = ContentItem.Create(_validUserId, "Title", "Notes");
+        item.UpdateScheduledDate(DateTime.UtcNow.AddDays(7));
+        item.ClearDomainEvents();
+
+        // Act
+        item.ClearScheduledDate();
+
+        // Assert
+        item.ScheduledDate.Should().BeNull();
+    }
+
+    [Fact]
+    public void ClearScheduledDateShouldRaiseEvent()
+    {
+        // Arrange
+        var item = ContentItem.Create(_validUserId, "Title", "Notes");
+        item.UpdateScheduledDate(DateTime.UtcNow.AddDays(7));
+        item.ClearDomainEvents();
+
+        // Act
+        item.ClearScheduledDate();
+
+        // Assert
+        item.DomainEvents.Should().ContainSingle()
+            .Which.Should().BeOfType<ContentItemScheduledDateChangedEvent>();
+    }
+
+    [Fact]
+    public void ClearScheduledDateWhenAlreadyNullShouldNotRaiseEvent()
+    {
+        // Arrange
+        var item = ContentItem.Create(_validUserId, "Title", "Notes");
+        item.ClearDomainEvents();
+
+        // Act
+        item.ClearScheduledDate();
+
+        // Assert
+        item.DomainEvents.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void UpdateScheduledDateOnDeletedItemShouldThrow()
+    {
+        // Arrange
+        var item = ContentItem.Create(_validUserId, "Title", "Notes");
+        item.SoftDelete();
+
+        // Act
+        var act = () => item.UpdateScheduledDate(DateTime.UtcNow.AddDays(7));
+
+        // Assert
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("Cannot modify a deleted content item.*");
+    }
+
+    [Fact]
+    public void ClearScheduledDateOnDeletedItemShouldThrow()
+    {
+        // Arrange
+        var item = ContentItem.Create(_validUserId, "Title", "Notes");
+        item.UpdateScheduledDate(DateTime.UtcNow.AddDays(7));
+        item.SoftDelete();
+
+        // Act
+        var act = () => item.ClearScheduledDate();
+
+        // Assert
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("Cannot modify a deleted content item.*");
+    }
+
+    #endregion
+
     #region Helper Methods
 
     private static void MoveToStatus(ContentItem item, IdeaStatus targetStatus)
