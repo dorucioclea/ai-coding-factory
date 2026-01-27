@@ -106,6 +106,12 @@ public class ApplicationDbContext : DbContext, IUnitOfWork
     /// </summary>
     public DbSet<TaskHistory> TaskHistory => Set<TaskHistory>();
 
+    /// <summary>
+    /// Gets or sets the ApprovalRecords DbSet.
+    /// Story: ACF-009
+    /// </summary>
+    public DbSet<ApprovalRecord> ApprovalRecords => Set<ApprovalRecord>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

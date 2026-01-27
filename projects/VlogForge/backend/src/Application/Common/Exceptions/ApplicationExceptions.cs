@@ -74,8 +74,17 @@ public class ForbiddenAccessException : Exception
     /// <summary>
     /// Initializes a new instance of the ForbiddenAccessException class.
     /// </summary>
-    public ForbiddenAccessException() 
+    public ForbiddenAccessException()
         : base("You do not have permission to perform this action.")
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the ForbiddenAccessException class with a custom message.
+    /// </summary>
+    /// <param name="message">The error message.</param>
+    public ForbiddenAccessException(string message)
+        : base(message)
     {
     }
 }

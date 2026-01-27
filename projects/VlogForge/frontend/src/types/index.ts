@@ -19,3 +19,4 @@ export {
   PLATFORM_METADATA,
 } from './integrations';
 export * from './tasks';
+export * from './approval';

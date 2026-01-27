@@ -85,4 +85,12 @@ public interface IContentItemRepository
     /// Saves all changes to the repository.
     /// </summary>
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets content items pending approval for a team.
+    /// Story: ACF-009
+    /// </summary>
+    /// <param name="teamId">The team ID.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    Task<IReadOnlyList<ContentItem>> GetPendingApprovalForTeamAsync(Guid teamId, CancellationToken cancellationToken = default);
 }

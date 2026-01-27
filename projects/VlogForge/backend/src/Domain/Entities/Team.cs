@@ -36,6 +36,7 @@ public sealed class Team : AggregateRoot
 
     private readonly List<TeamMember> _members = new();
     private readonly List<TeamInvitation> _invitations = new();
+    private readonly List<Guid> _approverIds = new();
 
     /// <summary>
     /// Gets the user ID of the team owner.
@@ -61,6 +62,19 @@ public sealed class Team : AggregateRoot
     /// Gets the pending team invitations.
     /// </summary>
     public IReadOnlyCollection<TeamInvitation> Invitations => _invitations.AsReadOnly();
+
+    /// <summary>
+    /// Gets whether this team requires approval for content before scheduling.
+    /// Story: ACF-009
+    /// </summary>
+    public bool RequiresApproval { get; private set; }
+
+    /// <summary>
+    /// Gets the user IDs of members who can approve content.
+    /// If empty and RequiresApproval is true, only Admins and Owner can approve.
+    /// Story: ACF-009
+    /// </summary>
+    public IReadOnlyCollection<Guid> ApproverIds => _approverIds.AsReadOnly();
 
     private Team() : base()
     {
@@ -303,6 +317,69 @@ public sealed class Team : AggregateRoot
     }
 
     /// <summary>
+    /// Configures the approval workflow settings.
+    /// Story: ACF-009
+    /// </summary>
+    /// <param name="requiresApproval">Whether approval is required before scheduling.</param>
+    /// <param name="approverIds">User IDs of designated approvers. If empty, Admins and Owner can approve.</param>
+    /// <param name="configuredByUserId">The user ID making the configuration change.</param>
+    public void ConfigureWorkflow(bool requiresApproval, IEnumerable<Guid>? approverIds, Guid configuredByUserId)
+    {
+        if (!HasPermission(configuredByUserId, TeamAccessRight.ManageTeamSettings))
+            throw new UnauthorizedAccessException("You do not have permission to configure workflow settings.");
+
+        RequiresApproval = requiresApproval;
+
+        _approverIds.Clear();
+
+        if (approverIds is not null)
+        {
+            foreach (var approverId in approverIds.Distinct())
+            {
+                if (approverId == Guid.Empty)
+                    continue;
+
+                // Verify approver is a member
+                if (!IsMember(approverId))
+                    throw new InvalidOperationException($"Approver must be a team member.");
+
+                _approverIds.Add(approverId);
+            }
+        }
+
+        IncrementVersion();
+
+        RaiseDomainEvent(new TeamWorkflowConfiguredEvent(
+            Id,
+            configuredByUserId,
+            RequiresApproval,
+            _approverIds.ToList()));
+    }
+
+    /// <summary>
+    /// Checks if a user can approve content for this team.
+    /// Story: ACF-009
+    /// </summary>
+    /// <param name="userId">The user ID to check.</param>
+    /// <returns>True if the user can approve content.</returns>
+    public bool CanApproveContent(Guid userId)
+    {
+        if (!RequiresApproval)
+            return false;
+
+        var member = _members.FirstOrDefault(m => m.UserId == userId);
+        if (member is null)
+            return false;
+
+        // If specific approvers are designated, only they can approve
+        if (_approverIds.Count > 0)
+            return _approverIds.Contains(userId);
+
+        // Otherwise, Admins and Owner can approve
+        return member.Role >= TeamRole.Admin;
+    }
+
+    /// <summary>
     /// Checks if a user has a specific permission.
     /// </summary>
     /// <param name="userId">The user ID to check.</param>
@@ -321,6 +398,7 @@ public sealed class Team : AggregateRoot
             TeamAccessRight.AssignTasks => member.Role >= TeamRole.Editor,
             TeamAccessRight.InviteMembers => member.Role >= TeamRole.Admin,
             TeamAccessRight.ManageTeamSettings => member.Role >= TeamRole.Admin,
+            TeamAccessRight.ApproveContent => CanApproveContent(userId), // ACF-009
             _ => false
         };
     }
@@ -390,7 +468,7 @@ public sealed class Team : AggregateRoot
 
 /// <summary>
 /// Team permissions for authorization checks.
-/// Story: ACF-007
+/// Story: ACF-007, ACF-009
 /// </summary>
 public enum TeamAccessRight
 {
@@ -407,5 +485,8 @@ public enum TeamAccessRight
     InviteMembers,
 
     /// <summary>Can manage team settings.</summary>
-    ManageTeamSettings
+    ManageTeamSettings,
+
+    /// <summary>Can approve or request changes on content. Story: ACF-009</summary>
+    ApproveContent
 }

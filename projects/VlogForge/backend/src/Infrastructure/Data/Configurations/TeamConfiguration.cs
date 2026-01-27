@@ -38,6 +38,21 @@ public class TeamConfiguration : IEntityTypeConfiguration<Team>
             .HasColumnName("description")
             .HasMaxLength(Team.MaxDescriptionLength);
 
+        // Workflow settings (ACF-009)
+        builder.Property(t => t.RequiresApproval)
+            .HasColumnName("requires_approval")
+            .HasDefaultValue(false);
+
+        builder.Property(t => t.ApproverIds)
+            .HasColumnName("approver_ids")
+            .HasConversion(
+                v => string.Join(',', v),
+                v => string.IsNullOrEmpty(v)
+                    ? new List<Guid>()
+                    : v.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                        .Select(Guid.Parse)
+                        .ToList());
+
         // Audit fields
         builder.Property(t => t.CreatedAt)
             .HasColumnName("created_at")

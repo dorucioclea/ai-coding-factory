@@ -5,6 +5,7 @@
 
 /**
  * Content idea status enum matching backend
+ * Updated for ACF-009 approval workflows
  */
 export enum IdeaStatus {
   Idea = 0,
@@ -12,19 +13,23 @@ export enum IdeaStatus {
   InReview = 2,
   Scheduled = 3,
   Published = 4,
+  Approved = 5,
+  ChangesRequested = 6,
 }
 
 /**
  * Status display properties for UI
+ * Updated for ACF-009 approval workflows
  */
 export interface StatusConfig {
   label: string;
-  color: 'gray' | 'yellow' | 'orange' | 'blue' | 'green';
+  color: 'gray' | 'yellow' | 'orange' | 'blue' | 'green' | 'purple' | 'red';
   description: string;
 }
 
 /**
  * Status configuration map
+ * Updated for ACF-009 approval workflows
  */
 export const STATUS_CONFIG: Record<IdeaStatus, StatusConfig> = {
   [IdeaStatus.Idea]: {
@@ -40,7 +45,7 @@ export const STATUS_CONFIG: Record<IdeaStatus, StatusConfig> = {
   [IdeaStatus.InReview]: {
     label: 'In Review',
     color: 'orange',
-    description: 'Under review',
+    description: 'Submitted for approval',
   },
   [IdeaStatus.Scheduled]: {
     label: 'Scheduled',
@@ -52,17 +57,33 @@ export const STATUS_CONFIG: Record<IdeaStatus, StatusConfig> = {
     color: 'green',
     description: 'Published content',
   },
+  [IdeaStatus.Approved]: {
+    label: 'Approved',
+    color: 'purple',
+    description: 'Approved and ready to schedule',
+  },
+  [IdeaStatus.ChangesRequested]: {
+    label: 'Changes Requested',
+    color: 'red',
+    description: 'Needs revision based on feedback',
+  },
 };
 
 /**
  * Valid status transitions
+ * Updated for ACF-009 approval workflows
+ * Workflow: Idea → Draft → InReview → Approved → Scheduled → Published
+ *                          ↓
+ *                   ChangesRequested → Draft (loop back)
  */
 export const VALID_TRANSITIONS: Record<IdeaStatus, IdeaStatus[]> = {
   [IdeaStatus.Idea]: [IdeaStatus.Draft],
   [IdeaStatus.Draft]: [IdeaStatus.Idea, IdeaStatus.InReview],
-  [IdeaStatus.InReview]: [IdeaStatus.Draft, IdeaStatus.Scheduled],
-  [IdeaStatus.Scheduled]: [IdeaStatus.InReview, IdeaStatus.Published],
-  [IdeaStatus.Published]: [],
+  [IdeaStatus.InReview]: [IdeaStatus.Draft, IdeaStatus.Approved, IdeaStatus.ChangesRequested],
+  [IdeaStatus.Approved]: [IdeaStatus.InReview, IdeaStatus.Scheduled],
+  [IdeaStatus.ChangesRequested]: [IdeaStatus.Draft],
+  [IdeaStatus.Scheduled]: [IdeaStatus.Approved, IdeaStatus.Published],
+  [IdeaStatus.Published]: [IdeaStatus.Scheduled],
 };
 
 /**

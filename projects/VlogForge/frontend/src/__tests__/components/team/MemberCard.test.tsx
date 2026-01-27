@@ -7,15 +7,17 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { MemberCard } from '@/components/team/MemberCard';
+import { TeamRole } from '@/types';
 
 // Mock canModifyMember function
 vi.mock('@/types', async () => {
   const actual = await vi.importActual('@/types');
   return {
     ...actual,
-    canModifyMember: vi.fn((currentUserRole, memberRole, isCurrentUserOwner) => {
-      if (isCurrentUserOwner && memberRole !== 'Owner') return true;
-      if (currentUserRole === 'Admin' && memberRole === 'Member') return true;
+    canModifyMember: vi.fn((currentUserRole, memberRole, isCurrentUserOwner, targetIsOwner) => {
+      if (targetIsOwner) return false;
+      if (isCurrentUserOwner) return true;
+      if (currentUserRole === 2 /* Admin */ && memberRole < 2) return true; // Admin can modify Editor and Viewer
       return false;
     }),
   };
@@ -28,7 +30,7 @@ const mockMember = {
   firstName: 'Test',
   lastName: 'Member',
   displayName: 'Test Member',
-  role: 'Member' as const,
+  role: TeamRole.Editor,
   joinedAt: '2024-01-15T00:00:00Z',
 };
 
@@ -40,7 +42,7 @@ const _mockOwnerMember = {
   firstName: 'Team',
   lastName: 'Owner',
   displayName: 'Team Owner',
-  role: 'Owner' as const,
+  role: TeamRole.Owner,
   joinedAt: '2024-01-01T00:00:00Z',
 };
 
@@ -52,14 +54,14 @@ const _mockAdminMember = {
   firstName: 'Team',
   lastName: 'Admin',
   displayName: 'Team Admin',
-  role: 'Admin' as const,
+  role: TeamRole.Admin,
   joinedAt: '2024-01-10T00:00:00Z',
 };
 
 describe('MemberCard', () => {
   const defaultProps = {
     member: mockMember,
-    currentUserRole: 'Member' as const,
+    currentUserRole: TeamRole.Editor,
     isCurrentUserOwner: false,
     isOwner: false,
     onChangeRole: vi.fn(),
@@ -98,7 +100,7 @@ describe('MemberCard', () => {
     render(
       <MemberCard
         {...defaultProps}
-        currentUserRole="Owner"
+        currentUserRole={TeamRole.Owner}
         isCurrentUserOwner={true}
       />
     );
@@ -123,7 +125,7 @@ describe('MemberCard', () => {
     render(
       <MemberCard
         {...defaultProps}
-        currentUserRole="Owner"
+        currentUserRole={TeamRole.Owner}
         isCurrentUserOwner={true}
         onRemove={onRemove}
       />
@@ -144,7 +146,7 @@ describe('MemberCard', () => {
     render(
       <MemberCard
         {...defaultProps}
-        currentUserRole="Owner"
+        currentUserRole={TeamRole.Owner}
         isCurrentUserOwner={true}
         onChangeRole={onChangeRole}
       />

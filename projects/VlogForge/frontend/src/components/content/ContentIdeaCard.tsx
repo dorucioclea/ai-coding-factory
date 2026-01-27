@@ -3,6 +3,7 @@
 import { Calendar, Edit2, MoreVertical, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
+import { ApprovalActions } from '@/components/approval';
 import {
   Button,
   Card,
@@ -17,6 +18,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui';
+import { useAuth } from '@/hooks';
 import { useUpdateIdeaStatus } from '@/hooks';
 import { cn } from '@/lib/utils';
 import type { ContentIdeaResponse, IdeaStatus } from '@/types';
@@ -29,6 +31,12 @@ interface ContentIdeaCardProps {
   onEdit?: (idea: ContentIdeaResponse) => void;
   onDelete?: (id: string) => void;
   className?: string;
+  /** Team ID for approval workflow */
+  teamId?: string;
+  /** Whether current user can approve content */
+  canApprove?: boolean;
+  /** Callback when approval action completes */
+  onApprovalComplete?: () => void;
 }
 
 export function ContentIdeaCard({
@@ -36,9 +44,15 @@ export function ContentIdeaCard({
   onEdit,
   onDelete,
   className,
+  teamId,
+  canApprove = false,
+  onApprovalComplete,
 }: ContentIdeaCardProps) {
+  const { user } = useAuth();
   const [isStatusChanging, setIsStatusChanging] = useState(false);
   const updateStatusMutation = useUpdateIdeaStatus();
+
+  const isOwner = user?.id === idea.userId;
 
   const handleStatusChange = async (newStatus: IdeaStatus) => {
     try {
@@ -140,12 +154,23 @@ export function ContentIdeaCard({
         )}
       </CardContent>
 
-      <CardFooter className="pt-3 border-t">
-        <StatusDropdown
-          currentStatus={idea.status}
-          onChange={handleStatusChange}
-          disabled={isStatusChanging}
-        />
+      <CardFooter className="pt-3 border-t flex flex-col gap-3">
+        <div className="w-full">
+          <StatusDropdown
+            currentStatus={idea.status}
+            onChange={handleStatusChange}
+            disabled={isStatusChanging}
+          />
+        </div>
+        {teamId && (
+          <ApprovalActions
+            content={idea}
+            teamId={teamId}
+            canApprove={canApprove}
+            isOwner={isOwner}
+            onActionComplete={onApprovalComplete}
+          />
+        )}
       </CardFooter>
     </Card>
   );

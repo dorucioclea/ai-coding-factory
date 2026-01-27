@@ -153,4 +153,23 @@ public sealed class ContentItemRepository : IContentItemRepository
     {
         return _context.SaveChangesAsync(cancellationToken);
     }
+
+    /// <summary>
+    /// Gets content items pending approval for a team.
+    /// Story: ACF-009
+    /// </summary>
+    public async Task<IReadOnlyList<ContentItem>> GetPendingApprovalForTeamAsync(Guid teamId, CancellationToken cancellationToken = default)
+    {
+        // Get content items in InReview status that have approval records for this team
+        var contentItemIds = await _context.ApprovalRecords
+            .Where(r => r.TeamId == teamId)
+            .Select(r => r.ContentItemId)
+            .Distinct()
+            .ToListAsync(cancellationToken);
+
+        return await _context.ContentItems
+            .Where(c => contentItemIds.Contains(c.Id) && c.Status == IdeaStatus.InReview)
+            .OrderByDescending(c => c.CreatedAt)
+            .ToListAsync(cancellationToken);
+    }
 }

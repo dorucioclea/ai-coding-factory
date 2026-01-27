@@ -49,3 +49,12 @@ export {
   useAddComment,
   useTaskFilters,
 } from './use-tasks';
+export {
+  useApproval,
+  usePendingApprovals,
+  useApprovalHistory,
+  useConfigureWorkflow,
+  useSubmitForApproval,
+  useApproveContent,
+  useRequestChanges,
+} from './use-approval';

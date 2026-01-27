@@ -5,7 +5,7 @@ namespace VlogForge.Domain.Entities;
 
 /// <summary>
 /// Status workflow for content ideas.
-/// Story: ACF-005
+/// Story: ACF-005, ACF-009
 /// </summary>
 public enum IdeaStatus
 {
@@ -22,7 +22,13 @@ public enum IdeaStatus
     Scheduled = 3,
 
     /// <summary>Published content.</summary>
-    Published = 4
+    Published = 4,
+
+    /// <summary>Approved by approver, ready to be scheduled. Story: ACF-009</summary>
+    Approved = 5,
+
+    /// <summary>Approver requested changes, needs revision. Story: ACF-009</summary>
+    ChangesRequested = 6
 }
 
 /// <summary>
@@ -321,12 +327,47 @@ public sealed class ContentItem : AggregateRoot
 
     private static void ValidateStatusTransition(IdeaStatus from, IdeaStatus to)
     {
-        // Allow moving one step forward or one step backward
-        var diff = (int)to - (int)from;
-
-        if (diff != 1 && diff != -1)
+        // Define valid transitions for the approval workflow (ACF-009)
+        // Workflow: Idea → Draft → InReview → Approved → Scheduled → Published
+        //                    ↑       ↓                ↓
+        //                    └─ ChangesRequested ←────┘
+        //                          ↓
+        //                   (can go to Draft or directly to InReview)
+        var validTransitions = new Dictionary<IdeaStatus, IdeaStatus[]>
         {
-            throw new InvalidOperationException($"Cannot transition from {from} to {to}. Only adjacent transitions are allowed.");
+            { IdeaStatus.Idea, new[] { IdeaStatus.Draft } },
+            { IdeaStatus.Draft, new[] { IdeaStatus.Idea, IdeaStatus.InReview } },
+            { IdeaStatus.InReview, new[] { IdeaStatus.Draft, IdeaStatus.Approved, IdeaStatus.ChangesRequested } },
+            { IdeaStatus.Approved, new[] { IdeaStatus.InReview, IdeaStatus.Scheduled } },
+            { IdeaStatus.ChangesRequested, new[] { IdeaStatus.Draft, IdeaStatus.InReview } },
+            { IdeaStatus.Scheduled, new[] { IdeaStatus.Approved, IdeaStatus.Published } },
+            { IdeaStatus.Published, new[] { IdeaStatus.Scheduled } }
+        };
+
+        if (!validTransitions.TryGetValue(from, out var allowedTargets) ||
+            !allowedTargets.Contains(to))
+        {
+            throw new InvalidOperationException($"Cannot transition from {from} to {to}. Invalid status transition.");
         }
+    }
+
+    /// <summary>
+    /// Gets the valid status transitions from the current status.
+    /// Story: ACF-009
+    /// </summary>
+    /// <returns>Array of valid target statuses.</returns>
+    public IdeaStatus[] GetValidTransitions()
+    {
+        return Status switch
+        {
+            IdeaStatus.Idea => new[] { IdeaStatus.Draft },
+            IdeaStatus.Draft => new[] { IdeaStatus.Idea, IdeaStatus.InReview },
+            IdeaStatus.InReview => new[] { IdeaStatus.Draft, IdeaStatus.Approved, IdeaStatus.ChangesRequested },
+            IdeaStatus.Approved => new[] { IdeaStatus.InReview, IdeaStatus.Scheduled },
+            IdeaStatus.ChangesRequested => new[] { IdeaStatus.Draft, IdeaStatus.InReview },
+            IdeaStatus.Scheduled => new[] { IdeaStatus.Approved, IdeaStatus.Published },
+            IdeaStatus.Published => new[] { IdeaStatus.Scheduled },
+            _ => Array.Empty<IdeaStatus>()
+        };
     }
 }

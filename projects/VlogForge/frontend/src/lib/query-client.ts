@@ -164,6 +164,13 @@ export const queryKeys = {
     invitations: (id: string) => [...queryKeys.teams.detail(id), 'invitations'] as const,
   },
 
+  // Approval queries (ACF-009)
+  approvals: {
+    all: ['approvals'] as const,
+    pending: (teamId: string) => [...queryKeys.approvals.all, 'pending', teamId] as const,
+    history: (contentId: string) => [...queryKeys.approvals.all, 'history', contentId] as const,
+  },
+
   // Generic entity factory
   entity: (name: string) => ({
     all: [name] as const,
