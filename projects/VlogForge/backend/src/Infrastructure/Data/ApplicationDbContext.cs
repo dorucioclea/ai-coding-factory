@@ -64,6 +64,12 @@ public class ApplicationDbContext : DbContext, IUnitOfWork
     /// </summary>
     public DbSet<ContentPerformance> ContentPerformances => Set<ContentPerformance>();
 
+    /// <summary>
+    /// Gets or sets the ContentItems DbSet (content ideas).
+    /// Story: ACF-005
+    /// </summary>
+    public DbSet<ContentItem> ContentItems => Set<ContentItem>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

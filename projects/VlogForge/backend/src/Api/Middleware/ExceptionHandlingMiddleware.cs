@@ -119,6 +119,26 @@ public class ExceptionHandlingMiddleware
                     Detail = conflictException.Message
                 }),
 
+            InvalidOperationException invalidOpException => (
+                HttpStatusCode.BadRequest,
+                new ErrorResponse
+                {
+                    Type = "InvalidOperation",
+                    Title = "Invalid Operation",
+                    Status = (int)HttpStatusCode.BadRequest,
+                    Detail = invalidOpException.Message
+                }),
+
+            ArgumentException argumentException => (
+                HttpStatusCode.BadRequest,
+                new ErrorResponse
+                {
+                    Type = "BadRequest",
+                    Title = "Invalid Argument",
+                    Status = (int)HttpStatusCode.BadRequest,
+                    Detail = argumentException.Message
+                }),
+
             _ => (
                 HttpStatusCode.InternalServerError,
                 new ErrorResponse

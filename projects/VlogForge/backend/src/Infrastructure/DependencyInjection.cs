@@ -60,6 +60,9 @@ public static class DependencyInjection
         services.AddScoped<IMetricsSnapshotRepository, MetricsSnapshotRepository>();
         services.AddScoped<IContentPerformanceRepository, ContentPerformanceRepository>();
 
+        // Register content ideas repository (ACF-005)
+        services.AddScoped<IContentItemRepository, ContentItemRepository>();
+
         // Register encryption service (ACF-003)
         services.AddSingleton<IEncryptionService, EncryptionService>();
 
