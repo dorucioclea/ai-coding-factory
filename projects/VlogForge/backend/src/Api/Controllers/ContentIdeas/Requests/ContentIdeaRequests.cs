@@ -74,3 +74,30 @@ public sealed class UpdateScheduleRequest
     /// </summary>
     public DateTime? ScheduledDate { get; init; }
 }
+
+/// <summary>
+/// Request to assign a content item to a team member.
+/// Story: ACF-008
+/// </summary>
+public sealed class AssignTaskToMemberRequest
+{
+    /// <summary>
+    /// The team ID.
+    /// </summary>
+    public Guid TeamId { get; init; }
+
+    /// <summary>
+    /// The user ID of the assignee.
+    /// </summary>
+    public Guid AssigneeId { get; init; }
+
+    /// <summary>
+    /// The due date for the task.
+    /// </summary>
+    public DateTime DueDate { get; init; }
+
+    /// <summary>
+    /// Optional notes for the task.
+    /// </summary>
+    public string? Notes { get; init; }
+}

@@ -192,3 +192,50 @@ public class TeamAccessDeniedException : DomainException
         UserId = Guid.Empty;
     }
 }
+
+/// <summary>
+/// Exception thrown when a task assignment is not found.
+/// Story: ACF-008
+/// </summary>
+public class TaskAssignmentNotFoundException : DomainException
+{
+    public Guid TaskAssignmentId { get; }
+
+    public TaskAssignmentNotFoundException(Guid taskAssignmentId)
+        : base("TASK_NOT_FOUND", "Task assignment not found.")
+    {
+        TaskAssignmentId = taskAssignmentId;
+    }
+}
+
+/// <summary>
+/// Exception thrown when a user doesn't have permission to modify a task.
+/// Story: ACF-008
+/// </summary>
+public class TaskAccessDeniedException : DomainException
+{
+    public Guid TaskAssignmentId { get; }
+    public Guid UserId { get; }
+
+    public TaskAccessDeniedException(Guid taskAssignmentId, Guid userId)
+        : base("TASK_ACCESS_DENIED", "You do not have permission to modify this task.")
+    {
+        TaskAssignmentId = taskAssignmentId;
+        UserId = userId;
+    }
+}
+
+/// <summary>
+/// Exception thrown when a content item is not found.
+/// Story: ACF-008
+/// </summary>
+public class ContentItemNotFoundException : DomainException
+{
+    public Guid ContentItemId { get; }
+
+    public ContentItemNotFoundException(Guid contentItemId)
+        : base("CONTENT_ITEM_NOT_FOUND", "Content item not found.")
+    {
+        ContentItemId = contentItemId;
+    }
+}

@@ -88,6 +88,24 @@ public class ApplicationDbContext : DbContext, IUnitOfWork
     /// </summary>
     public DbSet<TeamInvitation> TeamInvitations => Set<TeamInvitation>();
 
+    /// <summary>
+    /// Gets or sets the TaskAssignments DbSet.
+    /// Story: ACF-008
+    /// </summary>
+    public DbSet<TaskAssignment> TaskAssignments => Set<TaskAssignment>();
+
+    /// <summary>
+    /// Gets or sets the TaskComments DbSet.
+    /// Story: ACF-008
+    /// </summary>
+    public DbSet<TaskComment> TaskComments => Set<TaskComment>();
+
+    /// <summary>
+    /// Gets or sets the TaskHistory DbSet.
+    /// Story: ACF-008
+    /// </summary>
+    public DbSet<TaskHistory> TaskHistory => Set<TaskHistory>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

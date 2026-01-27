@@ -66,6 +66,9 @@ public static class DependencyInjection
         // Register team repository (ACF-007)
         services.AddScoped<ITeamRepository, TeamRepository>();
 
+        // Register task assignment repository (ACF-008)
+        services.AddScoped<ITaskAssignmentRepository, TaskAssignmentRepository>();
+
         // Register encryption service (ACF-003)
         services.AddSingleton<IEncryptionService, EncryptionService>();
 
