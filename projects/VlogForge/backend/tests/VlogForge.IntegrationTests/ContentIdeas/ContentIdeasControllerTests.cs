@@ -403,4 +403,87 @@ public class ContentIdeasControllerTests : IClassFixture<WebApplicationFactoryFi
     }
 
     #endregion
+
+    #region Cross-User Access Tests
+
+    [Fact]
+    public async Task GetByIdForOtherUserContentShouldReturnForbidden()
+    {
+        // Arrange - Create content with User A
+        var authA = await RegisterAndGetTokensAsync();
+        SetAuthHeader(authA.AccessToken);
+        var created = await CreateTestContentIdea("User A's Idea");
+        ClearAuthHeader();
+
+        // Act - Try to access with User B
+        var authB = await RegisterAndGetTokensAsync();
+        SetAuthHeader(authB.AccessToken);
+
+        try
+        {
+            var response = await _client.GetAsync($"/api/content/{created.Id}");
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        }
+        finally
+        {
+            ClearAuthHeader();
+        }
+    }
+
+    [Fact]
+    public async Task UpdateOtherUserContentShouldReturnForbidden()
+    {
+        // Arrange - Create content with User A
+        var authA = await RegisterAndGetTokensAsync();
+        SetAuthHeader(authA.AccessToken);
+        var created = await CreateTestContentIdea("User A's Idea");
+        ClearAuthHeader();
+
+        // Act - Try to update with User B
+        var authB = await RegisterAndGetTokensAsync();
+        SetAuthHeader(authB.AccessToken);
+
+        try
+        {
+            var updateRequest = new { Title = "Hacked Title", Notes = "Hacked" };
+            var response = await _client.PutAsJsonAsync($"/api/content/{created.Id}", updateRequest);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        }
+        finally
+        {
+            ClearAuthHeader();
+        }
+    }
+
+    [Fact]
+    public async Task DeleteOtherUserContentShouldReturnForbidden()
+    {
+        // Arrange - Create content with User A
+        var authA = await RegisterAndGetTokensAsync();
+        SetAuthHeader(authA.AccessToken);
+        var created = await CreateTestContentIdea("User A's Idea");
+        ClearAuthHeader();
+
+        // Act - Try to delete with User B
+        var authB = await RegisterAndGetTokensAsync();
+        SetAuthHeader(authB.AccessToken);
+
+        try
+        {
+            var response = await _client.DeleteAsync($"/api/content/{created.Id}");
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        }
+        finally
+        {
+            ClearAuthHeader();
+        }
+    }
+
+    #endregion
 }

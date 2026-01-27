@@ -9,6 +9,8 @@ namespace VlogForge.Application.ContentIdeas.Commands.UpdateContentIdea;
 /// </summary>
 public sealed class UpdateContentIdeaCommandValidator : AbstractValidator<UpdateContentIdeaCommand>
 {
+    private const int MaxPlatformTagLength = 50;
+
     public UpdateContentIdeaCommandValidator()
     {
         RuleFor(x => x.Id)
@@ -32,7 +34,9 @@ public sealed class UpdateContentIdeaCommandValidator : AbstractValidator<Update
 
         RuleFor(x => x.PlatformTags)
             .Must(tags => tags == null || tags.Count <= ContentItem.MaxPlatformTags)
-            .WithMessage($"Cannot have more than {ContentItem.MaxPlatformTags} platform tags.");
+            .WithMessage($"Cannot have more than {ContentItem.MaxPlatformTags} platform tags.")
+            .Must(tags => tags == null || tags.All(t => string.IsNullOrEmpty(t) || t.Length <= MaxPlatformTagLength))
+            .WithMessage($"Each platform tag must be {MaxPlatformTagLength} characters or less.");
 
         RuleFor(x => x.Status)
             .IsInEnum()

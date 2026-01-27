@@ -76,14 +76,27 @@ public sealed class ContentItemRepository : IContentItemRepository
             return await GetByUserIdAsync(userId, cancellationToken: cancellationToken);
         }
 
-        var normalizedTerm = searchTerm.Trim().ToLowerInvariant();
+        // Escape LIKE pattern special characters to prevent LIKE injection
+        var escapedTerm = EscapeLikePattern(searchTerm.Trim().ToLowerInvariant());
 
         return await _context.ContentItems
             .Where(c => c.UserId == userId)
-            .Where(c => EF.Functions.ILike(c.Title, $"%{normalizedTerm}%") ||
-                        (c.Notes != null && EF.Functions.ILike(c.Notes, $"%{normalizedTerm}%")))
+            .Where(c => EF.Functions.ILike(c.Title, $"%{escapedTerm}%") ||
+                        (c.Notes != null && EF.Functions.ILike(c.Notes, $"%{escapedTerm}%")))
             .OrderByDescending(c => c.CreatedAt)
             .ToListAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Escapes LIKE pattern special characters to prevent injection.
+    /// </summary>
+    private static string EscapeLikePattern(string input)
+    {
+        return input
+            .Replace("\\", "\\\\")
+            .Replace("%", "\\%")
+            .Replace("_", "\\_")
+            .Replace("[", "\\[");
     }
 
     public async Task<IReadOnlyList<ContentItem>> GetDeletedOlderThanAsync(int olderThanDays, CancellationToken cancellationToken = default)

@@ -39,13 +39,11 @@ public sealed class GetContentIdeasQueryHandler : IRequestHandler<GetContentIdea
             items = await _repository.GetByUserIdAsync(request.UserId, cancellationToken: cancellationToken);
         }
 
-        // Sort by creation date (newest first)
-        var sortedItems = items.OrderByDescending(i => i.CreatedAt).ToList();
-
+        // Items are already sorted by CreatedAt DESC from the repository
         return new ContentIdeasListResponse
         {
-            Items = sortedItems.Select(ContentIdeaResponse.FromEntity).ToList(),
-            TotalCount = sortedItems.Count
+            Items = items.Select(ContentIdeaResponse.FromEntity).ToList(),
+            TotalCount = items.Count
         };
     }
 }

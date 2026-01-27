@@ -153,6 +153,8 @@ public sealed class ContentItem : AggregateRoot
     /// <returns>True if added, false if already exists or limit reached.</returns>
     public bool AddPlatformTag(string tag)
     {
+        EnsureNotDeleted();
+
         if (string.IsNullOrWhiteSpace(tag))
             return false;
 
@@ -176,6 +178,8 @@ public sealed class ContentItem : AggregateRoot
     /// <returns>True if removed, false if not found.</returns>
     public bool RemovePlatformTag(string tag)
     {
+        EnsureNotDeleted();
+
         if (string.IsNullOrWhiteSpace(tag))
             return false;
 
@@ -196,6 +200,8 @@ public sealed class ContentItem : AggregateRoot
     /// <param name="tags">The platform tags to set.</param>
     public void SetPlatformTags(IEnumerable<string> tags)
     {
+        EnsureNotDeleted();
+
         var normalizedTags = tags
             .Where(t => !string.IsNullOrWhiteSpace(t))
             .Select(t => t.Trim().ToLowerInvariant())
