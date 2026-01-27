@@ -90,13 +90,23 @@ public sealed partial class FileStorageService : IFileStorageService
         if (_settings.Provider == "Local")
         {
             var fullPath = Path.Combine(_settings.LocalBasePath, relativePath);
-            var directory = Path.GetDirectoryName(fullPath);
+
+            // Validate path to prevent directory traversal attacks
+            var resolvedPath = Path.GetFullPath(fullPath);
+            var basePath = Path.GetFullPath(_settings.LocalBasePath);
+            if (!resolvedPath.StartsWith(basePath, StringComparison.OrdinalIgnoreCase))
+            {
+                LogPathTraversalAttempt(_logger, relativePath);
+                throw new InvalidOperationException("Invalid file path.");
+            }
+
+            var directory = Path.GetDirectoryName(resolvedPath);
             if (directory != null)
             {
                 Directory.CreateDirectory(directory);
             }
 
-            await using var fileStream = File.Create(fullPath);
+            await using var fileStream = File.Create(resolvedPath);
             await stream.CopyToAsync(fileStream, cancellationToken);
 
             var url = $"{_settings.BaseUrl.TrimEnd('/')}/{relativePath.Replace('\\', '/')}";
@@ -117,10 +127,19 @@ public sealed partial class FileStorageService : IFileStorageService
             var relativePath = fileUrl.Replace(_settings.BaseUrl.TrimEnd('/'), "").TrimStart('/');
             var fullPath = Path.Combine(_settings.LocalBasePath, relativePath);
 
-            if (File.Exists(fullPath))
+            // Validate path to prevent directory traversal attacks
+            var resolvedPath = Path.GetFullPath(fullPath);
+            var basePath = Path.GetFullPath(_settings.LocalBasePath);
+            if (!resolvedPath.StartsWith(basePath, StringComparison.OrdinalIgnoreCase))
             {
-                File.Delete(fullPath);
-                LogFileDeleted(_logger, fullPath);
+                LogPathTraversalAttempt(_logger, fileUrl);
+                throw new InvalidOperationException("Invalid file path.");
+            }
+
+            if (File.Exists(resolvedPath))
+            {
+                File.Delete(resolvedPath);
+                LogFileDeleted(_logger, resolvedPath);
             }
 
             return Task.CompletedTask;
@@ -209,4 +228,7 @@ public sealed partial class FileStorageService : IFileStorageService
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Profile picture uploaded: {StandardUrl}, thumbnail: {ThumbnailUrl}")]
     private static partial void LogProfilePictureUploaded(ILogger logger, string standardUrl, string thumbnailUrl);
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Path traversal attempt detected: {Path}")]
+    private static partial void LogPathTraversalAttempt(ILogger logger, string path);
 }

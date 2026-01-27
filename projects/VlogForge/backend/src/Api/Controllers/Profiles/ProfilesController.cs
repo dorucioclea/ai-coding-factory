@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -20,10 +21,14 @@ namespace VlogForge.Api.Controllers.Profiles;
 [ApiController]
 [Route("api/profiles")]
 [Produces("application/json")]
-public class ProfilesController : ControllerBase
+public partial class ProfilesController : ControllerBase
 {
     private readonly IMediator _mediator;
     private readonly ICurrentUserService _currentUserService;
+
+    // Username validation: 3-30 chars, alphanumeric, underscores, and hyphens
+    [GeneratedRegex(@"^[a-zA-Z0-9_-]{3,30}$", RegexOptions.Compiled)]
+    private static partial Regex UsernameRegex();
 
     public ProfilesController(IMediator mediator, ICurrentUserService currentUserService)
     {
@@ -39,9 +44,15 @@ public class ProfilesController : ControllerBase
     [HttpGet("{username}")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(PublicProfileResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<PublicProfileResponse>> GetByUsername(string username)
     {
+        if (string.IsNullOrWhiteSpace(username) || !UsernameRegex().IsMatch(username))
+        {
+            return BadRequest("Invalid username format. Username must be 3-30 characters and contain only letters, numbers, underscores, and hyphens.");
+        }
+
         var query = new GetProfileByUsernameQuery(username);
         var result = await _mediator.Send(query);
         return Ok(result);
