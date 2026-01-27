@@ -97,6 +97,15 @@ export const queryKeys = {
     detail: (id: string) => [...queryKeys.users.details(), id] as const,
   },
 
+  // Analytics queries (ACF-004)
+  analytics: {
+    all: ['analytics'] as const,
+    overview: () => ['analytics', 'overview'] as const,
+    trends: (period: string) => ['analytics', 'trends', period] as const,
+    topContent: (sortBy: string, limit: number) =>
+      ['analytics', 'top-content', sortBy, limit] as const,
+  },
+
   // Generic entity factory
   entity: (name: string) => ({
     all: [name] as const,

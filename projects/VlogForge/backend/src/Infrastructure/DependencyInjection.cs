@@ -54,6 +54,11 @@ public static class DependencyInjection
         services.AddScoped<ICreatorProfileRepository, CreatorProfileRepository>();
         services.AddScoped<IPlatformConnectionRepository, PlatformConnectionRepository>();
 
+        // Register analytics repositories (ACF-004)
+        services.AddScoped<IPlatformMetricsRepository, PlatformMetricsRepository>();
+        services.AddScoped<IMetricsSnapshotRepository, MetricsSnapshotRepository>();
+        services.AddScoped<IContentPerformanceRepository, ContentPerformanceRepository>();
+
         // Register encryption service (ACF-003)
         services.AddSingleton<IEncryptionService, EncryptionService>();
 

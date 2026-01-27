@@ -46,6 +46,24 @@ public class ApplicationDbContext : DbContext, IUnitOfWork
     /// </summary>
     public DbSet<PlatformConnection> PlatformConnections => Set<PlatformConnection>();
 
+    /// <summary>
+    /// Gets or sets the PlatformMetrics DbSet (analytics).
+    /// Story: ACF-004
+    /// </summary>
+    public DbSet<PlatformMetrics> PlatformMetrics => Set<PlatformMetrics>();
+
+    /// <summary>
+    /// Gets or sets the MetricsSnapshots DbSet (historical analytics).
+    /// Story: ACF-004
+    /// </summary>
+    public DbSet<MetricsSnapshot> MetricsSnapshots => Set<MetricsSnapshot>();
+
+    /// <summary>
+    /// Gets or sets the ContentPerformances DbSet (content analytics).
+    /// Story: ACF-004
+    /// </summary>
+    public DbSet<ContentPerformance> ContentPerformances => Set<ContentPerformance>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
