@@ -9,7 +9,7 @@ namespace VlogForge.Application.Discovery.Queries.DiscoverCreators;
 /// Handler for DiscoverCreatorsQuery.
 /// Story: ACF-010
 /// </summary>
-public sealed class DiscoverCreatorsQueryHandler : IRequestHandler<DiscoverCreatorsQuery, DiscoveryResponse>
+public sealed partial class DiscoverCreatorsQueryHandler : IRequestHandler<DiscoverCreatorsQuery, DiscoveryResponse>
 {
     private readonly ICreatorProfileRepository _repository;
     private readonly ICacheService _cacheService;
@@ -36,7 +36,7 @@ public sealed class DiscoverCreatorsQueryHandler : IRequestHandler<DiscoverCreat
         var cached = await _cacheService.GetAsync<DiscoveryResponse>(cacheKey, cancellationToken);
         if (cached is not null)
         {
-            _logger.LogDebug("Discovery results retrieved from cache for key: {CacheKey}", cacheKey);
+            LogCacheHit(_logger, cacheKey);
             return cached;
         }
 
@@ -89,10 +89,16 @@ public sealed class DiscoverCreatorsQueryHandler : IRequestHandler<DiscoverCreat
 
         // Cache the response
         await _cacheService.SetAsync(cacheKey, response, CacheDuration, cancellationToken);
-        _logger.LogDebug("Discovery results cached with key: {CacheKey}", cacheKey);
+        LogCacheMiss(_logger, cacheKey);
 
         return response;
     }
+
+    [LoggerMessage(Level = LogLevel.Debug, Message = "Discovery results retrieved from cache for key: {CacheKey}")]
+    private static partial void LogCacheHit(ILogger logger, string cacheKey);
+
+    [LoggerMessage(Level = LogLevel.Debug, Message = "Discovery results cached with key: {CacheKey}")]
+    private static partial void LogCacheMiss(ILogger logger, string cacheKey);
 
     private static string BuildCacheKey(DiscoverCreatorsQuery request)
     {

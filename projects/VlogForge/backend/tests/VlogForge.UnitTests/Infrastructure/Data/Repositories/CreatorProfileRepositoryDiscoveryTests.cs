@@ -236,153 +236,9 @@ public class CreatorProfileRepositoryDiscoveryTests : IDisposable
 
     #endregion
 
-    #region Search Term Tests
-
-    // NOTE: Search tests using EF.Functions.ILike require PostgreSQL and cannot be tested
-    // with InMemory provider. These tests are marked as Skip and should be run as
-    // integration tests with a real PostgreSQL database.
-
-    [Fact(Skip = "EF.Functions.ILike requires PostgreSQL - use integration tests")]
-    public async Task DiscoverCreatorsAsync_WithSearchTerm_ShouldSearchDisplayName()
-    {
-        // Arrange
-        await CreateAndSaveProfile("user1", "Gaming Expert", Guid.NewGuid());
-        await CreateAndSaveProfile("user2", "Cooking Master", Guid.NewGuid());
-
-        // Act
-        var (profiles, _, _) = await _repository.DiscoverCreatorsAsync(
-            searchTerm: "Gaming");
-
-        // Assert
-        profiles.Should().HaveCount(1);
-        profiles[0].DisplayName.Should().Be("Gaming Expert");
-    }
-
-    [Fact(Skip = "EF.Functions.ILike requires PostgreSQL - use integration tests")]
-    public async Task DiscoverCreatorsAsync_WithSearchTerm_ShouldSearchUsername()
-    {
-        // Arrange
-        await CreateAndSaveProfile("gamingpro", "User One", Guid.NewGuid());
-        await CreateAndSaveProfile("cookmaster", "User Two", Guid.NewGuid());
-
-        // Act
-        var (profiles, _, _) = await _repository.DiscoverCreatorsAsync(
-            searchTerm: "gaming");
-
-        // Assert
-        profiles.Should().HaveCount(1);
-        profiles[0].Username.Should().Be("gamingpro");
-    }
-
-    [Fact(Skip = "EF.Functions.ILike requires PostgreSQL - use integration tests")]
-    public async Task DiscoverCreatorsAsync_WithSearchTerm_ShouldSearchBio()
-    {
-        // Arrange
-        var profile1 = await CreateAndSaveProfile("user1", "User One", Guid.NewGuid());
-        profile1.UpdateBasicInfo("User One", Bio.Create("I love gaming and streaming!"));
-        await _repository.UpdateAsync(profile1);
-        await _context.SaveChangesAsync();
-
-        var profile2 = await CreateAndSaveProfile("user2", "User Two", Guid.NewGuid());
-        profile2.UpdateBasicInfo("User Two", Bio.Create("I love cooking recipes!"));
-        await _repository.UpdateAsync(profile2);
-        await _context.SaveChangesAsync();
-
-        _context.ChangeTracker.Clear();
-
-        // Act
-        var (profiles, _, _) = await _repository.DiscoverCreatorsAsync(
-            searchTerm: "gaming");
-
-        // Assert
-        profiles.Should().HaveCount(1);
-        profiles[0].Username.Should().Be("user1");
-    }
-
-    [Fact(Skip = "EF.Functions.ILike requires PostgreSQL - use integration tests")]
-    public async Task DiscoverCreatorsAsync_WithSearchTerm_ShouldBeCaseInsensitive()
-    {
-        // Arrange
-        await CreateAndSaveProfile("user1", "Gaming Expert", Guid.NewGuid());
-
-        // Act
-        var (profiles, _, _) = await _repository.DiscoverCreatorsAsync(
-            searchTerm: "GAMING");
-
-        // Assert
-        profiles.Should().HaveCount(1);
-    }
-
-    [Fact(Skip = "EF.Functions.ILike requires PostgreSQL - use integration tests")]
-    public async Task DiscoverCreatorsAsync_WithSearchTerm_ShouldMatchPartialStrings()
-    {
-        // Arrange
-        await CreateAndSaveProfile("user1", "Gaming Expert Pro", Guid.NewGuid());
-
-        // Act
-        var (profiles, _, _) = await _repository.DiscoverCreatorsAsync(
-            searchTerm: "Expert");
-
-        // Assert
-        profiles.Should().HaveCount(1);
-    }
-
-    #endregion
-
-    #region LIKE Pattern Escaping Tests
-
-    // NOTE: LIKE pattern escaping tests require PostgreSQL and cannot be tested
-    // with InMemory provider. These should be run as integration tests.
-
-    [Fact(Skip = "EF.Functions.ILike requires PostgreSQL - use integration tests")]
-    public async Task DiscoverCreatorsAsync_WithPercentInSearchTerm_ShouldEscapeCorrectly()
-    {
-        // Arrange
-        await CreateAndSaveProfile("user1", "100% Gamer", Guid.NewGuid());
-        await CreateAndSaveProfile("user2", "Gaming Pro", Guid.NewGuid());
-
-        // Act - Search for literal "100%"
-        var (profiles, _, _) = await _repository.DiscoverCreatorsAsync(
-            searchTerm: "100%");
-
-        // Assert - Should match only the one with "100%" in name
-        profiles.Should().HaveCount(1);
-        profiles[0].DisplayName.Should().Be("100% Gamer");
-    }
-
-    [Fact(Skip = "EF.Functions.ILike requires PostgreSQL - use integration tests")]
-    public async Task DiscoverCreatorsAsync_WithUnderscoreInSearchTerm_ShouldEscapeCorrectly()
-    {
-        // Arrange
-        await CreateAndSaveProfile("user1", "Gaming_Pro", Guid.NewGuid());
-        await CreateAndSaveProfile("user2", "GamingXPro", Guid.NewGuid());
-
-        // Act - Search for literal "_"
-        var (profiles, _, _) = await _repository.DiscoverCreatorsAsync(
-            searchTerm: "Gaming_");
-
-        // Assert - Should match only the one with underscore
-        profiles.Should().HaveCount(1);
-        profiles[0].DisplayName.Should().Be("Gaming_Pro");
-    }
-
-    [Fact(Skip = "EF.Functions.ILike requires PostgreSQL - use integration tests")]
-    public async Task DiscoverCreatorsAsync_WithBackslashInSearchTerm_ShouldEscapeCorrectly()
-    {
-        // Arrange
-        await CreateAndSaveProfile("user1", "Gaming\\Pro", Guid.NewGuid());
-        await CreateAndSaveProfile("user2", "GamingPro", Guid.NewGuid());
-
-        // Act
-        var (profiles, _, _) = await _repository.DiscoverCreatorsAsync(
-            searchTerm: "Gaming\\");
-
-        // Assert
-        profiles.Should().HaveCount(1);
-        profiles[0].DisplayName.Should().Be("Gaming\\Pro");
-    }
-
-    #endregion
+    // NOTE: Search and LIKE pattern escaping tests require PostgreSQL (EF.Functions.ILike)
+    // They have been moved to VlogForge.IntegrationTests/Discovery/ for testing with real DB.
+    // See: DiscoverCreatorsSearchIntegrationTests.cs
 
     #region Cursor Pagination Tests
 
@@ -496,23 +352,7 @@ public class CreatorProfileRepositoryDiscoveryTests : IDisposable
         totalCount.Should().Be(3); // Total count should be all matching
     }
 
-    [Fact(Skip = "EF.Functions.ILike requires PostgreSQL - use integration tests")]
-    public async Task DiscoverCreatorsAsync_WithSearchFilter_ShouldReturnFilteredTotalCount()
-    {
-        // Arrange
-        await CreateAndSaveProfile("user1", "Gaming One", Guid.NewGuid());
-        await CreateAndSaveProfile("user2", "Gaming Two", Guid.NewGuid());
-        await CreateAndSaveProfile("user3", "Cooking One", Guid.NewGuid());
-
-        // Act - Search for "Gaming"
-        var (profiles, _, totalCount) = await _repository.DiscoverCreatorsAsync(
-            searchTerm: "Gaming",
-            pageSize: 10);
-
-        // Assert
-        profiles.Should().HaveCount(2);
-        totalCount.Should().Be(2);
-    }
+    // Test for search-filtered total count moved to IntegrationTests (requires PostgreSQL)
 
     [Fact]
     public async Task DiscoverCreatorsAsync_WithNicheFilter_ShouldReturnFilteredTotalCount()
@@ -821,7 +661,7 @@ public class CreatorProfileRepositoryDiscoveryTests : IDisposable
             profile.Id,
             platformType,
             $"{username}_handle",
-            $"https://{platformType.ToString().ToLower()}.com/@{username}");
+            $"https://{platformType.ToString().ToLowerInvariant()}.com/@{username}");
         platform.UpdateFollowerCount(followerCount);
         profile.AddConnectedPlatform(platform);
 

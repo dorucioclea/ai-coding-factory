@@ -110,7 +110,7 @@ public sealed class CreatorProfileRepository : ICreatorProfileRepository
         if (niches is { Count: > 0 })
         {
             var normalizedNiches = niches.Select(n => n.ToLowerInvariant()).ToList();
-            query = query.Where(p => p.NicheTags.Any(t => normalizedNiches.Contains(t.Value.ToLower())));
+            query = query.Where(p => p.NicheTags.Any(t => normalizedNiches.Contains(t.Value.ToLowerInvariant())));
         }
 
         // Filter by platforms
@@ -136,7 +136,22 @@ public sealed class CreatorProfileRepository : ICreatorProfileRepository
                 EF.Functions.ILike(p.Bio.Value, $"%{escapedTerm}%"));
         }
 
-        // Get total count before pagination
+        // Filter by follower count IN THE DATABASE using subquery (not in-memory!)
+        // This ensures pagination works correctly with follower filters
+        // Story: ACF-010 - CRITICAL FIX for pagination
+        if (minFollowers.HasValue)
+        {
+            query = query.Where(p =>
+                p.ConnectedPlatforms.Sum(cp => (long)(cp.FollowerCount ?? 0)) >= minFollowers.Value);
+        }
+
+        if (maxFollowers.HasValue)
+        {
+            query = query.Where(p =>
+                p.ConnectedPlatforms.Sum(cp => (long)(cp.FollowerCount ?? 0)) <= maxFollowers.Value);
+        }
+
+        // Get total count AFTER all filters applied (including follower filter)
         var totalCount = await query.CountAsync(cancellationToken);
 
         // Order by creation date descending for consistent pagination
@@ -165,24 +180,6 @@ public sealed class CreatorProfileRepository : ICreatorProfileRepository
 
         var hasMore = profiles.Count > pageSize;
         var result = profiles.Take(pageSize).ToList();
-
-        // Post-filter by follower count (done in memory after fetching connected platforms)
-        // Note: For accurate pagination with follower filter, we recalculate hasMore
-        if (minFollowers.HasValue || maxFollowers.HasValue)
-        {
-            var filteredResult = result.Where(p =>
-            {
-                var total = p.ConnectedPlatforms.Sum(cp => cp.FollowerCount ?? 0);
-                var meetsMin = !minFollowers.HasValue || total >= minFollowers.Value;
-                var meetsMax = !maxFollowers.HasValue || total <= maxFollowers.Value;
-                return meetsMin && meetsMax;
-            }).ToList();
-
-            // Recalculate hasMore: if we filtered out items, we may have more to fetch
-            // hasMore is true if original query had more OR we still have enough after filter
-            hasMore = hasMore || filteredResult.Count < result.Count;
-            result = filteredResult;
-        }
 
         return (result.AsReadOnly(), hasMore, totalCount);
     }

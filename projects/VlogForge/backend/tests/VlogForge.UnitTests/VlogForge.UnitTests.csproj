@@ -6,6 +6,8 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <!-- Test projects commonly use underscore naming conventions and inline arrays -->
+    <NoWarn>$(NoWarn);CA1707;CA1861;CA1859</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
