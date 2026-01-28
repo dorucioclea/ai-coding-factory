@@ -203,7 +203,9 @@ public class ContentItemTests
     [Theory]
     [InlineData(IdeaStatus.Idea, IdeaStatus.Draft)]
     [InlineData(IdeaStatus.Draft, IdeaStatus.InReview)]
-    [InlineData(IdeaStatus.InReview, IdeaStatus.Scheduled)]
+    [InlineData(IdeaStatus.InReview, IdeaStatus.Approved)]
+    [InlineData(IdeaStatus.InReview, IdeaStatus.ChangesRequested)]
+    [InlineData(IdeaStatus.Approved, IdeaStatus.Scheduled)]
     [InlineData(IdeaStatus.Scheduled, IdeaStatus.Published)]
     public void UpdateStatusToNextValidStatusShouldSucceed(IdeaStatus from, IdeaStatus to)
     {
@@ -226,6 +228,9 @@ public class ContentItemTests
     [InlineData(IdeaStatus.Draft, IdeaStatus.Scheduled)]
     [InlineData(IdeaStatus.Draft, IdeaStatus.Published)]
     [InlineData(IdeaStatus.InReview, IdeaStatus.Published)]
+    [InlineData(IdeaStatus.ChangesRequested, IdeaStatus.Approved)]
+    [InlineData(IdeaStatus.ChangesRequested, IdeaStatus.Scheduled)]
+    [InlineData(IdeaStatus.ChangesRequested, IdeaStatus.Published)]
     public void UpdateStatusSkippingStepsShouldThrow(IdeaStatus from, IdeaStatus to)
     {
         // Arrange
@@ -243,7 +248,10 @@ public class ContentItemTests
     [Theory]
     [InlineData(IdeaStatus.Draft, IdeaStatus.Idea)]
     [InlineData(IdeaStatus.InReview, IdeaStatus.Draft)]
-    [InlineData(IdeaStatus.Scheduled, IdeaStatus.InReview)]
+    [InlineData(IdeaStatus.Approved, IdeaStatus.InReview)]
+    [InlineData(IdeaStatus.ChangesRequested, IdeaStatus.Draft)]
+    [InlineData(IdeaStatus.ChangesRequested, IdeaStatus.InReview)]
+    [InlineData(IdeaStatus.Scheduled, IdeaStatus.Approved)]
     [InlineData(IdeaStatus.Published, IdeaStatus.Scheduled)]
     public void UpdateStatusBackwardsShouldSucceed(IdeaStatus from, IdeaStatus to)
     {
@@ -271,6 +279,27 @@ public class ContentItemTests
 
         // Assert
         item.DomainEvents.Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData(IdeaStatus.Idea, new[] { IdeaStatus.Draft })]
+    [InlineData(IdeaStatus.Draft, new[] { IdeaStatus.Idea, IdeaStatus.InReview })]
+    [InlineData(IdeaStatus.InReview, new[] { IdeaStatus.Draft, IdeaStatus.Approved, IdeaStatus.ChangesRequested })]
+    [InlineData(IdeaStatus.Approved, new[] { IdeaStatus.InReview, IdeaStatus.Scheduled })]
+    [InlineData(IdeaStatus.ChangesRequested, new[] { IdeaStatus.Draft, IdeaStatus.InReview })]
+    [InlineData(IdeaStatus.Scheduled, new[] { IdeaStatus.Approved, IdeaStatus.Published })]
+    [InlineData(IdeaStatus.Published, new[] { IdeaStatus.Scheduled })]
+    public void GetValidTransitionsShouldReturnCorrectTargets(IdeaStatus from, IdeaStatus[] expected)
+    {
+        // Arrange
+        var item = ContentItem.Create(_validUserId, "Title", "Notes");
+        MoveToStatus(item, from);
+
+        // Act
+        var transitions = item.GetValidTransitions();
+
+        // Assert
+        transitions.Should().BeEquivalentTo(expected);
     }
 
     #endregion
@@ -684,11 +713,19 @@ public class ContentItemTests
 
     private static void MoveToStatus(ContentItem item, IdeaStatus targetStatus)
     {
+        if (targetStatus == IdeaStatus.ChangesRequested)
+        {
+            MoveToStatus(item, IdeaStatus.InReview);
+            item.UpdateStatus(IdeaStatus.ChangesRequested);
+            return;
+        }
+
         var transitions = new[]
         {
             IdeaStatus.Idea,
             IdeaStatus.Draft,
             IdeaStatus.InReview,
+            IdeaStatus.Approved,
             IdeaStatus.Scheduled,
             IdeaStatus.Published
         };

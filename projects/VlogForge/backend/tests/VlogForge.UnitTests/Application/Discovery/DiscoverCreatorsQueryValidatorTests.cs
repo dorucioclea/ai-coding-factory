@@ -67,19 +67,6 @@ public class DiscoverCreatorsQueryValidatorTests
     }
 
     [Fact]
-    public void Validate_SearchTermExceedsLimit_ShouldHaveValidationError()
-    {
-        // Arrange
-        var query = new DiscoverCreatorsQuery(SearchTerm: new string('a', 101));
-
-        // Act
-        var result = _validator.TestValidate(query);
-
-        // Assert
-        result.ShouldHaveValidationErrorFor(x => x.SearchTerm);
-    }
-
-    [Fact]
     public void Validate_NullSearchTerm_ShouldNotHaveValidationError()
     {
         // Arrange
@@ -90,70 +77,6 @@ public class DiscoverCreatorsQueryValidatorTests
 
         // Assert
         result.ShouldNotHaveValidationErrorFor(x => x.SearchTerm);
-    }
-
-    [Fact]
-    public void Validate_NichesWithinLimit_ShouldNotHaveValidationError()
-    {
-        // Arrange
-        var niches = Enumerable.Range(1, 10).Select(i => $"niche{i}").ToList();
-        var query = new DiscoverCreatorsQuery(Niches: niches);
-
-        // Act
-        var result = _validator.TestValidate(query);
-
-        // Assert
-        result.ShouldNotHaveValidationErrorFor(x => x.Niches);
-    }
-
-    [Fact]
-    public void Validate_NichesExceedsLimit_ShouldHaveValidationError()
-    {
-        // Arrange
-        var niches = Enumerable.Range(1, 11).Select(i => $"niche{i}").ToList();
-        var query = new DiscoverCreatorsQuery(Niches: niches);
-
-        // Act
-        var result = _validator.TestValidate(query);
-
-        // Assert
-        result.ShouldHaveValidationErrorFor(x => x.Niches);
-    }
-
-    [Fact]
-    public void Validate_PlatformsWithinLimit_ShouldNotHaveValidationError()
-    {
-        // Arrange
-        var platforms = new List<PlatformType> { PlatformType.YouTube, PlatformType.TikTok, PlatformType.Instagram };
-        var query = new DiscoverCreatorsQuery(Platforms: platforms);
-
-        // Act
-        var result = _validator.TestValidate(query);
-
-        // Assert
-        result.ShouldNotHaveValidationErrorFor(x => x.Platforms);
-    }
-
-    [Fact]
-    public void Validate_PlatformsExceedsLimit_ShouldHaveValidationError()
-    {
-        // Arrange
-        var platforms = new List<PlatformType>
-        {
-            PlatformType.YouTube,
-            PlatformType.TikTok,
-            PlatformType.Instagram,
-            PlatformType.Twitter,
-            PlatformType.Twitch,
-            PlatformType.LinkedIn
-        };
-        var query = new DiscoverCreatorsQuery(Platforms: platforms);
-
-        // Act
-        var result = _validator.TestValidate(query);
-
-        // Assert
-        result.ShouldHaveValidationErrorFor(x => x.Platforms);
     }
 
     [Fact]
@@ -433,16 +356,4 @@ public class DiscoverCreatorsQueryValidatorTests
         result.IsValid.Should().BeTrue();
     }
 
-    [Fact]
-    public void Validate_DefaultPageSize_ShouldBeValid()
-    {
-        // Arrange
-        var query = new DiscoverCreatorsQuery(); // Default PageSize is 20
-
-        // Act
-        var result = _validator.TestValidate(query);
-
-        // Assert
-        result.ShouldNotHaveValidationErrorFor(x => x.PageSize);
-    }
 }

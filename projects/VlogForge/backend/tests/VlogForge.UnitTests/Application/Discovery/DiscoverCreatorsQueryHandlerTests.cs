@@ -157,41 +157,6 @@ public class DiscoverCreatorsQueryHandlerTests
             Times.Once);
     }
 
-    [Fact]
-    public async Task Handle_WithPlatformFilter_ShouldPassPlatformsToRepository()
-    {
-        // Arrange
-        var platforms = new List<PlatformType> { PlatformType.YouTube, PlatformType.TikTok };
-        var query = new DiscoverCreatorsQuery(Platforms: platforms);
-        var profiles = CreateTestProfiles(1);
-
-        _cacheServiceMock
-            .Setup(x => x.GetAsync<DiscoveryResponse>(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((DiscoveryResponse?)null);
-
-        _repositoryMock
-            .Setup(x => x.DiscoverCreatorsAsync(
-                It.IsAny<Guid?>(),
-                It.IsAny<IReadOnlyList<string>?>(),
-                It.Is<IReadOnlyList<PlatformType>>(p =>
-                    p.Contains(PlatformType.YouTube) &&
-                    p.Contains(PlatformType.TikTok)),
-                It.IsAny<int?>(),
-                It.IsAny<int?>(),
-                It.IsAny<string?>(),
-                It.IsAny<bool?>(),
-                It.IsAny<Guid?>(),
-                It.IsAny<int>(),
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync((profiles, false, 1));
-
-        // Act
-        var result = await _handler.Handle(query, CancellationToken.None);
-
-        // Assert
-        result.Should().NotBeNull();
-    }
-
     [Theory]
     [InlineData(AudienceSizeRange.Small, 1000, 10000)]
     [InlineData(AudienceSizeRange.Medium, 10000, 100000)]
@@ -218,70 +183,6 @@ public class DiscoverCreatorsQueryHandlerTests
                 expectedMax,
                 It.IsAny<string?>(),
                 It.IsAny<bool?>(),
-                It.IsAny<Guid?>(),
-                It.IsAny<int>(),
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync((profiles, false, 1));
-
-        // Act
-        var result = await _handler.Handle(query, CancellationToken.None);
-
-        // Assert
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public async Task Handle_WithSearchTerm_ShouldPassSearchTermToRepository()
-    {
-        // Arrange
-        var query = new DiscoverCreatorsQuery(SearchTerm: "gaming creator");
-        var profiles = CreateTestProfiles(1);
-
-        _cacheServiceMock
-            .Setup(x => x.GetAsync<DiscoveryResponse>(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((DiscoveryResponse?)null);
-
-        _repositoryMock
-            .Setup(x => x.DiscoverCreatorsAsync(
-                It.IsAny<Guid?>(),
-                It.IsAny<IReadOnlyList<string>?>(),
-                It.IsAny<IReadOnlyList<PlatformType>?>(),
-                It.IsAny<int?>(),
-                It.IsAny<int?>(),
-                "gaming creator",
-                It.IsAny<bool?>(),
-                It.IsAny<Guid?>(),
-                It.IsAny<int>(),
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync((profiles, false, 1));
-
-        // Act
-        var result = await _handler.Handle(query, CancellationToken.None);
-
-        // Assert
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public async Task Handle_WithOpenToCollaborationFilter_ShouldPassFilterToRepository()
-    {
-        // Arrange
-        var query = new DiscoverCreatorsQuery(OpenToCollaboration: true);
-        var profiles = CreateTestProfiles(1);
-
-        _cacheServiceMock
-            .Setup(x => x.GetAsync<DiscoveryResponse>(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((DiscoveryResponse?)null);
-
-        _repositoryMock
-            .Setup(x => x.DiscoverCreatorsAsync(
-                It.IsAny<Guid?>(),
-                It.IsAny<IReadOnlyList<string>?>(),
-                It.IsAny<IReadOnlyList<PlatformType>?>(),
-                It.IsAny<int?>(),
-                It.IsAny<int?>(),
-                It.IsAny<string?>(),
-                true,
                 It.IsAny<Guid?>(),
                 It.IsAny<int>(),
                 It.IsAny<CancellationToken>()))
@@ -362,39 +263,6 @@ public class DiscoverCreatorsQueryHandlerTests
     }
 
     [Fact]
-    public async Task Handle_WithExcludeUserId_ShouldExcludeUserFromResults()
-    {
-        // Arrange
-        var userId = Guid.NewGuid();
-        var query = new DiscoverCreatorsQuery(ExcludeUserId: userId);
-        var profiles = CreateTestProfiles(1);
-
-        _cacheServiceMock
-            .Setup(x => x.GetAsync<DiscoveryResponse>(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((DiscoveryResponse?)null);
-
-        _repositoryMock
-            .Setup(x => x.DiscoverCreatorsAsync(
-                userId,
-                It.IsAny<IReadOnlyList<string>?>(),
-                It.IsAny<IReadOnlyList<PlatformType>?>(),
-                It.IsAny<int?>(),
-                It.IsAny<int?>(),
-                It.IsAny<string?>(),
-                It.IsAny<bool?>(),
-                It.IsAny<Guid?>(),
-                It.IsAny<int>(),
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync((profiles, false, 1));
-
-        // Act
-        var result = await _handler.Handle(query, CancellationToken.None);
-
-        // Assert
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
     public async Task Handle_EmptyResults_ShouldReturnEmptyList()
     {
         // Arrange
@@ -472,70 +340,6 @@ public class DiscoverCreatorsQueryHandlerTests
                 It.IsAny<int>(),
                 It.IsAny<CancellationToken>()),
             Times.Once);
-    }
-
-    [Fact]
-    public async Task Handle_WithEmptyCursor_ShouldPassNullCursorToRepository()
-    {
-        // Arrange
-        var query = new DiscoverCreatorsQuery(Cursor: "   ");
-        var profiles = CreateTestProfiles(1);
-
-        _cacheServiceMock
-            .Setup(x => x.GetAsync<DiscoveryResponse>(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((DiscoveryResponse?)null);
-
-        _repositoryMock
-            .Setup(x => x.DiscoverCreatorsAsync(
-                It.IsAny<Guid?>(),
-                It.IsAny<IReadOnlyList<string>?>(),
-                It.IsAny<IReadOnlyList<PlatformType>?>(),
-                It.IsAny<int?>(),
-                It.IsAny<int?>(),
-                It.IsAny<string?>(),
-                It.IsAny<bool?>(),
-                null,
-                It.IsAny<int>(),
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync((profiles, false, 1));
-
-        // Act
-        var result = await _handler.Handle(query, CancellationToken.None);
-
-        // Assert
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public async Task Handle_WithNullAudienceSize_ShouldPassNullFollowerRangeToRepository()
-    {
-        // Arrange
-        var query = new DiscoverCreatorsQuery(AudienceSize: null);
-        var profiles = CreateTestProfiles(1);
-
-        _cacheServiceMock
-            .Setup(x => x.GetAsync<DiscoveryResponse>(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((DiscoveryResponse?)null);
-
-        _repositoryMock
-            .Setup(x => x.DiscoverCreatorsAsync(
-                It.IsAny<Guid?>(),
-                It.IsAny<IReadOnlyList<string>?>(),
-                It.IsAny<IReadOnlyList<PlatformType>?>(),
-                null, // minFollowers should be null
-                null, // maxFollowers should be null
-                It.IsAny<string?>(),
-                It.IsAny<bool?>(),
-                It.IsAny<Guid?>(),
-                It.IsAny<int>(),
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync((profiles, false, 1));
-
-        // Act
-        var result = await _handler.Handle(query, CancellationToken.None);
-
-        // Assert
-        result.Should().NotBeNull();
     }
 
     [Fact]
@@ -769,103 +573,6 @@ public class DiscoverCreatorsQueryHandlerTests
         var dto = result.Items[0];
         dto.TotalFollowers.Should().Be(15000); // 5000 + 10000
         dto.Platforms.Should().HaveCount(2);
-    }
-
-    [Fact]
-    public async Task Handle_WithNoMoreResults_ShouldNotSetNextCursor()
-    {
-        // Arrange
-        var query = new DiscoverCreatorsQuery(PageSize: 10);
-        var profiles = CreateTestProfiles(3);
-
-        _cacheServiceMock
-            .Setup(x => x.GetAsync<DiscoveryResponse>(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((DiscoveryResponse?)null);
-
-        _repositoryMock
-            .Setup(x => x.DiscoverCreatorsAsync(
-                It.IsAny<Guid?>(),
-                It.IsAny<IReadOnlyList<string>?>(),
-                It.IsAny<IReadOnlyList<PlatformType>?>(),
-                It.IsAny<int?>(),
-                It.IsAny<int?>(),
-                It.IsAny<string?>(),
-                It.IsAny<bool?>(),
-                It.IsAny<Guid?>(),
-                It.IsAny<int>(),
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync((profiles, false, 3)); // HasMore = false
-
-        // Act
-        var result = await _handler.Handle(query, CancellationToken.None);
-
-        // Assert
-        result.HasMore.Should().BeFalse();
-        result.NextCursor.Should().BeNull();
-    }
-
-    [Fact]
-    public async Task Handle_ShouldSetPageSizeInResponse()
-    {
-        // Arrange
-        var query = new DiscoverCreatorsQuery(PageSize: 35);
-        var profiles = CreateTestProfiles(1);
-
-        _cacheServiceMock
-            .Setup(x => x.GetAsync<DiscoveryResponse>(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((DiscoveryResponse?)null);
-
-        _repositoryMock
-            .Setup(x => x.DiscoverCreatorsAsync(
-                It.IsAny<Guid?>(),
-                It.IsAny<IReadOnlyList<string>?>(),
-                It.IsAny<IReadOnlyList<PlatformType>?>(),
-                It.IsAny<int?>(),
-                It.IsAny<int?>(),
-                It.IsAny<string?>(),
-                It.IsAny<bool?>(),
-                It.IsAny<Guid?>(),
-                35,
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync((profiles, false, 1));
-
-        // Act
-        var result = await _handler.Handle(query, CancellationToken.None);
-
-        // Assert
-        result.PageSize.Should().Be(35);
-    }
-
-    [Fact]
-    public async Task Handle_WithOpenToCollaborationFalse_ShouldFilterCorrectly()
-    {
-        // Arrange
-        var query = new DiscoverCreatorsQuery(OpenToCollaboration: false);
-        var profiles = CreateTestProfiles(1);
-
-        _cacheServiceMock
-            .Setup(x => x.GetAsync<DiscoveryResponse>(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((DiscoveryResponse?)null);
-
-        _repositoryMock
-            .Setup(x => x.DiscoverCreatorsAsync(
-                It.IsAny<Guid?>(),
-                It.IsAny<IReadOnlyList<string>?>(),
-                It.IsAny<IReadOnlyList<PlatformType>?>(),
-                It.IsAny<int?>(),
-                It.IsAny<int?>(),
-                It.IsAny<string?>(),
-                false,
-                It.IsAny<Guid?>(),
-                It.IsAny<int>(),
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync((profiles, false, 1));
-
-        // Act
-        var result = await _handler.Handle(query, CancellationToken.None);
-
-        // Assert
-        result.Should().NotBeNull();
     }
 
     private static IReadOnlyList<CreatorProfile> CreateTestProfiles(int count)

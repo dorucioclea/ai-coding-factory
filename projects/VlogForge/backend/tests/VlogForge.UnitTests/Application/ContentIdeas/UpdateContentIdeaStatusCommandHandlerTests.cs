@@ -114,7 +114,7 @@ public class UpdateContentIdeaStatusCommandHandlerTests
 
         // Assert
         await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("*Cannot transition*Only adjacent transitions are allowed*");
+            .WithMessage("*Cannot transition*Invalid status transition*");
     }
 
     [Fact]
@@ -140,14 +140,19 @@ public class UpdateContentIdeaStatusCommandHandlerTests
         var result2 = await _handler.Handle(command2, CancellationToken.None);
         result2.Status.Should().Be(IdeaStatus.InReview);
 
-        // InReview -> Scheduled
-        var command3 = new UpdateContentIdeaStatusCommand(itemId, userId, IdeaStatus.Scheduled);
+        // InReview -> Approved
+        var command3 = new UpdateContentIdeaStatusCommand(itemId, userId, IdeaStatus.Approved);
         var result3 = await _handler.Handle(command3, CancellationToken.None);
-        result3.Status.Should().Be(IdeaStatus.Scheduled);
+        result3.Status.Should().Be(IdeaStatus.Approved);
+
+        // Approved -> Scheduled
+        var command4 = new UpdateContentIdeaStatusCommand(itemId, userId, IdeaStatus.Scheduled);
+        var result4 = await _handler.Handle(command4, CancellationToken.None);
+        result4.Status.Should().Be(IdeaStatus.Scheduled);
 
         // Scheduled -> Published
-        var command4 = new UpdateContentIdeaStatusCommand(itemId, userId, IdeaStatus.Published);
-        var result4 = await _handler.Handle(command4, CancellationToken.None);
-        result4.Status.Should().Be(IdeaStatus.Published);
+        var command5 = new UpdateContentIdeaStatusCommand(itemId, userId, IdeaStatus.Published);
+        var result5 = await _handler.Handle(command5, CancellationToken.None);
+        result5.Status.Should().Be(IdeaStatus.Published);
     }
 }

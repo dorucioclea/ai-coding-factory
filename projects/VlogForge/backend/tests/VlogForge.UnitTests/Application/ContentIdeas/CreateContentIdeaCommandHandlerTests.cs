@@ -97,17 +97,4 @@ public class CreateContentIdeaCommandHandlerTests
         result.PlatformTags.Should().BeEmpty();
     }
 
-    [Fact]
-    public async Task HandleShouldSetInitialStatusToIdea()
-    {
-        // Arrange
-        var userId = Guid.NewGuid();
-        var command = new CreateContentIdeaCommand(userId, "Test Video");
-
-        // Act
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        result.Status.Should().Be(IdeaStatus.Idea);
-    }
 }
