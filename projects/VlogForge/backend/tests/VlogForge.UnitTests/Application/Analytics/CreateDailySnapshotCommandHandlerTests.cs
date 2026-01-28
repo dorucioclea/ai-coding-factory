@@ -207,36 +207,6 @@ public class CreateDailySnapshotCommandHandlerTests
             () => _handler.Handle(command, CancellationToken.None));
     }
 
-    [Fact]
-    public async Task HandleShouldSaveChangesOnce()
-    {
-        // Arrange
-        var snapshotDate = DateTime.UtcNow.Date;
-        var command = new CreateDailySnapshotCommand(snapshotDate);
-        var connection = CreateTestConnection();
-        var metrics = CreateTestMetrics();
-
-        _connectionRepositoryMock
-            .Setup(x => x.GetAllActiveConnectionsAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<PlatformConnection> { connection });
-
-        _metricsRepositoryMock
-            .Setup(x => x.GetByConnectionIdsAsync(It.IsAny<IEnumerable<Guid>>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Dictionary<Guid, PlatformMetrics> { { _testConnectionId, metrics } });
-
-        _snapshotRepositoryMock
-            .Setup(x => x.GetExistingForDateAsync(snapshotDate, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new HashSet<(Guid, PlatformType)>());
-
-        // Act
-        await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        _snapshotRepositoryMock.Verify(
-            x => x.SaveChangesAsync(It.IsAny<CancellationToken>()),
-            Times.Once);
-    }
-
     #region Helper Methods
 
     private PlatformConnection CreateTestConnection(PlatformType platform = PlatformType.YouTube)

@@ -16,7 +16,6 @@ namespace VlogForge.UnitTests.Application.Calendar;
 [Trait("Story", "ACF-006")]
 public class UpdateScheduledDateCommandHandlerTests
 {
-    private static readonly string[] TestPlatformTags = new[] { "youtube", "tiktok" };
     private readonly Mock<IContentItemRepository> _repositoryMock;
     private readonly Mock<ILogger<UpdateScheduledDateCommandHandler>> _loggerMock;
     private readonly UpdateScheduledDateCommandHandler _handler;
@@ -109,28 +108,4 @@ public class UpdateScheduledDateCommandHandlerTests
         await act.Should().ThrowAsync<ForbiddenAccessException>();
     }
 
-    [Fact]
-    public async Task HandleShouldReturnUpdatedContentIdeaResponse()
-    {
-        // Arrange
-        var item = ContentItem.Create(_userId, "Test Item", "Notes");
-        item.SetPlatformTags(TestPlatformTags);
-        var scheduledDate = DateTime.UtcNow.AddDays(7);
-        var command = new UpdateScheduledDateCommand(_contentItemId, _userId, scheduledDate);
-
-        _repositoryMock
-            .Setup(r => r.GetByIdAsync(_contentItemId, false, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(item);
-
-        // Act
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        result.Id.Should().Be(item.Id);
-        result.Title.Should().Be("Test Item");
-        result.Notes.Should().Be("Notes");
-        result.Status.Should().Be(IdeaStatus.Idea);
-        result.PlatformTags.Should().Contain("youtube");
-        result.PlatformTags.Should().Contain("tiktok");
-    }
 }

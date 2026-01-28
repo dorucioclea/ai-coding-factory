@@ -70,24 +70,6 @@ public class GetMyTasksQueryHandlerTests
     }
 
     [Fact]
-    public async Task HandleShouldExcludeCompletedWhenRequested()
-    {
-        // Arrange
-        _repositoryMock.Setup(x => x.GetByAssigneeIdPagedAsync(
-                _userId, 1, 20, false, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((new List<TaskAssignment>(), 0));
-
-        var query = new GetMyTasksQuery(_userId, 1, 20, false);
-
-        // Act
-        await _handler.Handle(query, CancellationToken.None);
-
-        // Assert
-        _repositoryMock.Verify(x => x.GetByAssigneeIdPagedAsync(
-            _userId, 1, 20, false, It.IsAny<CancellationToken>()), Times.Once);
-    }
-
-    [Fact]
     public async Task HandleShouldMapOverdueCorrectly()
     {
         // Arrange

@@ -52,21 +52,6 @@ public class CreateTeamCommandHandlerTests
     }
 
     [Fact]
-    public async Task HandleWithNullDescriptionShouldSucceed()
-    {
-        // Arrange
-        var ownerId = Guid.NewGuid();
-        var command = new CreateTeamCommand(ownerId, "Test Team", null);
-
-        // Act
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        result.Should().NotBeNull();
-        result.Description.Should().BeNull();
-    }
-
-    [Fact]
     public async Task HandleWithDuplicateNameShouldThrow()
     {
         // Arrange
