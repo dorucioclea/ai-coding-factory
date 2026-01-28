@@ -171,6 +171,17 @@ export const queryKeys = {
     history: (contentId: string) => [...queryKeys.approvals.all, 'history', contentId] as const,
   },
 
+  // Collaboration queries (ACF-011)
+  collaborations: {
+    all: ['collaborations'] as const,
+    inbox: (filters?: Record<string, unknown>) =>
+      [...queryKeys.collaborations.all, 'inbox', filters] as const,
+    sent: (filters?: Record<string, unknown>) =>
+      [...queryKeys.collaborations.all, 'sent', filters] as const,
+    detail: (id: string) =>
+      [...queryKeys.collaborations.all, 'detail', id] as const,
+  },
+
   // Discovery queries (ACF-010)
   discovery: {
     all: ['discovery'] as const,

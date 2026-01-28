@@ -72,6 +72,9 @@ public static class DependencyInjection
         // Register approval record repository (ACF-009)
         services.AddScoped<IApprovalRecordRepository, ApprovalRecordRepository>();
 
+        // Register collaboration request repository (ACF-011)
+        services.AddScoped<ICollaborationRequestRepository, CollaborationRequestRepository>();
+
         // Register encryption service (ACF-003)
         services.AddSingleton<IEncryptionService, EncryptionService>();
 

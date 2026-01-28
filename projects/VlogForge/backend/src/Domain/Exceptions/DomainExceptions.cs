@@ -239,3 +239,60 @@ public class ContentItemNotFoundException : DomainException
         ContentItemId = contentItemId;
     }
 }
+
+/// <summary>
+/// Exception thrown when a collaboration request is not found.
+/// Story: ACF-011
+/// </summary>
+public class CollaborationRequestNotFoundException : DomainException
+{
+    public Guid RequestId { get; }
+
+    public CollaborationRequestNotFoundException(Guid requestId)
+        : base("COLLABORATION_REQUEST_NOT_FOUND", "Collaboration request not found.")
+    {
+        RequestId = requestId;
+    }
+}
+
+/// <summary>
+/// Exception thrown when a user exceeds the daily collaboration request limit.
+/// Story: ACF-011
+/// </summary>
+public class CollaborationRateLimitExceededException : DomainException
+{
+    public Guid UserId { get; }
+
+    public CollaborationRateLimitExceededException(Guid userId)
+        : base("COLLABORATION_RATE_LIMIT", "You have reached the maximum number of collaboration requests per day (5).")
+    {
+        UserId = userId;
+    }
+}
+
+/// <summary>
+/// Exception thrown when a duplicate pending collaboration request exists.
+/// Story: ACF-011
+/// </summary>
+public class DuplicateCollaborationRequestException : DomainException
+{
+    public DuplicateCollaborationRequestException()
+        : base("DUPLICATE_COLLABORATION_REQUEST", "A pending collaboration request already exists for this creator.")
+    {
+    }
+}
+
+/// <summary>
+/// Exception thrown when the recipient is not open to collaborations.
+/// Story: ACF-011
+/// </summary>
+public class RecipientNotOpenToCollaborationsException : DomainException
+{
+    public Guid RecipientId { get; }
+
+    public RecipientNotOpenToCollaborationsException(Guid recipientId)
+        : base("RECIPIENT_NOT_OPEN", "This creator is not currently open to collaborations.")
+    {
+        RecipientId = recipientId;
+    }
+}

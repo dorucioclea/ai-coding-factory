@@ -20,3 +20,4 @@ export {
 } from './integrations';
 export * from './tasks';
 export * from './approval';
+export * from './collaboration';

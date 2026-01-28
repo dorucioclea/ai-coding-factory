@@ -58,3 +58,10 @@ export {
   useApproveContent,
   useRequestChanges,
 } from './use-approval';
+export {
+  useCollaborationInbox,
+  useSentCollaborations,
+  useSendCollaborationRequest,
+  useAcceptCollaborationRequest,
+  useDeclineCollaborationRequest,
+} from './use-collaborations';

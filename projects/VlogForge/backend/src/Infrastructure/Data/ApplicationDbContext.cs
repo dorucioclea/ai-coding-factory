@@ -112,6 +112,12 @@ public class ApplicationDbContext : DbContext, IUnitOfWork
     /// </summary>
     public DbSet<ApprovalRecord> ApprovalRecords => Set<ApprovalRecord>();
 
+    /// <summary>
+    /// Gets or sets the CollaborationRequests DbSet.
+    /// Story: ACF-011
+    /// </summary>
+    public DbSet<CollaborationRequest> CollaborationRequests => Set<CollaborationRequest>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
