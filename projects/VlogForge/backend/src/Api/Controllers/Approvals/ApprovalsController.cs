@@ -64,7 +64,7 @@ public class ApprovalsController : ControllerBase
         {
             return NotFound(new { error = "Team not found." });
         }
-        catch (UnauthorizedAccessException)
+        catch (System.UnauthorizedAccessException)
         {
             return Forbid();
         }
@@ -273,7 +273,7 @@ public class ApprovalsController : ControllerBase
         var userIdString = _currentUserService.UserId;
         if (string.IsNullOrEmpty(userIdString) || !Guid.TryParse(userIdString, out var userId))
         {
-            throw new UnauthorizedAccessException("User ID not found in claims.");
+            throw new System.UnauthorizedAccessException("User ID not found in claims.");
         }
         return userId;
     }

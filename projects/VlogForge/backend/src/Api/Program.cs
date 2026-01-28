@@ -1,4 +1,6 @@
 using System.Globalization;
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
 using Serilog;
 using VlogForge.Application;
 using VlogForge.Infrastructure;
@@ -25,6 +27,38 @@ builder.Services
     .AddApplicationServices()
     .AddInfrastructureServices(builder.Configuration)
     .AddApiServices(builder.Configuration);
+
+// Add rate limiting for API endpoints (Story: ACF-010)
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    // Discovery endpoint: 30 requests per minute per user
+    options.AddPolicy("discovery", context =>
+        RateLimitPartition.GetSlidingWindowLimiter(
+            partitionKey: context.User?.Identity?.Name ?? context.Connection.RemoteIpAddress?.ToString() ?? "anonymous",
+            factory: _ => new SlidingWindowRateLimiterOptions
+            {
+                PermitLimit = 30,
+                Window = TimeSpan.FromMinutes(1),
+                SegmentsPerWindow = 6,
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 2
+            }));
+
+    // Global rate limit: 100 requests per minute
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+        RateLimitPartition.GetSlidingWindowLimiter(
+            partitionKey: context.User?.Identity?.Name ?? context.Connection.RemoteIpAddress?.ToString() ?? "anonymous",
+            factory: _ => new SlidingWindowRateLimiterOptions
+            {
+                PermitLimit = 100,
+                Window = TimeSpan.FromMinutes(1),
+                SegmentsPerWindow = 6,
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 5
+            }));
+});
 
 var app = builder.Build();
 
@@ -59,6 +93,9 @@ app.UseCors("AllowedOrigins");
 // Authentication & Authorization
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Rate limiting (Story: ACF-010)
+app.UseRateLimiter();
 
 // Health checks
 app.MapHealthChecks("/health");

@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using VlogForge.Application.Common.Interfaces;
 using VlogForge.Application.Discovery.DTOs;
 using VlogForge.Application.Discovery.Queries.DiscoverCreators;
@@ -39,9 +40,11 @@ public class DiscoveryController : ControllerBase
     /// <returns>Paginated list of discoverable creators.</returns>
     [HttpGet]
     [Authorize]
+    [EnableRateLimiting("discovery")]
     [ProducesResponseType(typeof(DiscoveryResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<ActionResult<DiscoveryResponse>> DiscoverCreators(
         [FromQuery] string? niches = null,
         [FromQuery] string? platforms = null,
