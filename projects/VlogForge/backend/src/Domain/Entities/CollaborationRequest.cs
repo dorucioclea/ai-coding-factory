@@ -177,6 +177,8 @@ public sealed class CollaborationRequest : AggregateRoot
 
     /// <summary>
     /// Marks the request as expired.
+    /// Intended for use by background expiration jobs only.
+    /// No-op if the request is not in Pending status.
     /// </summary>
     public void MarkExpired()
     {

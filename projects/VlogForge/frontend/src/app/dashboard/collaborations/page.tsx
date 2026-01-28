@@ -34,12 +34,16 @@ export default function CollaborationsPage() {
   const [actionRequestId, setActionRequestId] = useState<string | null>(null);
 
   const inboxQuery = useCollaborationInbox(
-    activeTab === 'inbox' ? statusFilter : undefined,
-    activeTab === 'inbox' ? page : 1
+    statusFilter,
+    page,
+    20,
+    activeTab === 'inbox'
   );
   const sentQuery = useSentCollaborations(
-    activeTab === 'sent' ? statusFilter : undefined,
-    activeTab === 'sent' ? page : 1
+    statusFilter,
+    page,
+    20,
+    activeTab === 'sent'
   );
 
   const { mutate: acceptRequest, isPending: isAcceptPending } = useAcceptCollaborationRequest();

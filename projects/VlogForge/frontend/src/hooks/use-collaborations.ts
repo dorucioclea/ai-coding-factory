@@ -1,5 +1,3 @@
-'use client';
-
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { apiClient } from '@/lib/api-client';
@@ -19,7 +17,8 @@ import type {
 export function useCollaborationInbox(
   status?: CollaborationRequestStatus,
   page = 1,
-  pageSize = 20
+  pageSize = 20,
+  enabled = true
 ) {
   const filters = { status, page, pageSize };
 
@@ -34,6 +33,7 @@ export function useCollaborationInbox(
         },
       }),
     staleTime: 1000 * 60 * 2,
+    enabled,
   });
 }
 
@@ -44,7 +44,8 @@ export function useCollaborationInbox(
 export function useSentCollaborations(
   status?: CollaborationRequestStatus,
   page = 1,
-  pageSize = 20
+  pageSize = 20,
+  enabled = true
 ) {
   const filters = { status, page, pageSize };
 
@@ -59,6 +60,7 @@ export function useSentCollaborations(
         },
       }),
     staleTime: 1000 * 60 * 2,
+    enabled,
   });
 }
 
@@ -73,7 +75,7 @@ export function useSendCollaborationRequest() {
     mutationFn: (payload: SendCollaborationRequestPayload) =>
       apiClient.post<CollaborationRequestDto>('/collaborations/request', payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.collaborations.sent() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.collaborations.all });
     },
   });
 }
@@ -87,10 +89,11 @@ export function useAcceptCollaborationRequest() {
 
   return useMutation({
     mutationFn: (requestId: string) =>
-      apiClient.post<CollaborationRequestDto>(`/collaborations/${requestId}/accept`),
+      apiClient.post<CollaborationRequestDto>(
+        `/collaborations/${encodeURIComponent(requestId)}/accept`
+      ),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.collaborations.inbox() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.collaborations.sent() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.collaborations.all });
     },
   });
 }
@@ -112,13 +115,12 @@ export function useDeclineCollaborationRequest() {
     }) => {
       const payload: DeclineCollaborationRequestPayload = { reason };
       return apiClient.post<CollaborationRequestDto>(
-        `/collaborations/${requestId}/decline`,
+        `/collaborations/${encodeURIComponent(requestId)}/decline`,
         payload
       );
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.collaborations.inbox() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.collaborations.sent() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.collaborations.all });
     },
   });
 }
