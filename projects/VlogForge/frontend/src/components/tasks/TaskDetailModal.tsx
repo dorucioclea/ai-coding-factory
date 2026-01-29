@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { format, parseISO } from 'date-fns';
 import { Calendar, User, Clock } from 'lucide-react';
 import {
@@ -10,8 +11,13 @@ import {
   DialogTitle,
   Badge,
   Separator,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
 } from '@/components/ui';
 import { TaskComments } from './TaskComments';
+import { TaskHistory } from './TaskHistory';
 import { TaskStatusDropdown } from './TaskStatusDropdown';
 import { OverdueBadge } from './OverdueBadge';
 import {
@@ -31,8 +37,9 @@ interface TaskDetailModalProps {
 }
 
 /**
- * Modal for viewing full task details with comments
- * ACF-015 Phase 6
+ * Modal for viewing full task details with comments and history
+ * Stories: ACF-008, ACF-014
+ * ACF-014 AC5: Modal shows full details including comments and history
  */
 export function TaskDetailModal({
   task,
@@ -43,6 +50,8 @@ export function TaskDetailModal({
   isUpdatingStatus = false,
   isAddingComment = false,
 }: TaskDetailModalProps) {
+  const [activeTab, setActiveTab] = useState('comments');
+
   if (!task) return null;
 
   const dueDate = parseISO(task.dueDate);
@@ -159,12 +168,27 @@ export function TaskDetailModal({
 
           <Separator />
 
-          {/* Comments Section */}
-          <TaskComments
-            comments={task.comments}
-            onAddComment={onAddComment}
-            isAddingComment={isAddingComment}
-          />
+          {/* Tabbed Comments & History Section - ACF-014 AC5 */}
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="w-full">
+              <TabsTrigger value="comments" className="flex-1">
+                Comments ({task.comments.length})
+              </TabsTrigger>
+              <TabsTrigger value="history" className="flex-1">
+                History ({task.history?.length ?? 0})
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="comments" className="mt-4">
+              <TaskComments
+                comments={task.comments}
+                onAddComment={onAddComment}
+                isAddingComment={isAddingComment}
+              />
+            </TabsContent>
+            <TabsContent value="history" className="mt-4">
+              <TaskHistory history={task.history ?? []} />
+            </TabsContent>
+          </Tabs>
         </div>
       </DialogContent>
     </Dialog>

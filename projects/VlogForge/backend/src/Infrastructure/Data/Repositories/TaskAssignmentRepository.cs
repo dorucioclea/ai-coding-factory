@@ -81,6 +81,54 @@ public sealed class TaskAssignmentRepository : ITaskAssignmentRepository
         return (tasks, totalCount);
     }
 
+    public async Task<(IReadOnlyList<TaskAssignment> Tasks, int TotalCount)> GetByAssigneeIdFilteredPagedAsync(
+        Guid assigneeId,
+        int page,
+        int pageSize,
+        AssignmentStatus? status = null,
+        string sortBy = "dueDate",
+        string sortDirection = "asc",
+        CancellationToken cancellationToken = default)
+    {
+        var query = _context.TaskAssignments
+            .Where(t => t.AssigneeId == assigneeId);
+
+        if (status.HasValue)
+        {
+            query = query.Where(t => t.Status == status.Value);
+        }
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        query = sortBy switch
+        {
+            "createdAt" => sortDirection == "desc"
+                ? query.OrderByDescending(t => t.CreatedAt)
+                : query.OrderBy(t => t.CreatedAt),
+            "status" => sortDirection == "desc"
+                ? query.OrderByDescending(t => t.Status).ThenBy(t => t.DueDate)
+                : query.OrderBy(t => t.Status).ThenBy(t => t.DueDate),
+            _ => sortDirection == "desc"
+                ? query.OrderByDescending(t => t.DueDate)
+                : query.OrderBy(t => t.DueDate),
+        };
+
+        var tasks = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return (tasks, totalCount);
+    }
+
+    public async Task<TaskAssignment?> GetByIdWithCommentsAndHistoryAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _context.TaskAssignments
+            .Include(t => t.Comments.OrderBy(c => c.CreatedAt))
+            .Include(t => t.History.OrderByDescending(h => h.CreatedAt))
+            .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
+    }
+
     public async Task<IReadOnlyList<TaskAssignment>> GetByContentItemIdAsync(
         Guid contentItemId,
         CancellationToken cancellationToken = default)

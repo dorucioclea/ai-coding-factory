@@ -33,11 +33,11 @@ public class GetMyTasksQueryHandlerTests
     {
         // Arrange
         var tasks = CreateTestTasks();
-        _repositoryMock.Setup(x => x.GetByAssigneeIdPagedAsync(
-                _userId, 1, 20, true, It.IsAny<CancellationToken>()))
+        _repositoryMock.Setup(x => x.GetByAssigneeIdFilteredPagedAsync(
+                _userId, 1, 20, null, "dueDate", "asc", It.IsAny<CancellationToken>()))
             .ReturnsAsync((tasks, tasks.Count));
 
-        var query = new GetMyTasksQuery(_userId, 1, 20, true);
+        var query = new GetMyTasksQuery(_userId, 1, 20);
 
         // Act
         var result = await _handler.Handle(query, CancellationToken.None);
@@ -54,11 +54,11 @@ public class GetMyTasksQueryHandlerTests
     public async Task HandleShouldReturnEmptyListWhenNoTasks()
     {
         // Arrange
-        _repositoryMock.Setup(x => x.GetByAssigneeIdPagedAsync(
-                _userId, 1, 20, true, It.IsAny<CancellationToken>()))
+        _repositoryMock.Setup(x => x.GetByAssigneeIdFilteredPagedAsync(
+                _userId, 1, 20, null, "dueDate", "asc", It.IsAny<CancellationToken>()))
             .ReturnsAsync((new List<TaskAssignment>(), 0));
 
-        var query = new GetMyTasksQuery(_userId, 1, 20, true);
+        var query = new GetMyTasksQuery(_userId, 1, 20);
 
         // Act
         var result = await _handler.Handle(query, CancellationToken.None);
@@ -85,11 +85,11 @@ public class GetMyTasksQueryHandlerTests
             DateTime.UtcNow.AddDays(-1), // Past due date
             "Overdue task");
 
-        _repositoryMock.Setup(x => x.GetByAssigneeIdPagedAsync(
-                _userId, 1, 20, true, It.IsAny<CancellationToken>()))
+        _repositoryMock.Setup(x => x.GetByAssigneeIdFilteredPagedAsync(
+                _userId, 1, 20, null, "dueDate", "asc", It.IsAny<CancellationToken>()))
             .ReturnsAsync((new List<TaskAssignment> { overdueTask }, 1));
 
-        var query = new GetMyTasksQuery(_userId, 1, 20, true);
+        var query = new GetMyTasksQuery(_userId, 1, 20);
 
         // Act
         var result = await _handler.Handle(query, CancellationToken.None);
@@ -103,11 +103,11 @@ public class GetMyTasksQueryHandlerTests
     public async Task HandleShouldCalculatePaginationCorrectly()
     {
         // Arrange
-        _repositoryMock.Setup(x => x.GetByAssigneeIdPagedAsync(
-                _userId, 2, 10, true, It.IsAny<CancellationToken>()))
+        _repositoryMock.Setup(x => x.GetByAssigneeIdFilteredPagedAsync(
+                _userId, 2, 10, null, "dueDate", "asc", It.IsAny<CancellationToken>()))
             .ReturnsAsync((new List<TaskAssignment>(), 25)); // 25 total items
 
-        var query = new GetMyTasksQuery(_userId, 2, 10, true);
+        var query = new GetMyTasksQuery(_userId, 2, 10);
 
         // Act
         var result = await _handler.Handle(query, CancellationToken.None);

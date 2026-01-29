@@ -48,6 +48,7 @@ export {
   useUpdateTaskStatus,
   useAddComment,
   useTaskFilters,
+  useGroupedTasks,
 } from './use-tasks';
 export {
   useApproval,

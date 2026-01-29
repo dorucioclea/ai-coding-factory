@@ -7,22 +7,21 @@ import {
   useUpdateTaskStatus,
   useAddComment,
   useTaskFilters,
+  useGroupedTasks,
 } from '@/hooks';
-import { TaskList } from '@/components/tasks';
+import { GroupedTaskList } from '@/components/tasks';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import { AssignmentStatus } from '@/types';
 
 /**
- * My Tasks page - displays user's assigned tasks
- * ACF-015 Phase 6
+ * My Tasks page - displays user's assigned tasks grouped by status
+ * ACF-014: Team Member Task View
  *
- * Features:
- * - View all assigned tasks
- * - Filter by status and overdue
- * - Sort by due date
- * - Update task status
- * - Add comments
- * - Overdue highlighting
+ * AC1: Tasks assigned across all teams
+ * AC2: Tasks grouped by status (Not Started, In Progress, Completed)
+ * AC3: Sorted by due date (earliest first) within each group
+ * AC4: Quick status update via dropdown on each card
+ * AC5: Task detail modal with comments and history
  */
 export default function TasksPage() {
   const { buildFilters } = useTaskFilters();
@@ -33,6 +32,9 @@ export default function TasksPage() {
   const { data, isLoading, error } = useMyTasks(filters);
   const updateStatusMutation = useUpdateTaskStatus();
   const addCommentMutation = useAddComment();
+
+  const tasks = data?.items ?? [];
+  const groupedTasks = useGroupedTasks(tasks);
 
   const handleStatusChange = useCallback(
     (taskId: string, status: AssignmentStatus) => {
@@ -54,14 +56,10 @@ export default function TasksPage() {
     [addCommentMutation]
   );
 
-  const tasks = data?.items ?? [];
   const overdueCount = tasks.filter((t) => t.isOverdue).length;
-  const inProgressCount = tasks.filter(
-    (t) => t.status === AssignmentStatus.InProgress
-  ).length;
-  const completedCount = tasks.filter(
-    (t) => t.status === AssignmentStatus.Completed
-  ).length;
+  const notStartedCount = groupedTasks[AssignmentStatus.NotStarted].length;
+  const inProgressCount = groupedTasks[AssignmentStatus.InProgress].length;
+  const completedCount = groupedTasks[AssignmentStatus.Completed].length;
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -71,7 +69,7 @@ export default function TasksPage() {
           <h1 className="text-3xl font-bold">My Tasks</h1>
         </div>
         <p className="text-muted-foreground">
-          Manage your assigned content tasks and track progress
+          View and manage your assigned tasks across all teams
         </p>
       </div>
 
@@ -80,11 +78,11 @@ export default function TasksPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Tasks
+              Not Started
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{tasks.length}</div>
+            <div className="text-2xl font-bold">{notStartedCount}</div>
           </CardContent>
         </Card>
 
@@ -95,7 +93,9 @@ export default function TasksPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{inProgressCount}</div>
+            <div className="text-2xl font-bold text-blue-600">
+              {inProgressCount}
+            </div>
           </CardContent>
         </Card>
 
@@ -148,9 +148,9 @@ export default function TasksPage() {
         </Card>
       )}
 
-      {/* Task List */}
-      <TaskList
-        tasks={tasks}
+      {/* Grouped Task List - ACF-014 AC2, AC3 */}
+      <GroupedTaskList
+        groupedTasks={groupedTasks}
         isLoading={isLoading}
         onStatusChange={handleStatusChange}
         onAddComment={handleAddComment}

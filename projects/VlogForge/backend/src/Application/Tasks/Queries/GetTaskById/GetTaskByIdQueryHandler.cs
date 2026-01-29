@@ -8,7 +8,7 @@ namespace VlogForge.Application.Tasks.Queries.GetTaskById;
 
 /// <summary>
 /// Handler for GetTaskByIdQuery.
-/// Story: ACF-008
+/// Stories: ACF-008, ACF-014
 /// </summary>
 public sealed partial class GetTaskByIdQueryHandler : IRequestHandler<GetTaskByIdQuery, TaskAssignmentResponse>
 {
@@ -28,9 +28,7 @@ public sealed partial class GetTaskByIdQueryHandler : IRequestHandler<GetTaskByI
 
     public async Task<TaskAssignmentResponse> Handle(GetTaskByIdQuery request, CancellationToken cancellationToken)
     {
-        var task = request.IncludeComments
-            ? await _taskRepository.GetByIdWithCommentsAsync(request.TaskId, cancellationToken)
-            : await _taskRepository.GetByIdAsync(request.TaskId, cancellationToken);
+        var task = await LoadTaskAsync(request, cancellationToken);
 
         if (task is null)
         {
@@ -46,7 +44,29 @@ public sealed partial class GetTaskByIdQueryHandler : IRequestHandler<GetTaskByI
 
         LogTaskRetrieved(_logger, request.TaskId, request.RequestingUserId);
 
-        return TaskAssignmentResponse.FromEntity(task, request.IncludeComments);
+        return TaskAssignmentResponse.FromEntity(task, request.IncludeComments, request.IncludeHistory);
+    }
+
+    private async Task<Domain.Entities.TaskAssignment?> LoadTaskAsync(
+        GetTaskByIdQuery request,
+        CancellationToken cancellationToken)
+    {
+        if (request.IncludeComments && request.IncludeHistory)
+        {
+            return await _taskRepository.GetByIdWithCommentsAndHistoryAsync(request.TaskId, cancellationToken);
+        }
+
+        if (request.IncludeHistory)
+        {
+            return await _taskRepository.GetByIdWithHistoryAsync(request.TaskId, cancellationToken);
+        }
+
+        if (request.IncludeComments)
+        {
+            return await _taskRepository.GetByIdWithCommentsAsync(request.TaskId, cancellationToken);
+        }
+
+        return await _taskRepository.GetByIdAsync(request.TaskId, cancellationToken);
     }
 
     [LoggerMessage(Level = LogLevel.Debug, Message = "Task {TaskId} retrieved by user {UserId}")]

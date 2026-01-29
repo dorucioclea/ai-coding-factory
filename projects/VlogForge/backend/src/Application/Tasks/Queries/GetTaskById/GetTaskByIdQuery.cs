@@ -5,10 +5,11 @@ namespace VlogForge.Application.Tasks.Queries.GetTaskById;
 
 /// <summary>
 /// Query to get a task by its ID.
-/// Story: ACF-008
+/// Stories: ACF-008, ACF-014
 /// </summary>
 public sealed record GetTaskByIdQuery(
     Guid TaskId,
     Guid RequestingUserId,
-    bool IncludeComments = true
+    bool IncludeComments = true,
+    bool IncludeHistory = false
 ) : IRequest<TaskAssignmentResponse>;

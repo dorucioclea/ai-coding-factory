@@ -54,6 +54,7 @@ export {
   SelectScrollDownButton,
 } from './select';
 export { Separator } from './separator';
+export { Tabs, TabsList, TabsTrigger, TabsContent } from './tabs';
 export { Skeleton } from './skeleton';
 export { Switch } from './switch';
 export { Textarea, type TextareaProps } from './textarea';

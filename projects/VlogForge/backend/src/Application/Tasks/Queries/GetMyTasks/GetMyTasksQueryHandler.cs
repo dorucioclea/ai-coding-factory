@@ -7,7 +7,7 @@ namespace VlogForge.Application.Tasks.Queries.GetMyTasks;
 
 /// <summary>
 /// Handler for GetMyTasksQuery.
-/// Story: ACF-008
+/// Stories: ACF-008, ACF-014
 /// </summary>
 public sealed partial class GetMyTasksQueryHandler : IRequestHandler<GetMyTasksQuery, TaskListResponse>
 {
@@ -24,11 +24,13 @@ public sealed partial class GetMyTasksQueryHandler : IRequestHandler<GetMyTasksQ
 
     public async Task<TaskListResponse> Handle(GetMyTasksQuery request, CancellationToken cancellationToken)
     {
-        var (tasks, totalCount) = await _repository.GetByAssigneeIdPagedAsync(
+        var (tasks, totalCount) = await _repository.GetByAssigneeIdFilteredPagedAsync(
             request.UserId,
             request.Page,
             request.PageSize,
-            request.IncludeCompleted,
+            request.Status,
+            request.SortBy,
+            request.SortDirection,
             cancellationToken);
 
         LogTasksRetrieved(_logger, request.UserId, tasks.Count, totalCount);

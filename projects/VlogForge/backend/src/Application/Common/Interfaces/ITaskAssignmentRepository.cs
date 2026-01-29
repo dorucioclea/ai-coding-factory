@@ -57,6 +57,35 @@ public interface ITaskAssignmentRepository
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Gets task assignments for an assignee with pagination, optional status filter, and sorting.
+    /// Story: ACF-014
+    /// </summary>
+    /// <param name="assigneeId">The assignee's user ID.</param>
+    /// <param name="page">Page number (1-based).</param>
+    /// <param name="pageSize">Number of items per page.</param>
+    /// <param name="status">Optional status filter.</param>
+    /// <param name="sortBy">Sort field: dueDate, createdAt, or status.</param>
+    /// <param name="sortDirection">Sort direction: asc or desc.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Tuple of tasks list and total count.</returns>
+    Task<(IReadOnlyList<TaskAssignment> Tasks, int TotalCount)> GetByAssigneeIdFilteredPagedAsync(
+        Guid assigneeId,
+        int page,
+        int pageSize,
+        AssignmentStatus? status = null,
+        string sortBy = "dueDate",
+        string sortDirection = "asc",
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets a task assignment by ID with both comments and history included.
+    /// Story: ACF-014
+    /// </summary>
+    /// <param name="id">The task assignment ID.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    Task<TaskAssignment?> GetByIdWithCommentsAndHistoryAsync(Guid id, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Gets all task assignments for a content item.
     /// </summary>
     /// <param name="contentItemId">The content item ID.</param>

@@ -1,6 +1,7 @@
 /**
- * Task Assignment types for VlogForge (ACF-015)
+ * Task Assignment types for VlogForge
  * Matches backend TaskDtos.cs
+ * Stories: ACF-008, ACF-014
  */
 
 /**
@@ -14,6 +15,19 @@ export enum AssignmentStatus {
 }
 
 /**
+ * Task history action enum
+ * Maps to backend TaskHistoryAction
+ * Story: ACF-014
+ */
+export enum TaskHistoryAction {
+  Created = 0,
+  StatusChanged = 1,
+  Reassigned = 2,
+  DueDateChanged = 3,
+  CommentAdded = 4,
+}
+
+/**
  * Task comment response
  */
 export interface TaskCommentResponse {
@@ -23,6 +37,18 @@ export interface TaskCommentResponse {
   parentCommentId?: string;
   isEdited: boolean;
   editedAt?: string;
+  createdAt: string;
+}
+
+/**
+ * Task history response
+ * Story: ACF-014
+ */
+export interface TaskHistoryResponse {
+  id: string;
+  changedByUserId: string;
+  action: TaskHistoryAction;
+  description: string;
   createdAt: string;
 }
 
@@ -42,6 +68,7 @@ export interface TaskAssignmentResponse {
   createdAt: string;
   isOverdue: boolean;
   comments: TaskCommentResponse[];
+  history: TaskHistoryResponse[];
 }
 
 /**
@@ -95,6 +122,15 @@ export interface TaskFilters {
 }
 
 /**
+ * Grouped tasks by status for ACF-014 AC2
+ */
+export interface GroupedTasks {
+  [AssignmentStatus.NotStarted]: TaskAssignmentResponse[];
+  [AssignmentStatus.InProgress]: TaskAssignmentResponse[];
+  [AssignmentStatus.Completed]: TaskAssignmentResponse[];
+}
+
+/**
  * Status display helpers
  */
 export const AssignmentStatusLabels: Record<AssignmentStatus, string> = {
@@ -110,4 +146,16 @@ export const AssignmentStatusColors: Record<
   [AssignmentStatus.NotStarted]: 'default',
   [AssignmentStatus.InProgress]: 'secondary',
   [AssignmentStatus.Completed]: 'success',
+};
+
+/**
+ * Task history action display labels
+ * Story: ACF-014
+ */
+export const TaskHistoryActionLabels: Record<TaskHistoryAction, string> = {
+  [TaskHistoryAction.Created]: 'Created',
+  [TaskHistoryAction.StatusChanged]: 'Status Changed',
+  [TaskHistoryAction.Reassigned]: 'Reassigned',
+  [TaskHistoryAction.DueDateChanged]: 'Due Date Changed',
+  [TaskHistoryAction.CommentAdded]: 'Comment Added',
 };

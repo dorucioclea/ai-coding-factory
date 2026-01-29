@@ -20,8 +20,12 @@ public sealed class TaskAssignmentResponse
     public DateTime CreatedAt { get; init; }
     public bool IsOverdue { get; init; }
     public IReadOnlyList<TaskCommentResponse> Comments { get; init; } = new List<TaskCommentResponse>();
+    public IReadOnlyList<TaskHistoryResponse> History { get; init; } = new List<TaskHistoryResponse>();
 
-    public static TaskAssignmentResponse FromEntity(TaskAssignment task, bool includeComments = false)
+    public static TaskAssignmentResponse FromEntity(
+        TaskAssignment task,
+        bool includeComments = false,
+        bool includeHistory = false)
     {
         return new TaskAssignmentResponse
         {
@@ -38,7 +42,10 @@ public sealed class TaskAssignmentResponse
             IsOverdue = task.IsOverdue(),
             Comments = includeComments
                 ? task.Comments.Select(TaskCommentResponse.FromEntity).ToList()
-                : new List<TaskCommentResponse>()
+                : new List<TaskCommentResponse>(),
+            History = includeHistory
+                ? task.History.Select(TaskHistoryResponse.FromEntity).ToList()
+                : new List<TaskHistoryResponse>()
         };
     }
 }

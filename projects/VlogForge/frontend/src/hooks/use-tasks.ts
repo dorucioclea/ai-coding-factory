@@ -1,22 +1,25 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { apiClient } from '@/lib/api-client';
 import { queryKeys } from '@/lib/query-client';
-import type {
-  TaskListResponse,
-  TaskAssignmentResponse,
-  AssignTaskRequest,
-  UpdateTaskStatusRequest,
-  AddCommentRequest,
-  TaskFilters,
+import {
+  AssignmentStatus,
+  type TaskListResponse,
+  type TaskAssignmentResponse,
+  type AssignTaskRequest,
+  type UpdateTaskStatusRequest,
+  type AddCommentRequest,
+  type TaskFilters,
+  type GroupedTasks,
 } from '@/types';
 
 /**
  * Hook for fetching user's assigned tasks
  * GET /api/tasks/mine
+ * Stories: ACF-008, ACF-014
  */
 export function useMyTasks(filters?: TaskFilters) {
   return useQuery({
@@ -31,16 +34,54 @@ export function useMyTasks(filters?: TaskFilters) {
 }
 
 /**
- * Hook for fetching a single task with comments
- * GET /api/tasks/{id}
+ * Hook for fetching a single task with comments and history
+ * GET /api/tasks/{id}?includeComments=true&includeHistory=true
+ * Stories: ACF-008, ACF-014
  */
-export function useTask(id: string) {
+export function useTask(id: string, includeHistory = false) {
   return useQuery({
     queryKey: queryKeys.tasks.detail(id),
-    queryFn: () => apiClient.get<TaskAssignmentResponse>(`/tasks/${id}`),
+    queryFn: () =>
+      apiClient.get<TaskAssignmentResponse>(`/tasks/${id}`, {
+        params: {
+          includeComments: true,
+          includeHistory,
+        },
+      }),
     enabled: !!id,
     staleTime: 1000 * 60 * 2, // 2 minutes
   });
+}
+
+/**
+ * Groups tasks by status and sorts by due date within each group.
+ * Story: ACF-014 (AC2, AC3)
+ */
+export function useGroupedTasks(tasks: TaskAssignmentResponse[]): GroupedTasks {
+  return useMemo(() => {
+    const grouped: GroupedTasks = {
+      [AssignmentStatus.NotStarted]: [],
+      [AssignmentStatus.InProgress]: [],
+      [AssignmentStatus.Completed]: [],
+    };
+
+    for (const task of tasks) {
+      const statusKey = task.status as AssignmentStatus;
+      if (statusKey in grouped) {
+        grouped[statusKey] = [...grouped[statusKey], task];
+      }
+    }
+
+    // Sort each group by due date (earliest first)
+    const sortByDueDate = (a: TaskAssignmentResponse, b: TaskAssignmentResponse) =>
+      new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+
+    return {
+      [AssignmentStatus.NotStarted]: [...grouped[AssignmentStatus.NotStarted]].sort(sortByDueDate),
+      [AssignmentStatus.InProgress]: [...grouped[AssignmentStatus.InProgress]].sort(sortByDueDate),
+      [AssignmentStatus.Completed]: [...grouped[AssignmentStatus.Completed]].sort(sortByDueDate),
+    };
+  }, [tasks]);
 }
 
 /**

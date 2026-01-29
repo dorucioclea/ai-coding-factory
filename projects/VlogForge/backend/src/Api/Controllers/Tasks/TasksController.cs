@@ -9,13 +9,14 @@ using VlogForge.Application.Tasks.Commands.UpdateTaskStatus;
 using VlogForge.Application.Tasks.DTOs;
 using VlogForge.Application.Tasks.Queries.GetMyTasks;
 using VlogForge.Application.Tasks.Queries.GetTaskById;
+using VlogForge.Domain.Entities;
 using VlogForge.Domain.Exceptions;
 
 namespace VlogForge.Api.Controllers.Tasks;
 
 /// <summary>
 /// Task assignment management endpoints.
-/// Story: ACF-008
+/// Stories: ACF-008, ACF-014
 /// </summary>
 [ApiController]
 [Route("api/tasks")]
@@ -34,11 +35,14 @@ public class TasksController : ControllerBase
 
     /// <summary>
     /// Gets tasks assigned to the current user.
-    /// AC2: View Assigned Tasks - sorted by due date with overdue highlighting.
+    /// ACF-008 AC2: View Assigned Tasks - sorted by due date with overdue highlighting.
+    /// ACF-014 AC1-AC3: Task view grouped by status, sorted by due date.
     /// </summary>
     /// <param name="page">Page number (1-based, default: 1).</param>
     /// <param name="pageSize">Items per page (default: 20, max: 100).</param>
-    /// <param name="includeCompleted">Whether to include completed tasks (default: true).</param>
+    /// <param name="status">Optional status filter (0=NotStarted, 1=InProgress, 2=Completed).</param>
+    /// <param name="sortBy">Sort field: dueDate (default), createdAt, status.</param>
+    /// <param name="sortDirection">Sort direction: asc (default) or desc.</param>
     /// <returns>Paginated list of tasks.</returns>
     [HttpGet("mine")]
     [ProducesResponseType(typeof(TaskListResponse), StatusCodes.Status200OK)]
@@ -46,19 +50,23 @@ public class TasksController : ControllerBase
     public async Task<ActionResult<TaskListResponse>> GetMyTasks(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
-        [FromQuery] bool includeCompleted = true)
+        [FromQuery] AssignmentStatus? status = null,
+        [FromQuery] string sortBy = "dueDate",
+        [FromQuery] string sortDirection = "asc")
     {
         var userId = GetCurrentUserId();
-        var query = new GetMyTasksQuery(userId, page, pageSize, includeCompleted);
+        var query = new GetMyTasksQuery(userId, page, pageSize, status, sortBy, sortDirection);
         var result = await _mediator.Send(query);
         return Ok(result);
     }
 
     /// <summary>
     /// Gets a task by ID.
+    /// ACF-014 AC5: Task details with comments and history.
     /// </summary>
     /// <param name="id">The task ID.</param>
     /// <param name="includeComments">Whether to include comments (default: true).</param>
+    /// <param name="includeHistory">Whether to include history (default: false).</param>
     /// <returns>The task details.</returns>
     [HttpGet("{id:guid}", Name = "GetTaskById")]
     [ProducesResponseType(typeof(TaskAssignmentResponse), StatusCodes.Status200OK)]
@@ -67,10 +75,11 @@ public class TasksController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<TaskAssignmentResponse>> GetById(
         Guid id,
-        [FromQuery] bool includeComments = true)
+        [FromQuery] bool includeComments = true,
+        [FromQuery] bool includeHistory = false)
     {
         var userId = GetCurrentUserId();
-        var query = new GetTaskByIdQuery(id, userId, includeComments);
+        var query = new GetTaskByIdQuery(id, userId, includeComments, includeHistory);
 
         try
         {

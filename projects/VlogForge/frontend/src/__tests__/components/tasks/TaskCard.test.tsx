@@ -20,6 +20,7 @@ const mockTask = {
   notes: 'This is a task note',
   isOverdue: false,
   comments: [],
+  history: [],
   createdAt: '2024-01-15T00:00:00Z',
 };
 
