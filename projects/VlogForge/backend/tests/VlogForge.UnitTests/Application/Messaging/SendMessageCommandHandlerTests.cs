@@ -5,6 +5,7 @@ using VlogForge.Application.Common.Interfaces;
 using VlogForge.Application.Messaging.Commands.SendMessage;
 using VlogForge.Domain.Entities;
 using VlogForge.Domain.Exceptions;
+using VlogForge.Domain.Interfaces;
 using Xunit;
 
 namespace VlogForge.UnitTests.Application.Messaging;
@@ -19,6 +20,7 @@ public class SendMessageCommandHandlerTests
     private readonly Mock<IConversationRepository> _conversationRepoMock;
     private readonly Mock<IMessageRepository> _messageRepoMock;
     private readonly Mock<ICreatorProfileRepository> _profileRepoMock;
+    private readonly Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly SendMessageCommandHandler _handler;
 
     private static readonly Guid UserId = Guid.NewGuid();
@@ -31,11 +33,13 @@ public class SendMessageCommandHandlerTests
         _conversationRepoMock = new Mock<IConversationRepository>();
         _messageRepoMock = new Mock<IMessageRepository>();
         _profileRepoMock = new Mock<ICreatorProfileRepository>();
+        _unitOfWorkMock = new Mock<IUnitOfWork>();
 
         _handler = new SendMessageCommandHandler(
             _conversationRepoMock.Object,
             _messageRepoMock.Object,
             _profileRepoMock.Object,
+            _unitOfWorkMock.Object,
             new Mock<ILogger<SendMessageCommandHandler>>().Object);
 
         SetupValidConversation();
@@ -61,8 +65,11 @@ public class SendMessageCommandHandlerTests
         _messageRepoMock.Verify(
             x => x.AddAsync(It.IsAny<Message>(), It.IsAny<CancellationToken>()),
             Times.Once);
-        _messageRepoMock.Verify(
+        _unitOfWorkMock.Verify(
             x => x.SaveChangesAsync(It.IsAny<CancellationToken>()),
+            Times.Once);
+        _unitOfWorkMock.Verify(
+            x => x.CommitTransactionAsync(It.IsAny<CancellationToken>()),
             Times.Once);
     }
 

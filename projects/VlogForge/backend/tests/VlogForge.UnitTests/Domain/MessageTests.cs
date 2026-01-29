@@ -47,7 +47,6 @@ public class MessageTests
         evt.MessageId.Should().Be(message.Id);
         evt.ConversationId.Should().Be(ConversationId);
         evt.SenderId.Should().Be(SenderId);
-        evt.Content.Should().Be(ValidContent);
     }
 
     [Fact]

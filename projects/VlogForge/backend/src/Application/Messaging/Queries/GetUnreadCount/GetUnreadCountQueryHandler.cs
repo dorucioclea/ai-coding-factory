@@ -1,5 +1,6 @@
 using MediatR;
 using VlogForge.Application.Common.Interfaces;
+using VlogForge.Domain.Exceptions;
 
 namespace VlogForge.Application.Messaging.Queries.GetUnreadCount;
 
@@ -21,6 +22,9 @@ public sealed class GetUnreadCountQueryHandler
         GetUnreadCountQuery request,
         CancellationToken cancellationToken)
     {
+        if (request.UserId == Guid.Empty)
+            throw new EntityNotFoundException("User", request.UserId);
+
         return await _messageRepo.GetUnreadCountAsync(request.UserId, cancellationToken);
     }
 }

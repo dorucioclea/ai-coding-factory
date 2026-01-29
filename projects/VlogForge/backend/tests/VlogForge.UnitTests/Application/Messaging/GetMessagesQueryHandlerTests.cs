@@ -157,8 +157,17 @@ public class GetMessagesQueryHandlerTests
             { ParticipantId, CreatorProfile.Create(ParticipantId, $"user_{ParticipantId.ToString()[..8]}", "Participant") }
         };
 
-        _profileRepoMock.Setup(x => x.GetByUserIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Guid userId, CancellationToken _) =>
-                profiles.TryGetValue(userId, out var p) ? p : null);
+        _profileRepoMock.Setup(x => x.GetByUserIdsAsync(
+            It.IsAny<IReadOnlyCollection<Guid>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((IReadOnlyCollection<Guid> ids, CancellationToken _) =>
+            {
+                var result = new Dictionary<Guid, CreatorProfile>();
+                foreach (var id in ids)
+                {
+                    if (profiles.TryGetValue(id, out var profile))
+                        result[id] = profile;
+                }
+                return result as IReadOnlyDictionary<Guid, CreatorProfile>;
+            });
     }
 }

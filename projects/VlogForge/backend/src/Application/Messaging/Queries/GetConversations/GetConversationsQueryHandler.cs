@@ -32,18 +32,26 @@ public sealed class GetConversationsQueryHandler
         var (conversations, totalCount) = await _conversationRepo.GetUserConversationsAsync(
             request.UserId, request.Page, request.PageSize, cancellationToken);
 
-        var items = new List<ConversationResponse>();
+        // Batch-fetch profiles and unread counts to avoid N+1 queries
+        var participantIds = conversations
+            .Select(c => c.GetOtherParticipantId(request.UserId))
+            .Distinct()
+            .ToList();
+        var conversationIds = conversations.Select(c => c.Id).ToList();
 
-        foreach (var conversation in conversations)
+        var profileMap = await _profileRepo.GetByUserIdsAsync(participantIds, cancellationToken);
+        var unreadMap = await _messageRepo.GetUnreadCountsForConversationsAsync(
+            conversationIds, request.UserId, cancellationToken);
+
+        var items = conversations.Select(conversation =>
         {
             var otherParticipantId = conversation.GetOtherParticipantId(request.UserId);
-            var participantProfile = await _profileRepo.GetByUserIdAsync(otherParticipantId, cancellationToken);
-            var unreadCount = await _messageRepo.GetUnreadCountForConversationAsync(
-                conversation.Id, request.UserId, cancellationToken);
+            profileMap.TryGetValue(otherParticipantId, out var participantProfile);
+            unreadMap.TryGetValue(conversation.Id, out var unreadCount);
 
-            items.Add(ConversationResponse.FromEntity(
-                conversation, request.UserId, participantProfile, unreadCount));
-        }
+            return ConversationResponse.FromEntity(
+                conversation, request.UserId, participantProfile, unreadCount);
+        }).ToList();
 
         return new ConversationListResponse
         {

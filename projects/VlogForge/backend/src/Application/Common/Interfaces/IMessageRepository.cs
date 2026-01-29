@@ -31,6 +31,13 @@ public interface IMessageRepository
         Guid conversationId, Guid userId, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Gets unread message counts for multiple conversations in a single query.
+    /// Story: ACF-012 (N+1 fix)
+    /// </summary>
+    Task<IReadOnlyDictionary<Guid, int>> GetUnreadCountsForConversationsAsync(
+        IReadOnlyCollection<Guid> conversationIds, Guid userId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Counts messages sent by a user in the last minute (for rate limiting).
     /// </summary>
     Task<int> CountSentInLastMinuteAsync(Guid userId, CancellationToken cancellationToken = default);

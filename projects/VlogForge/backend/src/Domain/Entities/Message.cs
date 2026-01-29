@@ -70,7 +70,7 @@ public sealed class Message : Entity
 
         var message = new Message(conversationId, senderId, content.Trim());
         message.RaiseDomainEvent(new MessageSentEvent(
-            message.Id, conversationId, senderId, message.Content));
+            message.Id, conversationId, senderId));
 
         return message;
     }

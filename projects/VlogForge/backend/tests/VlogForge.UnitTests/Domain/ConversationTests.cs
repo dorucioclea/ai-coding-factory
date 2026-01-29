@@ -27,8 +27,11 @@ public class ConversationTests
         // Assert
         conversation.Should().NotBeNull();
         conversation.Id.Should().NotBeEmpty();
-        conversation.Participant1Id.Should().Be(Participant1Id);
-        conversation.Participant2Id.Should().Be(Participant2Id);
+        // Participants are normalized: smaller GUID becomes Participant1Id
+        var expectedP1 = Participant1Id.CompareTo(Participant2Id) < 0 ? Participant1Id : Participant2Id;
+        var expectedP2 = Participant1Id.CompareTo(Participant2Id) < 0 ? Participant2Id : Participant1Id;
+        conversation.Participant1Id.Should().Be(expectedP1);
+        conversation.Participant2Id.Should().Be(expectedP2);
         conversation.LastMessageAt.Should().BeNull();
         conversation.LastMessagePreview.Should().BeNull();
     }

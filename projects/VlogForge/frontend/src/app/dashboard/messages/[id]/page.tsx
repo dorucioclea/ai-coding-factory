@@ -9,6 +9,7 @@ import { useRouter, useParams } from 'next/navigation';
 import type { MessageDto } from '@/types/messaging';
 
 const MAX_MESSAGE_LENGTH = 2000;
+const MAX_ACCUMULATED_MESSAGES = 500;
 
 /**
  * Format a date as HH:MM
@@ -43,7 +44,7 @@ export default function MessageThreadPage() {
   const sendMessageMutation = useSendMessage(conversationId ?? '');
   const markAsReadMutation = useMarkAsRead(conversationId ?? '');
 
-  // Accumulate messages from all loaded pages
+  // Accumulate messages from all loaded pages, capped to prevent unbounded growth
   useEffect(() => {
     if (messagesQuery.data?.items) {
       if (page === 1) {
@@ -55,7 +56,11 @@ export default function MessageThreadPage() {
             (m) => !existingIds.has(m.id)
           );
           if (newMessages.length === 0) return prev;
-          return [...newMessages, ...prev];
+          const merged = [...newMessages, ...prev];
+          // Keep only the most recent messages to prevent memory growth
+          return merged.length > MAX_ACCUMULATED_MESSAGES
+            ? merged.slice(merged.length - MAX_ACCUMULATED_MESSAGES)
+            : merged;
         });
       }
     }

@@ -34,6 +34,13 @@ public interface ICreatorProfileRepository
     Task<bool> UserHasProfileAsync(Guid userId, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Gets profiles for multiple user IDs in a single query.
+    /// Story: ACF-012 (N+1 fix)
+    /// </summary>
+    Task<IReadOnlyDictionary<Guid, CreatorProfile>> GetByUserIdsAsync(
+        IReadOnlyCollection<Guid> userIds, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Adds a new profile to the repository.
     /// </summary>
     Task AddAsync(CreatorProfile profile, CancellationToken cancellationToken = default);

@@ -42,13 +42,15 @@ public sealed class GetMessagesQueryHandler
         var (messages, totalCount) = await _messageRepo.GetConversationMessagesAsync(
             request.ConversationId, request.Page, request.PageSize, cancellationToken);
 
-        var items = new List<MessageResponse>();
+        // Batch-fetch sender profiles to avoid N+1 queries
+        var senderIds = messages.Select(m => m.SenderId).Distinct().ToList();
+        var profileMap = await _profileRepo.GetByUserIdsAsync(senderIds, cancellationToken);
 
-        foreach (var message in messages)
+        var items = messages.Select(message =>
         {
-            var senderProfile = await _profileRepo.GetByUserIdAsync(message.SenderId, cancellationToken);
-            items.Add(MessageResponse.FromEntity(message, senderProfile));
-        }
+            profileMap.TryGetValue(message.SenderId, out var senderProfile);
+            return MessageResponse.FromEntity(message, senderProfile);
+        }).ToList();
 
         return new MessageListResponse
         {

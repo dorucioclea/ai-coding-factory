@@ -39,7 +39,9 @@ public sealed partial class MarkMessagesAsReadCommandHandler
         if (!conversation.IsParticipant(request.UserId))
             throw new NotConversationParticipantException(request.ConversationId, request.UserId);
 
-        // Mark messages as read (bulk operation)
+        // Mark messages as read using bulk ExecuteUpdateAsync for performance.
+        // This bypasses EF change tracker, so per-message MessageReadEvent is not raised.
+        // If read-receipt notifications are needed, publish a single aggregate event here.
         var count = await _messageRepo.MarkConversationMessagesAsReadAsync(
             request.ConversationId, request.UserId, cancellationToken);
 

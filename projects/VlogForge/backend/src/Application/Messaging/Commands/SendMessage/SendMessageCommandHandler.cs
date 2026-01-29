@@ -4,6 +4,7 @@ using VlogForge.Application.Common.Interfaces;
 using VlogForge.Application.Messaging.DTOs;
 using VlogForge.Domain.Entities;
 using VlogForge.Domain.Exceptions;
+using VlogForge.Domain.Interfaces;
 
 namespace VlogForge.Application.Messaging.Commands.SendMessage;
 
@@ -17,17 +18,20 @@ public sealed partial class SendMessageCommandHandler
     private readonly IConversationRepository _conversationRepo;
     private readonly IMessageRepository _messageRepo;
     private readonly ICreatorProfileRepository _profileRepo;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<SendMessageCommandHandler> _logger;
 
     public SendMessageCommandHandler(
         IConversationRepository conversationRepo,
         IMessageRepository messageRepo,
         ICreatorProfileRepository profileRepo,
+        IUnitOfWork unitOfWork,
         ILogger<SendMessageCommandHandler> logger)
     {
         _conversationRepo = conversationRepo;
         _messageRepo = messageRepo;
         _profileRepo = profileRepo;
+        _unitOfWork = unitOfWork;
         _logger = logger;
     }
 
@@ -52,13 +56,21 @@ public sealed partial class SendMessageCommandHandler
         // Create message
         var message = Message.Create(request.ConversationId, request.UserId, request.Content);
 
-        await _messageRepo.AddAsync(message, cancellationToken);
-
-        // Update conversation last message
-        conversation.UpdateLastMessage(message.Content);
-        await _conversationRepo.UpdateAsync(conversation, cancellationToken);
-
-        await _messageRepo.SaveChangesAsync(cancellationToken);
+        // Persist message and update conversation atomically
+        await _unitOfWork.BeginTransactionAsync(cancellationToken);
+        try
+        {
+            await _messageRepo.AddAsync(message, cancellationToken);
+            conversation.UpdateLastMessage(message.Content);
+            await _conversationRepo.UpdateAsync(conversation, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _unitOfWork.CommitTransactionAsync(cancellationToken);
+        }
+        catch
+        {
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            throw;
+        }
 
         // Get sender profile for response
         var senderProfile = await _profileRepo.GetByUserIdAsync(request.UserId, cancellationToken);

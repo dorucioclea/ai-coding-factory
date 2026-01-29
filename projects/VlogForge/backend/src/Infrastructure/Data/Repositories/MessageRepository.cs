@@ -66,6 +66,24 @@ public sealed class MessageRepository : IMessageRepository
             .CountAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyDictionary<Guid, int>> GetUnreadCountsForConversationsAsync(
+        IReadOnlyCollection<Guid> conversationIds, Guid userId, CancellationToken cancellationToken = default)
+    {
+        if (conversationIds.Count == 0)
+            return new Dictionary<Guid, int>();
+
+        var counts = await _context.Messages
+            .AsNoTracking()
+            .Where(m => conversationIds.Contains(m.ConversationId) &&
+                        !m.IsRead &&
+                        m.SenderId != userId)
+            .GroupBy(m => m.ConversationId)
+            .Select(g => new { ConversationId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.ConversationId, x => x.Count, cancellationToken);
+
+        return counts;
+    }
+
     public async Task<int> CountSentInLastMinuteAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         var oneMinuteAgo = DateTime.UtcNow.AddMinutes(-1);

@@ -58,6 +58,21 @@ public sealed class CreatorProfileRepository : ICreatorProfileRepository
     }
 
     /// <inheritdoc />
+    public async Task<IReadOnlyDictionary<Guid, CreatorProfile>> GetByUserIdsAsync(
+        IReadOnlyCollection<Guid> userIds, CancellationToken cancellationToken = default)
+    {
+        if (userIds.Count == 0)
+            return new Dictionary<Guid, CreatorProfile>();
+
+        var profiles = await _context.CreatorProfiles
+            .AsNoTracking()
+            .Where(p => userIds.Contains(p.UserId))
+            .ToListAsync(cancellationToken);
+
+        return profiles.ToDictionary(p => p.UserId);
+    }
+
+    /// <inheritdoc />
     public async Task AddAsync(CreatorProfile profile, CancellationToken cancellationToken = default)
     {
         await _context.CreatorProfiles.AddAsync(profile, cancellationToken);

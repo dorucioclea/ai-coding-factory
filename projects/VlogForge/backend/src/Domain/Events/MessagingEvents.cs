@@ -22,6 +22,7 @@ public sealed class ConversationCreatedEvent : DomainEvent
 
 /// <summary>
 /// Event raised when a message is sent.
+/// Only carries identifiers to avoid leaking message content in logs/event streams.
 /// Story: ACF-012
 /// </summary>
 public sealed class MessageSentEvent : DomainEvent
@@ -29,14 +30,12 @@ public sealed class MessageSentEvent : DomainEvent
     public Guid MessageId { get; }
     public Guid ConversationId { get; }
     public Guid SenderId { get; }
-    public string Content { get; }
 
-    public MessageSentEvent(Guid messageId, Guid conversationId, Guid senderId, string content)
+    public MessageSentEvent(Guid messageId, Guid conversationId, Guid senderId)
     {
         MessageId = messageId;
         ConversationId = conversationId;
         SenderId = senderId;
-        Content = content;
     }
 }
 
