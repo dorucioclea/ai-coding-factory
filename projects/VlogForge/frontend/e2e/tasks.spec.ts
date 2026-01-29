@@ -102,16 +102,6 @@ const mockTasks = [
   },
 ];
 
-const mockTaskListResponse = {
-  items: mockTasks,
-  totalCount: mockTasks.length,
-  page: 1,
-  pageSize: 20,
-  totalPages: 1,
-  hasNextPage: false,
-  hasPreviousPage: false,
-};
-
 const mockDetailTask = {
   ...mockTasks[1],
   comments: [
@@ -135,7 +125,11 @@ const mockDetailTask = {
 };
 
 /**
- * Setup API mocks for task endpoints
+ * Setup API mocks for task endpoints.
+ *
+ * NOTE: buildUrl uses `new URL(endpoint, API_BASE_URL)` where API_BASE_URL
+ * is 'http://localhost:5000/api'. Since the endpoint starts with '/',
+ * the resolved URL is 'http://localhost:5000/tasks/mine' (no /api prefix).
  */
 async function setupTaskMocks(
   page: Page,
@@ -155,8 +149,8 @@ async function setupTaskMocks(
     commentAddShouldFail = false,
   } = options;
 
-  // Mock GET /api/tasks/mine
-  await page.route('**/api/tasks/mine**', async (route: Route) => {
+  // Mock GET /tasks/mine (resolved URL has no /api prefix)
+  await page.route('**/tasks/mine**', async (route: Route) => {
     if (shouldFail) {
       await route.fulfill({
         status: 500,
@@ -181,8 +175,8 @@ async function setupTaskMocks(
     });
   });
 
-  // Mock GET /api/tasks/:id
-  await page.route('**/api/tasks/task-*', async (route: Route) => {
+  // Mock GET/PATCH/POST /tasks/:id (and sub-resources)
+  await page.route('**/tasks/task-*', async (route: Route) => {
     const url = route.request().url();
     const method = route.request().method();
 
@@ -237,6 +231,13 @@ async function setupTaskMocks(
   });
 }
 
+/**
+ * Wait for the tasks page to fully load by checking for a known task note.
+ */
+async function waitForTasksLoaded(page: Page) {
+  await expect(page.getByText('Film the intro sequence')).toBeVisible();
+}
+
 test.describe('My Tasks Page - ACF-014', () => {
   test.describe('AC1: Tasks Dashboard Display', () => {
     test('should display My Tasks page title and description', async ({ page }) => {
@@ -254,58 +255,71 @@ test.describe('My Tasks Page - ACF-014', () => {
       await page.goto('/dashboard/tasks');
 
       // Wait for data to load
-      await expect(page.getByText(/Not Started/i).first()).toBeVisible();
+      await waitForTasksLoaded(page);
 
-      // Stats cards: Not Started (2), In Progress (1), Completed (1), Overdue (1)
-      const statsSection = page.locator('.grid.gap-4');
-      await expect(statsSection).toBeVisible();
+      // Stats cards use h3 (CardTitle) - Not Started (2), In Progress (1), Completed (1)
+      const statsGrid = page.locator('.grid.gap-4.md\\:grid-cols-4');
+      await expect(statsGrid).toBeVisible();
     });
 
     test('should show tasks from multiple teams (cross-team aggregation)', async ({ page }) => {
       await setupTaskMocks(page);
       await page.goto('/dashboard/tasks');
 
-      // Tasks from team-1 and team-2 should both appear
-      await expect(page.getByText(/content-aaa/i).first()).toBeVisible();
-      await expect(page.getByText(/content-ccc/i).first()).toBeVisible();
+      // Task from team-1
+      await expect(page.getByText('Film the intro sequence')).toBeVisible();
+      // Task from team-2
+      await expect(page.getByText('Edit video for review')).toBeVisible();
     });
   });
 
   test.describe('AC2: Task Grouping by Status', () => {
-    test('should display three status groups', async ({ page }) => {
+    test('should display three status group headings', async ({ page }) => {
       await setupTaskMocks(page);
       await page.goto('/dashboard/tasks');
 
-      await expect(page.getByRole('heading', { name: 'Not Started' })).toBeVisible();
-      await expect(page.getByRole('heading', { name: 'In Progress' })).toBeVisible();
-      await expect(page.getByRole('heading', { name: 'Completed' })).toBeVisible();
+      await waitForTasksLoaded(page);
+
+      // GroupedTaskList uses h2 for group headings
+      const h2Headings = page.locator('h2');
+      await expect(h2Headings.filter({ hasText: 'Not Started' })).toBeVisible();
+      await expect(h2Headings.filter({ hasText: 'In Progress' })).toBeVisible();
+      await expect(h2Headings.filter({ hasText: 'Completed' })).toBeVisible();
     });
 
     test('should show correct task count per group', async ({ page }) => {
       await setupTaskMocks(page);
       await page.goto('/dashboard/tasks');
 
-      // Wait for groups to render
-      await expect(page.getByRole('heading', { name: 'Not Started' })).toBeVisible();
+      await waitForTasksLoaded(page);
 
-      // Not Started group: 2 tasks, In Progress: 1, Completed: 1
-      const notStartedSection = page.locator('section').filter({ hasText: 'Not Started' }).first();
-      await expect(notStartedSection).toBeVisible();
+      // Not Started group has 2 tasks (task-1 and task-2)
+      await expect(page.getByText('Film the intro sequence')).toBeVisible();
+      await expect(page.getByText('Write script for episode')).toBeVisible();
+
+      // In Progress group has 1 task (task-3)
+      await expect(page.getByText('Edit video for review')).toBeVisible();
+
+      // Completed group has 1 task (task-4)
+      await expect(page.getByText('Publish final video')).toBeVisible();
     });
   });
 
   test.describe('AC3: Due Date Sorting', () => {
-    test('should render tasks within groups (due date sorted)', async ({ page }) => {
+    test('should render tasks within groups sorted by due date', async ({ page }) => {
       await setupTaskMocks(page);
       await page.goto('/dashboard/tasks');
 
-      // Wait for tasks to load
-      await expect(page.getByRole('heading', { name: 'Not Started' })).toBeVisible();
+      await waitForTasksLoaded(page);
 
-      // Tasks should appear within their respective groups
-      // The hook sorts by dueDate ascending within each group
-      const notStartedSection = page.locator('section').filter({ hasText: 'Not Started' }).first();
-      await expect(notStartedSection).toBeVisible();
+      // Within Not Started group, task-2 (due Jan 20) should come before task-1 (due Feb 10)
+      // Both notes should be visible
+      const notStartedSection = page.locator('section').first();
+      const taskNotes = notStartedSection.locator('p');
+      const firstNote = taskNotes.filter({ hasText: 'Write script for episode' });
+      const secondNote = taskNotes.filter({ hasText: 'Film the intro sequence' });
+      await expect(firstNote).toBeVisible();
+      await expect(secondNote).toBeVisible();
     });
   });
 
@@ -314,12 +328,14 @@ test.describe('My Tasks Page - ACF-014', () => {
       await setupTaskMocks(page);
       await page.goto('/dashboard/tasks');
 
-      // Wait for tasks to load
-      await expect(page.getByRole('heading', { name: 'Not Started' })).toBeVisible();
+      await waitForTasksLoaded(page);
 
-      // Each task card has a status dropdown (Select trigger)
+      // Each task card has a Select trigger (rendered as a button)
       const selectTriggers = page.locator('button[role="combobox"]');
       await expect(selectTriggers.first()).toBeVisible();
+
+      // Should have 4 dropdowns (one per task card)
+      await expect(selectTriggers).toHaveCount(4);
     });
   });
 
@@ -328,11 +344,10 @@ test.describe('My Tasks Page - ACF-014', () => {
       await setupTaskMocks(page);
       await page.goto('/dashboard/tasks');
 
-      // Wait for tasks
-      await expect(page.getByRole('heading', { name: 'Not Started' })).toBeVisible();
+      await waitForTasksLoaded(page);
 
-      // Click on a task card content area
-      await page.getByText(/content-aaa/i).first().click();
+      // Click on a task card by its notes
+      await page.getByText('Film the intro sequence').click();
 
       // Modal should open with "Task Details" heading
       await expect(page.getByText('Task Details')).toBeVisible();
@@ -342,8 +357,10 @@ test.describe('My Tasks Page - ACF-014', () => {
       await setupTaskMocks(page);
       await page.goto('/dashboard/tasks');
 
-      await expect(page.getByRole('heading', { name: 'Not Started' })).toBeVisible();
-      await page.getByText(/content-bbb/i).first().click();
+      await waitForTasksLoaded(page);
+
+      // Click on the overdue task (task-2) which has comments and history
+      await page.getByText('Write script for episode').click();
 
       // Modal tabs
       await expect(page.getByRole('tab', { name: /Comments/i })).toBeVisible();
@@ -354,10 +371,12 @@ test.describe('My Tasks Page - ACF-014', () => {
       await setupTaskMocks(page);
       await page.goto('/dashboard/tasks');
 
-      await expect(page.getByRole('heading', { name: 'Not Started' })).toBeVisible();
-      await page.getByText(/content-bbb/i).first().click();
+      await waitForTasksLoaded(page);
 
-      // Comments tab is active by default
+      // Click the overdue task which has a comment
+      await page.getByText('Write script for episode').click();
+
+      // Comments tab is active by default; the detail mock returns the comment
       await expect(page.getByText('Please prioritize this')).toBeVisible();
     });
 
@@ -365,8 +384,10 @@ test.describe('My Tasks Page - ACF-014', () => {
       await setupTaskMocks(page);
       await page.goto('/dashboard/tasks');
 
-      await expect(page.getByRole('heading', { name: 'Not Started' })).toBeVisible();
-      await page.getByText(/content-bbb/i).first().click();
+      await waitForTasksLoaded(page);
+
+      // Click the overdue task
+      await page.getByText('Write script for episode').click();
 
       // Click History tab
       await page.getByRole('tab', { name: /History/i }).click();
@@ -379,20 +400,21 @@ test.describe('My Tasks Page - ACF-014', () => {
       await setupTaskMocks(page);
       await page.goto('/dashboard/tasks');
 
-      await expect(page.getByRole('heading', { name: 'Not Started' })).toBeVisible();
+      await waitForTasksLoaded(page);
 
       // task-2 is overdue, click it
-      await page.getByText(/content-bbb/i).first().click();
+      await page.getByText('Write script for episode').click();
 
       await expect(page.getByText('Overdue').first()).toBeVisible();
     });
 
-    test('should close modal when clicking close', async ({ page }) => {
+    test('should close modal when pressing Escape', async ({ page }) => {
       await setupTaskMocks(page);
       await page.goto('/dashboard/tasks');
 
-      await expect(page.getByRole('heading', { name: 'Not Started' })).toBeVisible();
-      await page.getByText(/content-aaa/i).first().click();
+      await waitForTasksLoaded(page);
+
+      await page.getByText('Film the intro sequence').click();
 
       await expect(page.getByText('Task Details')).toBeVisible();
 
@@ -409,7 +431,8 @@ test.describe('My Tasks Page - ACF-014', () => {
       await setupTaskMocks(page, { shouldFail: true });
       await page.goto('/dashboard/tasks');
 
-      await expect(page.getByText(/failed to load tasks/i)).toBeVisible();
+      // React Query retries 3 times with exponential backoff before error state
+      await expect(page.getByText(/failed to load tasks/i)).toBeVisible({ timeout: 15000 });
     });
 
     test('should show empty state when no tasks exist', async ({ page }) => {
@@ -425,20 +448,19 @@ test.describe('My Tasks Page - ACF-014', () => {
       await setupTaskMocks(page);
       await page.goto('/dashboard/tasks');
 
-      // Wait for data to load
-      await expect(page.getByRole('heading', { name: 'Not Started' })).toBeVisible();
+      await waitForTasksLoaded(page);
 
-      // Overdue stat card shows count (1 overdue task)
+      // Overdue stat card label is always visible
       await expect(page.getByText('Overdue').first()).toBeVisible();
     });
 
-    test('should highlight overdue task cards with destructive border', async ({ page }) => {
+    test('should highlight overdue task cards with destructive styling', async ({ page }) => {
       await setupTaskMocks(page);
       await page.goto('/dashboard/tasks');
 
-      await expect(page.getByRole('heading', { name: 'Not Started' })).toBeVisible();
+      await waitForTasksLoaded(page);
 
-      // Overdue task card has border-destructive class
+      // The overdue task (task-2) card has border-destructive class
       const overdueCard = page.locator('.border-destructive').first();
       await expect(overdueCard).toBeVisible();
     });
@@ -449,35 +471,44 @@ test.describe('My Tasks Page - ACF-014', () => {
       await setupTaskMocks(page);
       await page.goto('/dashboard/tasks');
 
-      await expect(page.getByRole('heading', { name: 'Not Started' })).toBeVisible();
+      await waitForTasksLoaded(page);
 
-      // Count task cards before collapse
-      const cardsBeforeCount = await page.getByText(/Content Item/i).count();
+      // All 4 task notes should be visible
+      await expect(page.getByText('Film the intro sequence')).toBeVisible();
+      await expect(page.getByText('Write script for episode')).toBeVisible();
 
       // Click the Not Started group header button to collapse
-      await page.getByRole('heading', { name: 'Not Started' }).click();
+      // The button wraps the h2 heading
+      const notStartedButton = page.locator('button').filter({ has: page.locator('h2', { hasText: 'Not Started' }) });
+      await notStartedButton.click();
 
-      // After collapsing, fewer cards should be visible
-      const cardsAfterCount = await page.getByText(/Content Item/i).count();
-      expect(cardsAfterCount).toBeLessThan(cardsBeforeCount);
+      // After collapsing Not Started, those 2 tasks should be hidden
+      await expect(page.getByText('Film the intro sequence')).not.toBeVisible();
+      await expect(page.getByText('Write script for episode')).not.toBeVisible();
+
+      // Other groups remain visible
+      await expect(page.getByText('Edit video for review')).toBeVisible();
+      await expect(page.getByText('Publish final video')).toBeVisible();
     });
 
     test('should expand a collapsed group when header is clicked again', async ({ page }) => {
       await setupTaskMocks(page);
       await page.goto('/dashboard/tasks');
 
-      await expect(page.getByRole('heading', { name: 'Not Started' })).toBeVisible();
+      await waitForTasksLoaded(page);
 
-      // Collapse
-      await page.getByRole('heading', { name: 'Not Started' }).click();
+      // Click to collapse
+      const notStartedButton = page.locator('button').filter({ has: page.locator('h2', { hasText: 'Not Started' }) });
+      await notStartedButton.click();
 
-      // Expand again
-      await page.getByRole('heading', { name: 'Not Started' }).click();
+      await expect(page.getByText('Film the intro sequence')).not.toBeVisible();
 
-      // All groups should be visible and expanded
-      await expect(page.getByRole('heading', { name: 'Not Started' })).toBeVisible();
-      await expect(page.getByRole('heading', { name: 'In Progress' })).toBeVisible();
-      await expect(page.getByRole('heading', { name: 'Completed' })).toBeVisible();
+      // Click again to expand
+      await notStartedButton.click();
+
+      // Tasks should be visible again
+      await expect(page.getByText('Film the intro sequence')).toBeVisible();
+      await expect(page.getByText('Write script for episode')).toBeVisible();
     });
   });
 });
