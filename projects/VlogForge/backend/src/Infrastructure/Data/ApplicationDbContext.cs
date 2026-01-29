@@ -130,6 +130,36 @@ public class ApplicationDbContext : DbContext, IUnitOfWork
     /// </summary>
     public DbSet<Message> Messages => Set<Message>();
 
+    /// <summary>
+    /// Gets or sets the SharedProjects DbSet.
+    /// Story: ACF-013
+    /// </summary>
+    public DbSet<SharedProject> SharedProjects => Set<SharedProject>();
+
+    /// <summary>
+    /// Gets or sets the SharedProjectMembers DbSet.
+    /// Story: ACF-013
+    /// </summary>
+    public DbSet<SharedProjectMember> SharedProjectMembers => Set<SharedProjectMember>();
+
+    /// <summary>
+    /// Gets or sets the SharedProjectTasks DbSet.
+    /// Story: ACF-013
+    /// </summary>
+    public DbSet<SharedProjectTask> SharedProjectTasks => Set<SharedProjectTask>();
+
+    /// <summary>
+    /// Gets or sets the SharedProjectLinks DbSet.
+    /// Story: ACF-013
+    /// </summary>
+    public DbSet<SharedProjectLink> SharedProjectLinks => Set<SharedProjectLink>();
+
+    /// <summary>
+    /// Gets or sets the SharedProjectActivities DbSet.
+    /// Story: ACF-013
+    /// </summary>
+    public DbSet<SharedProjectActivity> SharedProjectActivities => Set<SharedProjectActivity>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

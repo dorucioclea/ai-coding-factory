@@ -79,6 +79,9 @@ public static class DependencyInjection
         services.AddScoped<IConversationRepository, ConversationRepository>();
         services.AddScoped<IMessageRepository, MessageRepository>();
 
+        // Register shared project repository (ACF-013)
+        services.AddScoped<ISharedProjectRepository, SharedProjectRepository>();
+
         // Register encryption service (ACF-003)
         services.AddSingleton<IEncryptionService, EncryptionService>();
 

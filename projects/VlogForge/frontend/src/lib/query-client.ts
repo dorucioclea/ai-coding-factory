@@ -193,6 +193,19 @@ export const queryKeys = {
       [...queryKeys.messaging.all, 'unread-count'] as const,
   },
 
+  // Shared project queries (ACF-013)
+  sharedProjects: {
+    all: ['shared-projects'] as const,
+    lists: () => [...queryKeys.sharedProjects.all, 'list'] as const,
+    list: (filters?: Record<string, unknown>) =>
+      [...queryKeys.sharedProjects.lists(), filters] as const,
+    details: () => [...queryKeys.sharedProjects.all, 'detail'] as const,
+    detail: (id: string) =>
+      [...queryKeys.sharedProjects.details(), id] as const,
+    activity: (id: string, filters?: Record<string, unknown>) =>
+      [...queryKeys.sharedProjects.detail(id), 'activity', filters] as const,
+  },
+
   // Discovery queries (ACF-010)
   discovery: {
     all: ['discovery'] as const,

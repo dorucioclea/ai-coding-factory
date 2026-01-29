@@ -376,3 +376,35 @@ public class NoMutualCollaborationException : DomainException
         ParticipantId = participantId;
     }
 }
+
+/// <summary>
+/// Exception thrown when a shared project is not found.
+/// Story: ACF-013
+/// </summary>
+public class SharedProjectNotFoundException : DomainException
+{
+    public Guid ProjectId { get; }
+
+    public SharedProjectNotFoundException(Guid projectId)
+        : base("SHARED_PROJECT_NOT_FOUND", "Shared project not found.")
+    {
+        ProjectId = projectId;
+    }
+}
+
+/// <summary>
+/// Exception thrown when a user doesn't have access to a shared project.
+/// Story: ACF-013
+/// </summary>
+public class SharedProjectAccessDeniedException : DomainException
+{
+    public Guid ProjectId { get; }
+    public Guid UserId { get; }
+
+    public SharedProjectAccessDeniedException(Guid projectId, Guid userId)
+        : base("SHARED_PROJECT_ACCESS_DENIED", "You are not a member of this project.")
+    {
+        ProjectId = projectId;
+        UserId = userId;
+    }
+}
