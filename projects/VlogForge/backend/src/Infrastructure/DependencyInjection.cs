@@ -75,6 +75,10 @@ public static class DependencyInjection
         // Register collaboration request repository (ACF-011)
         services.AddScoped<ICollaborationRequestRepository, CollaborationRequestRepository>();
 
+        // Register messaging repositories (ACF-012)
+        services.AddScoped<IConversationRepository, ConversationRepository>();
+        services.AddScoped<IMessageRepository, MessageRepository>();
+
         // Register encryption service (ACF-003)
         services.AddSingleton<IEncryptionService, EncryptionService>();
 
@@ -116,6 +120,21 @@ public static class DependencyInjection
                     ValidAudience = jwtSettings.Audience,
                     ValidateLifetime = true,
                     ClockSkew = TimeSpan.Zero
+                };
+
+                // Support JWT token from query string for SignalR (ACF-012)
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        var accessToken = context.Request.Query["access_token"];
+                        var path = context.HttpContext.Request.Path;
+                        if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+                        {
+                            context.Token = accessToken;
+                        }
+                        return Task.CompletedTask;
+                    }
                 };
             });
         }

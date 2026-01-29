@@ -91,4 +91,13 @@ public interface ITeamRepository
     /// Saves all changes to the repository.
     /// </summary>
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Checks if two users are members of the same team.
+    /// Story: ACF-012
+    /// </summary>
+    /// <param name="userId1">The first user ID.</param>
+    /// <param name="userId2">The second user ID.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    Task<bool> AreInSameTeamAsync(Guid userId1, Guid userId2, CancellationToken cancellationToken = default);
 }

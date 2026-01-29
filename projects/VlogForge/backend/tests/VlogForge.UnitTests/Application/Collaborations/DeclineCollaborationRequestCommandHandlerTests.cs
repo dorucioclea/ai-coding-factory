@@ -2,6 +2,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using VlogForge.Application.Collaborations.Commands.DeclineCollaborationRequest;
+using Xunit;
 using VlogForge.Application.Common.Interfaces;
 using VlogForge.Domain.Entities;
 using VlogForge.Domain.Exceptions;

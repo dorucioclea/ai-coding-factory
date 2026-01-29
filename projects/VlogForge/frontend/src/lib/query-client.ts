@@ -182,6 +182,17 @@ export const queryKeys = {
       [...queryKeys.collaborations.all, 'detail', id] as const,
   },
 
+  // Messaging queries (ACF-012)
+  messaging: {
+    all: ['messaging'] as const,
+    conversations: (filters?: Record<string, unknown>) =>
+      [...queryKeys.messaging.all, 'conversations', filters] as const,
+    messages: (conversationId: string, filters?: Record<string, unknown>) =>
+      [...queryKeys.messaging.all, 'messages', conversationId, filters] as const,
+    unreadCount: () =>
+      [...queryKeys.messaging.all, 'unread-count'] as const,
+  },
+
   // Discovery queries (ACF-010)
   discovery: {
     all: ['discovery'] as const,

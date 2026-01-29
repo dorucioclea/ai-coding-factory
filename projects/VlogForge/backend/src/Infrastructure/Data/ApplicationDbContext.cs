@@ -118,6 +118,18 @@ public class ApplicationDbContext : DbContext, IUnitOfWork
     /// </summary>
     public DbSet<CollaborationRequest> CollaborationRequests => Set<CollaborationRequest>();
 
+    /// <summary>
+    /// Gets or sets the Conversations DbSet.
+    /// Story: ACF-012
+    /// </summary>
+    public DbSet<Conversation> Conversations => Set<Conversation>();
+
+    /// <summary>
+    /// Gets or sets the Messages DbSet.
+    /// Story: ACF-012
+    /// </summary>
+    public DbSet<Message> Messages => Set<Message>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

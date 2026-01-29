@@ -1,6 +1,7 @@
 using FluentAssertions;
 using VlogForge.Domain.Entities;
 using VlogForge.Domain.Events;
+using Xunit;
 
 namespace VlogForge.UnitTests.Domain;
 

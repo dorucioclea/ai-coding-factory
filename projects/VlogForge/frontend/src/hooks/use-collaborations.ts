@@ -20,10 +20,8 @@ export function useCollaborationInbox(
   pageSize = 20,
   enabled = true
 ) {
-  const filters = { status, page, pageSize };
-
   return useQuery({
-    queryKey: queryKeys.collaborations.inbox(filters),
+    queryKey: queryKeys.collaborations.inbox({ status, page, pageSize }),
     queryFn: () =>
       apiClient.get<CollaborationRequestListResponse>('/collaborations/inbox', {
         params: {
@@ -47,10 +45,8 @@ export function useSentCollaborations(
   pageSize = 20,
   enabled = true
 ) {
-  const filters = { status, page, pageSize };
-
   return useQuery({
-    queryKey: queryKeys.collaborations.sent(filters),
+    queryKey: queryKeys.collaborations.sent({ status, page, pageSize }),
     queryFn: () =>
       apiClient.get<CollaborationRequestListResponse>('/collaborations/sent', {
         params: {

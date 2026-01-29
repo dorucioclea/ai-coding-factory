@@ -6,6 +6,7 @@ using VlogForge.Application;
 using VlogForge.Infrastructure;
 using VlogForge.Api.Extensions;
 using VlogForge.Api.Middleware;
+using VlogForge.Infrastructure.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,6 +29,9 @@ builder.Services
     .AddInfrastructureServices(builder.Configuration)
     .AddApiServices(builder.Configuration);
 
+// Add SignalR for real-time messaging (Story: ACF-012)
+builder.Services.AddSignalR();
+
 // Add rate limiting for API endpoints (Story: ACF-010)
 builder.Services.AddRateLimiter(options =>
 {
@@ -40,6 +44,19 @@ builder.Services.AddRateLimiter(options =>
             factory: _ => new SlidingWindowRateLimiterOptions
             {
                 PermitLimit = 30,
+                Window = TimeSpan.FromMinutes(1),
+                SegmentsPerWindow = 6,
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 2
+            }));
+
+    // Messaging endpoint: 60 requests per minute per user (Story: ACF-012)
+    options.AddPolicy("messaging", context =>
+        RateLimitPartition.GetSlidingWindowLimiter(
+            partitionKey: context.User?.Identity?.Name ?? context.Connection.RemoteIpAddress?.ToString() ?? "anonymous",
+            factory: _ => new SlidingWindowRateLimiterOptions
+            {
+                PermitLimit = 60,
                 Window = TimeSpan.FromMinutes(1),
                 SegmentsPerWindow = 6,
                 QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
@@ -110,6 +127,9 @@ app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthC
 
 // Map controllers
 app.MapControllers();
+
+// Map SignalR hubs (Story: ACF-012)
+app.MapHub<MessagingHub>("/hubs/messaging");
 
 // Run the application
 try

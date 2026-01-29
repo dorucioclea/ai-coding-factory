@@ -296,3 +296,83 @@ public class RecipientNotOpenToCollaborationsException : DomainException
         RecipientId = recipientId;
     }
 }
+
+/// <summary>
+/// Exception thrown when a conversation is not found.
+/// Story: ACF-012
+/// </summary>
+public class ConversationNotFoundException : DomainException
+{
+    public Guid ConversationId { get; }
+
+    public ConversationNotFoundException(Guid conversationId)
+        : base("CONVERSATION_NOT_FOUND", "Conversation not found.")
+    {
+        ConversationId = conversationId;
+    }
+}
+
+/// <summary>
+/// Exception thrown when a message is not found.
+/// Story: ACF-012
+/// </summary>
+public class MessageNotFoundException : DomainException
+{
+    public Guid MessageId { get; }
+
+    public MessageNotFoundException(Guid messageId)
+        : base("MESSAGE_NOT_FOUND", "Message not found.")
+    {
+        MessageId = messageId;
+    }
+}
+
+/// <summary>
+/// Exception thrown when a user is not a participant in a conversation.
+/// Story: ACF-012
+/// </summary>
+public class NotConversationParticipantException : DomainException
+{
+    public Guid ConversationId { get; }
+    public Guid UserId { get; }
+
+    public NotConversationParticipantException(Guid conversationId, Guid userId)
+        : base("NOT_CONVERSATION_PARTICIPANT", "You are not a participant in this conversation.")
+    {
+        ConversationId = conversationId;
+        UserId = userId;
+    }
+}
+
+/// <summary>
+/// Exception thrown when a user exceeds the messaging rate limit.
+/// Story: ACF-012
+/// </summary>
+public class MessagingRateLimitExceededException : DomainException
+{
+    public Guid UserId { get; }
+
+    public MessagingRateLimitExceededException(Guid userId)
+        : base("MESSAGING_RATE_LIMIT", "You have reached the maximum number of messages per minute (60).")
+    {
+        UserId = userId;
+    }
+}
+
+/// <summary>
+/// Exception thrown when users don't have mutual collaboration to start a conversation.
+/// Story: ACF-012
+/// </summary>
+public class NoMutualCollaborationException : DomainException
+{
+    public Guid UserId { get; }
+    public Guid ParticipantId { get; }
+
+    public NoMutualCollaborationException(Guid userId, Guid participantId)
+        : base("NO_MUTUAL_COLLABORATION",
+            "You can only message creators with an accepted collaboration request or shared team membership.")
+    {
+        UserId = userId;
+        ParticipantId = participantId;
+    }
+}

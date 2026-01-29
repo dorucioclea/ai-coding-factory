@@ -119,4 +119,14 @@ public sealed class TeamRepository : ITeamRepository
     {
         return _context.SaveChangesAsync(cancellationToken);
     }
+
+    /// <inheritdoc />
+    public async Task<bool> AreInSameTeamAsync(Guid userId1, Guid userId2, CancellationToken cancellationToken = default)
+    {
+        return await _context.Teams
+            .AnyAsync(t =>
+                t.Members.Any(m => m.UserId == userId1) &&
+                t.Members.Any(m => m.UserId == userId2),
+                cancellationToken);
+    }
 }
